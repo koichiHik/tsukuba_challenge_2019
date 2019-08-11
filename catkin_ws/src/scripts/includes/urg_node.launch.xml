@@ -1,0 +1,19 @@
+
+<launch>
+
+  <!-- Transform Publisher -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="laser_broadcaster" args="0.2 0 0 0 0 0 base_link laser" />
+
+  <!-- Urg Node -->
+  <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+    <param name="ip_address"    type="str"        value="10.0.0.200"/>
+    <param name="angle_max"     type="double"     value="1.74532778"/>
+    <param name="angle_min"     type="double"     value="-1.74532778"/>
+    <param name="cluster"       type="int"        value="1"/>
+    <param name="frame_id"      type="str"        value="laser"/>
+    <param name="skip"          type="int"        value="0"/>
+    <param name="tf_prefix"     type="str"        value=""/>
+    <param name="time_offset"   type="double"     value="0.0"/>
+  </node>
+</launch>
+
