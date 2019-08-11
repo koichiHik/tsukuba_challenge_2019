@@ -1,1 +1,1 @@
-echo # tsukuba_challenge_2019
+Repository for tsukuba_challenge_2019
