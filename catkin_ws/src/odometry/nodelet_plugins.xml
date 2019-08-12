@@ -1,0 +1,9 @@
+<library path="lib/libodometry_nodelet">
+  <class 	name="odometry/OdometryNodelet" 
+					type="koichi_robotics_lib::OdometryNodelet" 
+					base_class_type="nodelet::Nodelet">
+    <description>
+      OdometryNodelet.
+    </description>
+  </class>
+</library>

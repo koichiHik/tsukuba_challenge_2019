@@ -1,34 +1,21 @@
 
 <launch>
+  <arg name="robot" value="imini" />
+  <arg name="mgr" value="pc_nodelet_mgr" />
 
-  <arg name="max_vel_x" default="0.15" />
-  <arg name="max_vel_x_back" default="0.15" />
-  <arg name="max_vel_y" default="0.0" />
-  <arg name="max_vel_theta" default="1.57" />
-  <arg name="max_acc_x" default="0.50" />
-  <arg name="max_acc_y" default="0.0" />
-  <arg name="max_acc_theta" default="1.00" />
+  <include file="$(find scripts)/includes/param_loader.launch.xml" >
+    <arg name="robot" value="$(arg robot)" />    
+  </include>
 
-
-  <!-- <rosparam file="$(find scripts)/param/config/robot_info.yaml" command="load" /> -->
-
-  <!-- <arg name="mgr" value="pc_nodelet_mgr" /> -->
-  <!-- <include file="$(find scripts)/includes/$(arg mgr).launch.xml"/> -->
+  <include file="$(find scripts)/includes/$(arg mgr).launch.xml"/>
 
   <include file="$(find scripts)/includes/joy_control.launch.xml"/>
 
   <include file="$(find scripts)/includes/ypspur_ros.launch.xml" >
-    <arg name="max_vel_x"     value="$(arg max_vel_x)" />
-    <arg name="max_vel_theta" value="$(arg max_vel_theta)" />
-    <arg name="max_acc_x"     value="$(arg max_acc_x)" />
-    <arg name="max_acc_theta" value="$(arg max_acc_theta)" />
+    <arg name="robot" value="$(arg robot)" />
   </include>
 
-  <!--
-  <include file="$(find scripts)/includes/zed.launch.xml">
-    <arg name="nodelet_mgr" value="$(arg mgr)" />	
-  </include>
-  -->
+  <include file="$(find scripts)/includes/odometry.launch.xml"/>
 
   <include file="$(find scripts)/includes/urg_node.launch.xml" />
 

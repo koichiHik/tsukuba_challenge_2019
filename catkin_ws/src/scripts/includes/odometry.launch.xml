@@ -1,0 +1,36 @@
+<launch>
+
+  <arg name="robot" default="" />
+	<arg name="nodelet_mgr" default="pc_nodelet_mgr"/>
+
+	<node pkg="nodelet" type="nodelet" name="OdometryNodelet" args="load odometry/OdometryNodelet $(arg nodelet_mgr)" output="screen" >
+		
+		<!-- Topic Name -->
+		<remap from="~/imu_topic_name" to="imu_topic_name" />
+		<remap from="~/joint_states_topic_name" to="joint_states_topic_name" />
+		<remap from="~/odom_whl_topic_name" to="odom_imu_topic_name" />
+		<remap from="~/odom_imu_topic_name" to="odom_whl_topic_name" />
+
+		<!-- Frame Name -->
+		<remap from="~/base_link_frame_name" to="base_link_frame_name" />
+		<remap from="~/odometry_imu_frame_name" to="odometry_imu_frame_name" />
+		<remap from="~/odometry_whl_frame_name" to="odometry_whl_frame_name" />
+
+		<!-- Parameters Name -->
+		<remap from="~/wheel_base" to="/robo/wheel_base" />
+		<remap from="~/l_whl_diameter" to="/robo/l_whl_diameter" />
+		<remap from="~/r_whl_diameter" to="/robo/r_whl_diameter" />
+		<remap from="~/gyro_1bit_in_rad" to="/imu/gyro_1bit_in_rad" />
+		<!--<remap from="~/acc_1bit" to="/imu/acc_1bit" />-->		
+		<remap from="~/standstill_thresh" to="/odometry/standstill_thresh" />
+		<remap from="~/use_left_pls" to="/odometry/use_left_pls" />
+		<remap from="~/use_right_pls" to="/odometry/use_right_pls" />
+		<remap from="~/cycle_time" to="/odometry/cycle_time" />
+    <remap from="~/max_sync_diff" to="/odometry/max_sync_diff" />
+		<remap from="~/dist_buffer" to="/odometry/dist_buffer" />
+    <remap from="~/imu_yaw_buffer" to="/odometry/imu_yaw_buffer" />
+    <remap from="~/whl_yaw_buffer" to="/odometry/whl_yaw_buffer" />
+		<remap from="~/odom_whl_only" to="/odometry/odom_whl_only" />
+
+	</node>
+</launch>

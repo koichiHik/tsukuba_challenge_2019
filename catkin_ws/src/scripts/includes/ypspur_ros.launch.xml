@@ -1,13 +1,9 @@
 <launch>
 
-  <arg name="robot" default="imini" />
-  <arg name="max_vel_x" default="0.0" />
-  <arg name="max_vel_theta" default="0.0" />
-  <arg name="max_acc_x" default="0.0" />
-  <arg name="max_acc_theta" default="0.0" />
+  <arg name="robot" default="" />
 
   <node pkg="ypspur_ros" type="ypspur_ros" name="ypspur" output="screen">
-    
+
     <!-- YpSpur Configuration Parameters -->
     <param name="~/compatible"          value="1" />
     <param name="~/port"                value="/dev/TFROG_DRIVER" />
@@ -29,10 +25,10 @@
     <param name="~/odometry_mode"       value="diff" />    
 
     <!-- YpSpur Control Limitation Parameters -->
-    <param name="~/vel"                 value="$(arg max_vel_x)" />
-    <param name="~/acc"                 value="$(arg max_acc_x)" />
-    <param name="~/angvel"              value="$(arg max_vel_theta)" />
-    <param name="~/angacc"              value="$(arg max_acc_theta)" />
+    <remap from="~/vel"                 to="max_vel_x" />
+    <remap from="~/acc"                 to="max_acc_x" />
+    <remap from="~/angvel"              to="max_vel_theta" />
+    <remap from="~/angacc"              to="max_acc_theta" />
 
   </node>
 

@@ -1,0 +1,17 @@
+
+urg_node:
+  x: 0.2
+  y: 0.0
+  z: 0.0
+  yaw: 0.0
+  pitch: 0.0
+  roll: 0.0
+  frame_id: laser
+  ip_address: 10.0.0.200
+  angle_max: 1.74532778
+  angle_min: -1.74532778
+  cluster: 1
+  skip: 0
+  tf_prefix: ""
+  time_offset: 0.0
+  tf_period_in_ms: 100

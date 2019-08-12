@@ -1,0 +1,7 @@
+
+# Definition of Coordinate System.
+map_frame_name: map
+odometry_imu_frame_name: odom_imu
+odometry_whl_frame_name: odom_whl
+base_link_frame_name: base_link
+lidar_frame_name: laser
