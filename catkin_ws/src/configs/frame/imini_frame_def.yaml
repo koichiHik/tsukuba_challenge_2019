@@ -9,15 +9,4 @@ frame_name:
     whl: odom
     ypspur: odom
 
-planner_frame:
-  global_cost_map:
-    base: base_link
-    global: map
-  local_cost_map:
-    base: base_link
-    global: odom
-  local_planner_map:
-    global: odom
-
-  
 

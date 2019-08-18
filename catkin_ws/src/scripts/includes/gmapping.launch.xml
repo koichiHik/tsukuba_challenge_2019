@@ -4,6 +4,14 @@
   <rosparam file="$(find configs)/navigation/$(arg robot)_gmapping.yaml" command="load" />  
 
   <node pkg="gmapping" type="slam_gmapping" name="gm_slam" output="screen">
+    
+    <!-- Topic Renaming (Pub) -->
+    <remap from="/gm_slam/entropy" to="/gm_slam/entropy" />
+    <remap from="/map" to="/gm_slam/map" />
+    <remap from="/map_metadata" to="/gm_slam/map_metadata" />
+
+    <!-- Topic Renaming (Sub) -->
+    <remap from="/scan" to="/urg_node/scan" />
 
     <!-- Frame Name -->
     <remap from="base_frame" to="/frame_name/base_link" />

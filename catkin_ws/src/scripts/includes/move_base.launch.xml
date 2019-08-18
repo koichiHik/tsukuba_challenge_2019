@@ -113,7 +113,7 @@
     <remap from="global_costmap/laser_scan_sensor/data_type" to="/move_base/costmap_common/laser_scan_sensor/data_type" />
     <remap from="global_costmap/laser_scan_sensor/marking" to="/move_base/costmap_common/laser_scan_sensor/marking" />
     <remap from="global_costmap/laser_scan_sensor/sensor_frame" to="/frame_name/lidar" />
-    <remap from="global_costmap/laser_scan_sensor/topic" to="/topic_name/lidar" />
+    <remap from="global_costmap/laser_scan_sensor/topic" to="/urg_node/scan" />
     <remap from="global_costmap/observation_sources" to="/move_base/costmap_common/observation_sources" />
     <remap from="global_costmap/obstacle_range" to="/move_base/costmap_common/obstacle_range" />
     <remap from="global_costmap/raytrace_range" to="/move_base/costmap_common/raytrace_range" />
@@ -135,7 +135,7 @@
     <remap from="local_costmap/laser_scan_sensor/data_type" to="/move_base/costmap_common/laser_scan_sensor/data_type" />
     <remap from="local_costmap/laser_scan_sensor/marking" to="/move_base/costmap_common/laser_scan_sensor/marking" />
     <remap from="local_costmap/laser_scan_sensor/sensor_frame" to="/frame_name/lidar" />
-    <remap from="local_costmap/laser_scan_sensor/topic" to="/topic_name/lidar" />
+    <remap from="local_costmap/laser_scan_sensor/topic" to="/urg_node/scan" />
     <remap from="local_costmap/observation_sources" to="/move_base/costmap_common/observation_sources" />
     <remap from="local_costmap/obstacle_range" to="/move_base/costmap_common/obstacle_range" />
     <remap from="local_costmap/raytrace_range" to="/move_base/costmap_common/raytrace_range" />

@@ -6,12 +6,20 @@
   <rosparam file="$(find configs)/control/$(arg robot)_ps3_holonomic_config.yaml" command="load" />
 
   <node pkg="joy" type="joy_node" name="ps3_joy" output="screen" >
+    <!-- Topic Renaming -->
+    <remap from="joy" to="/ps3_joy/joy" />
+    <remap from="joy/set_feedback" to="/ps3_joy/joy/set_feedback" />
+
     <remap from="~/dev" to="/ps3_joy/dev" />
     <remap from="~/deadzone" to="/ps3_joy/deadzone" />
     <remap from="~/autorepeat_rate" to="/ps3_joy/autorepeat_rate" />
   </node>
 
   <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node">
+    <!-- Topic Renaming -->
+    <remap from="joy" to="/ps3_joy/joy" />
+    <remap from="cmd_vel" to="/teleop_twist_joy/cmd_vel" />
+
     <remap from="~/axis_linear" to="/teleop_twist_joy/axis_linear/x" />
     <remap from="~/scale_lienar" to="/teleop_twist_joy/scale_lienar/x" />
     <remap from="~/axis_angular" to="/teleop_twist_joy/axis_angular/yaw" />

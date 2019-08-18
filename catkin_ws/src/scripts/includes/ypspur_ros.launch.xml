@@ -5,21 +5,23 @@
 
   <node pkg="ypspur_ros" type="ypspur_ros" name="ypspur" output="screen">
 
-    <!-- YpSpur Topic Name Parameters -->  
-    <remap from="odom" to="/topic_name/ypspur/odom" />
-    <remap from="ad/ad0" to="/topic_name/ypspur/ad/ad0" />
-    <remap from="ad/ad1" to="/topic_name/ypspur/ad/ad1" />
-    <remap from="ad/ad2" to="/topic_name/ypspur/ad/ad2" />
-    <remap from="ad/ad3" to="/topic_name/ypspur/ad/ad3" />
-    <remap from="ad/ad4" to="/topic_name/ypspur/ad/ad4" />
-    <remap from="ad/ad5" to="/topic_name/ypspur/ad/ad5" />  
-    <remap from="ad/ad6" to="/topic_name/ypspur/ad/ad6" />
-    <remap from="ad/ad7" to="/topic_name/ypspur/ad/ad7" />
-    <remap from="control_mode" to="/topic_name/ypspur/control_mode" />
-    <remap from="diagnostics" to="/topic_name/ypspur/diagnostics" />
-    <remap from="joint_position" to="/topic_name/ypspur/joint_position" />  
-    <remap from="joint_states" to="/topic_name/ypspur/joint_states" />
-    <remap from="joint_trajectory" to="/topic_name/ypspur/joint_trajectory" />
+    <!-- YpSpur Topic Name Parameters -->
+    <remap from="cmd_vel" to="/teleop_twist_joy/cmd_vel" />
+    <remap from="odom" to="/ypspur/odom" />
+    <remap from="ad/ad0" to="/ypspur/ad/ad0" />
+    <remap from="ad/ad1" to="/ypspur/ad/ad1" />
+    <remap from="ad/ad2" to="/ypspur/ad/ad2" />
+    <remap from="ad/ad3" to="/ypspur/ad/ad3" />
+    <remap from="ad/ad4" to="/ypspur/ad/ad4" />
+    <remap from="ad/ad5" to="/ypspur/ad/ad5" />  
+    <remap from="ad/ad6" to="/ypspur/ad/ad6" />
+    <remap from="ad/ad7" to="/ypspur/ad/ad7" />
+    <remap from="control_mode" to="/ypspur/control_mode" />
+    <remap from="diagnostics" to="/ypspur/diagnostics" />
+    <remap from="joint_position" to="/ypspur/joint_position" />  
+    <remap from="joint_states" to="/ypspur/joint_states" />
+    <remap from="joint_trajectory" to="/ypspur/joint_trajectory" />
+    <remap from="wrench" to="/ypspur/wrench" />
 
     <!-- YpSpur Frame Name Parameters -->  
     <param name="~/odom_id"             value="/frame_name/odometry/ypspur" />

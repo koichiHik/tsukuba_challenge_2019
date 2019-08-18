@@ -2,15 +2,15 @@
 
   <arg name="robot" default="" />
 	<arg name="nodelet_mgr" default="pc_nodelet_mgr"/>
-  <rosparam file="$(find configs)/odometry/$(arg robot)_odometry.yaml" command="load" />
 
+	<rosparam file="$(find configs)/odometry/$(arg robot)_odometry.yaml" command="load" />
 	<node pkg="nodelet" type="nodelet" name="OdometryNodelet" args="load odometry/OdometryNodelet $(arg nodelet_mgr)" output="screen" >
 		
 		<!-- Topic Name -->
-		<remap from="~/imu_topic_name" to="/topic_name/imu" />
-		<remap from="~/joint_states_topic_name" to="/topic_name/joint_states" />
-		<remap from="~/odom_whl_topic_name" to="/topic_name/odom_whl" />
-		<remap from="~/odom_imu_topic_name" to="/topic_name/odom_imu" />
+		<remap from="imu" to="/arduino/imu" />
+		<remap from="joint_states" to="/ypspur/joint_states" />
+		<remap from="odom_whl" to="/odometry/whl" />
+		<remap from="odom_imu" to="/odometry/imu" />
 
 		<!-- Frame Name -->
 		<remap from="~/base_link_frame_name" to="/frame_name/base_link" />
@@ -22,7 +22,8 @@
 		<remap from="~/l_whl_diameter" to="/robo/l_whl_diameter" />
 		<remap from="~/r_whl_diameter" to="/robo/r_whl_diameter" />
 		<remap from="~/gyro_1bit_in_rad" to="/imu/gyro_1bit_in_rad" />
-		<!--<remap from="~/acc_1bit" to="/imu/acc_1bit" />-->		
+
+		<!--<remap from="~/acc_1bit" to="/imu/acc_1bit" />-->
 		<remap from="~/standstill_thresh" to="/odometry/standstill_thresh" />
 		<remap from="~/use_left_pls" to="/odometry/use_left_pls" />
 		<remap from="~/use_right_pls" to="/odometry/use_right_pls" />
