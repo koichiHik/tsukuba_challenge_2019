@@ -6,6 +6,5 @@
 	<rosparam file="$(find configs)/topic/$(arg robot)_topic_def.yaml" command="load" />	
 	<rosparam file="$(find configs)/frame/$(arg robot)_frame_def.yaml" command="load" />
   <rosparam file="$(find configs)/control/$(arg robot)_control_limit.yaml" command="load" />
-  <rosparam file="$(find configs)/odometry/$(arg robot)_odometry.yaml" command="load" />
 
 </launch>

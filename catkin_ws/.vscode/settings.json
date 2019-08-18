@@ -1,0 +1,8 @@
+{
+  "C_Cpp.clang_format_style": "Google",
+  "editor.formatOnSave": true,
+  "editor.formatOnType": true,
+  "python.autoComplete.extraPaths": [
+    "/opt/ros/kinetic/lib/python2.7/dist-packages"
+  ],
+}

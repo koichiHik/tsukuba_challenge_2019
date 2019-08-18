@@ -1,23 +1,24 @@
 <launch>
 
-  <!-- Transform Publisher -->
+  <arg name="robot" default="" />
   <node pkg="static_transform_publisher_param_support" type="static_transform_publisher_param_support" name="laser_broadcaster" >
 
-    <remap from="~/frame_id"          to="base_link_frame_name" />
-    <remap from="~/child_frame_id"    to="lidar_frame_name" />
+    <remap from="~/frame_id"          to="/frame_name/base_link" />
+    <remap from="~/child_frame_id"    to="/frame_name/lidar" />
     <remap from="~/x"                 to="/urg_node/x" />
     <remap from="~/y"                 to="/urg_node/y" />
     <remap from="~/z"                 to="/urg_node/z" />
     <remap from="~/yaw"               to="/urg_node/yaw" />
     <remap from="~/pitch"             to="/urg_node/pitch" />
     <remap from="~/roll"              to="/urg_node/roll" />   
-    <remap from="~/period_in_ms"      to="/urg_node/tf_period_in_ms" />    
+    <remap from="~/period_in_ms"      to="/urg_node/tf_period_in_ms" />
+
   </node>
 
   <!-- Urg Node -->
   <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
 
-    <remap from="~/frame_id"      to="base_link_frame_name"/>
+    <remap from="~/frame_id"      to="/frame_name/base_link"/>
     <remap from="~/ip_address"    to="/urg_node/ip_address"/>
     <remap from="~/angle_max"     to="/urg_node/angle_max"/>
     <remap from="~/angle_min"     to="/urg_node/angle_min"/>

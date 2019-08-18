@@ -1,0 +1,13 @@
+<!--
+			Ter IMU Arduino Activation.
+-->
+<launch>
+
+  <arg name="robot" default="" />
+  <rosparam file="$(find configs)/hardware/$(arg robot)_config.yaml" command="load" />  
+
+	<node pkg="rosserial_python" type="serial_node.py" name="rosserial_imu" output="screen" >
+		<remap from="port" to="/imu/port" />
+		<remap from="baud" to="/imu/baud" />
+	</node>
+</launch>

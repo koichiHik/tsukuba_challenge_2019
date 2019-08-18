@@ -6,7 +6,6 @@ urg_node:
   yaw: 0.0
   pitch: 0.0
   roll: 0.0
-  frame_id: laser
   ip_address: 10.0.0.200
   angle_max: 1.74532778
   angle_min: -1.74532778

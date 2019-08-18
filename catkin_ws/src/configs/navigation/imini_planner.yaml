@@ -1,0 +1,152 @@
+
+planner_frame:
+  global_cost_map:
+    base: base_link
+    global: map
+  local_cost_map:
+    base: base_link
+    global: odom
+  local_planner_map:
+    global: odom
+
+planner_topic:
+  local_planner_odom: odom_whl
+
+move_base:
+
+  # Move Base Setting.
+  base_global_planner: navfn/NavfnROS
+  base_local_planner: teb_local_planner/TebLocalPlannerROS
+  planner_frequency: 0.0
+  controller_frequency: 10.0
+  planner_patience: 5.0
+  controller_patience: 15.0
+  max_planning_retries: -1
+  oscillation_timeout: 10.0
+  oscillation_distance: 0.5
+  clearing_radius: 0.46
+  conservative_reset_dist: 3.0
+  shutdown_costmaps: false
+  clearing_rotation_allowed: true
+  recovery_behavior_enabled: true
+
+  # Global Planner
+  NavfnROS:
+    planner_window_x: 0.0
+    planner_window_y: 0.0
+    default_tolerance: 0.1
+    visualize_potential: false
+    allow_unknown: true
+
+  # Local Planner
+  TebLocalPlannerROS:
+    alternative_time_cost: false
+    #costmap_converter_plugin: 
+    costmap_converter_rate: 5
+    costmap_converter_spin_thread: true
+    costmap_obstacles_behind_robot_dist: 0.2
+    dt_hysteresis: 0.1
+    dt_ref: 0.3
+    enable_homotopy_class_planning: true
+    enable_multithreading: true
+    feasibility_check_no_poses: 5
+    footprint_model: 
+      front_offset: 0.2
+      front_radius: 0.2
+      line_end: [0.3, 0.0]
+      line_start: [-0.3, 0.0]
+      radius: 0.2
+      rear_offset: 0.2
+      rear_radius: 0.2
+      type: polygon
+      vertices: [[0.3, 0.26], [0.3, -0.26], [-0.4, -0.26], [-0.4, 0.26]]
+    free_goal_vel: false
+    global_plan_overwrite_orientation: true
+    h_signature_prescaler: 0.5
+    h_signature_threshold: 0.1
+    include_costmap_obstacles: true
+    max_global_plan_lookahead_dist: 3.0
+    max_number_classes: 4
+    min_obstacle_dist: 0.15
+    min_turning_radius: 0.0
+    no_inner_iterations: 5
+    no_outer_iterations: 4
+    obstacle_heading_threshold: 0.45
+    obstacle_keypoint_offset: 0.1
+    obstacle_poses_affected: 30
+    optimization_activate: true
+    optimization_verbose: false
+    penalty_epsilon: 0.01
+    roadmap_graph_area_width: 5
+    roadmap_graph_no_samples: 15
+    simple_exploration: false
+    teb_autosize: true
+    visualize_hc_graph: false
+    weight_acc_lim_theta: 1
+    weight_acc_lim_x: 1
+    weight_dynamic_obstacle: 10
+    weight_kinematics_forward_drive: 100
+    weight_kinematics_nh: 1000
+    weight_kinematics_turning_radius: 0.1
+    weight_max_vel_theta: 1
+    weight_max_vel_x: 2
+    weight_obstacle: 50
+    weight_optimaltime: 1
+    #wheelbase: 
+    xy_goal_tolerance: 0.2
+    yaw_goal_tolerance: 0.1
+
+  # Costmap Common
+  costmap_common:
+    footprint: [[0.3, 0.26], [0.3, -0.26], [-0.4, -0.26], [-0.4, 0.26]]
+    footprint_padding: 0.01
+    inflation_radius: 0.35
+    laser_scan_sensor:
+      clearing: true
+      data_type: LaserScan
+      marking: true
+    observation_sources: laser_scan_sensor
+    obstacle_range: 2.5
+    raytrace_range: 3.0
+
+  # Global Costmap
+  global_costmap:
+    static_map: 5.0
+    update_frequency: true
+
+  # Local Costmap
+  local_costmap:
+    width: 6.0
+    height: 6.0
+    resolution: 0.05
+    inscribed_radius: 0.325
+    circumscribed_radius: 0.46
+    rolling_window: true
+    static_map: false
+    update_frequency: 2.0
+    publish_frequency: 2.0
+
+
+# 4. recovery_behaviors:
+  #- name: 'conservative_reset1'
+    #type: 'clear_costmap_recovery/ClearCostmapRecovery'
+  #- name: 'clearing_rotation1'
+    #type: 'rotate_recovery/RotateRecovery'
+  #- name: 'aggressive_reset1'
+    #type: 'clear_costmap_recovery/ClearCostmapRecovery'
+
+#conservative_reset1:
+  #reset_distance: 1.5
+#aggressive_reset1:
+  #reset_distance: 0.0
+
+
+#costmap_common:
+
+#global_costmap:
+
+#local_costmap:
+
+#navfn:
+
+#teb_local_planner:

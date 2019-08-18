@@ -6,6 +6,8 @@ robo:
   height: 1.0
 
 imu:
+  port: /dev/INVENSENSE_IMU
+  baud: 115200
   gyro_1bit_in_rad: 0.00013317
   acc_1bit: 0.00059821
 
@@ -16,7 +18,6 @@ urg_node:
   yaw: 0.0
   pitch: 0.0
   roll: 0.0
-  frame_id: laser
   ip_address: 10.0.0.200
   angle_max: 1.74532778
   angle_min: -1.74532778

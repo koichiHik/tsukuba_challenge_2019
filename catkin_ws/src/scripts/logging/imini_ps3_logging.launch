@@ -3,19 +3,23 @@
   <arg name="robot" value="imini" />
   <arg name="mgr" value="pc_nodelet_mgr" />
 
-  <include file="$(find scripts)/includes/param_loader.launch.xml" >
+  <include file="$(find scripts)/includes/common_param_loader.launch.xml" >
     <arg name="robot" value="$(arg robot)" />    
   </include>
 
   <include file="$(find scripts)/includes/$(arg mgr).launch.xml"/>
 
-  <include file="$(find scripts)/includes/joy_control.launch.xml"/>
+  <include file="$(find scripts)/includes/joy_control.launch.xml" >
+    <arg name="robot" value="$(arg robot)" />
+  </include>
 
   <include file="$(find scripts)/includes/ypspur_ros.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
   </include>
 
-  <include file="$(find scripts)/includes/odometry.launch.xml"/>
+  <include file="$(find scripts)/includes/odometry.launch.xml" >
+    <arg name="robot" value="$(arg robot)" />
+  </include>
 
   <include file="$(find scripts)/includes/urg_node.launch.xml" />
 

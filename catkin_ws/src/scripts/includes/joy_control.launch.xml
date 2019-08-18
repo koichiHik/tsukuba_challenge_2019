@@ -2,14 +2,22 @@
 
 <launch>
 
+  <arg name="robot" default="" />
+  <rosparam file="$(find configs)/control/$(arg robot)_ps3_holonomic_config.yaml" command="load" />
+
   <node pkg="joy" type="joy_node" name="ps3_joy" output="screen" >
-    <param name="dev" type="string" value="/dev/PS3_CONTROLLER" />
-    <param name="deadzone" value="0.12" />
-    <param name="autorepeat_rate" value="50" />
+    <remap from="~/dev" to="/ps3_joy/dev" />
+    <remap from="~/deadzone" to="/ps3_joy/deadzone" />
+    <remap from="~/autorepeat_rate" to="/ps3_joy/autorepeat_rate" />
   </node>
 
   <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node">
-    <rosparam command="load" file="$(find configs)/control/ps3_holonomic_config.yaml" />
+    <remap from="~/axis_linear" to="/teleop_twist_joy/axis_linear/x" />
+    <remap from="~/scale_lienar" to="/teleop_twist_joy/scale_lienar/x" />
+    <remap from="~/axis_angular" to="/teleop_twist_joy/axis_angular/yaw" />
+    <remap from="~/scale_angular" to="/teleop_twist_joy/scale_angular/yaw" />
+    <remap from="~/enable_button" to="/teleop_twist_joy/enable_button" />
+    <remap from="~/enable_turbo_button" to="/teleop_twist_joy/enable_turbo_button" />
   </node>
 
 </launch>

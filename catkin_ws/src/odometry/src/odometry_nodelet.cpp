@@ -120,13 +120,13 @@ void OdometryNodelet::onInit()
     odomSync->registerCallback(boost::bind(&OdometryNodelet::sensorCallback, this, _1, _2));
   }
 
-  odomPubWhl = nh.advertise<nav_msgs::Odometry>(odomWhlFrameName, 100);
+  odomPubWhl = nh.advertise<nav_msgs::Odometry>(odomWhlTopicName, 100);
   odomPubImu = nh.advertise<nav_msgs::Odometry>(odomImuTopicName, 100);
 }
 
 void OdometryNodelet::readParams(OdomParams &odomParams)
 {
-  // Frame Name
+  // Topic Name
   readParam("imu_topic_name", nh_ns.param<std::string>("imu_topic_name", imuTopicName, ""));
   readParam("joint_states_topic_name", nh_ns.param<std::string>("joint_states_topic_name", jointStatesTopicName, ""));
   readParam("odom_whl_topic_name", nh_ns.param<std::string>("odom_whl_topic_name", odomWhlTopicName, ""));
