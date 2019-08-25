@@ -1,3 +1,0 @@
-<launch>
-	<node pkg="cirkit_waypoint_generator" type="cirkit_waypoint_generator" name="WaypntGenerator" output="screen" />
-</launch>

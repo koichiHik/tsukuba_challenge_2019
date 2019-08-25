@@ -1,12 +1,15 @@
 <launch>
 
-  <arg name="robot" default="" />
+  <arg name="robot" />
+  <arg name="cmd_vel" />
+
+
   <rosparam file="$(find configs)/control/$(arg robot)_yp_spur.yaml" command="load" />  
 
   <node pkg="ypspur_ros" type="ypspur_ros" name="ypspur" output="screen">
 
     <!-- YpSpur Topic Name Parameters -->
-    <remap from="cmd_vel" to="/teleop_twist_joy/cmd_vel" />
+    <remap from="cmd_vel" to="$(arg cmd_vel)" />
     <remap from="odom" to="/ypspur/odom" />
     <remap from="ad/ad0" to="/ypspur/ad/ad0" />
     <remap from="ad/ad1" to="/ypspur/ad/ad1" />

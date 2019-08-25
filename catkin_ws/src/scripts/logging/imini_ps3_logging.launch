@@ -15,6 +15,7 @@
 
   <include file="$(find scripts)/includes/ypspur_ros.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
+    <arg name="cmd_vel" value="/teleop_twist_joy/cmd_vel" />
   </include>
 
   <include file="$(find scripts)/includes/odometry.launch.xml" >

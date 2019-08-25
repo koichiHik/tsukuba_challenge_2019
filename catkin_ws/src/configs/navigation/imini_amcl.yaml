@@ -47,7 +47,7 @@ amcl:
 
   # Odometry Related Parameters
   odom_model_type: diff-corrected
-  odom_alpha1: 0.010
+  odom_alpha1: 0.100
   odom_alpha2: 0.005
   odom_alpha3: 0.020
   odom_alpha4: 0.020

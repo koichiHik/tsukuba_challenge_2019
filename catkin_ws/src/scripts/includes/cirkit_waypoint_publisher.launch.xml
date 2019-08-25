@@ -1,0 +1,14 @@
+<launch>
+
+  <arg name="waypoint_filename" />
+  <arg name="waypoint_dir" default="$(find data)/waypoint/" />
+  <arg name="start_waypoint" default="0"/>
+
+  <node name="cirkit_waypoint_navigator_node" pkg="cirkit_waypoint_navigator" type="cirkit_waypoint_navigator_node" output="screen">
+    <param name="waypointsfile" value="$(arg waypoint_dir)$(arg waypoint_filename)" />
+    <param name="start_waypoint" value="$(arg start_waypoint)"/>
+  </node>
+
+  <node pkg="cirkit_waypoint_generator" name="cirkit_waypoint_server" type="cirkit_waypoint_server" args="--load $(arg waypoint_dir)$(arg waypoint_filename)" output="screen"/>
+
+</launch>

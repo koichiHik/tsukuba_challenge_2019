@@ -1,0 +1,10 @@
+
+<launch>
+
+  <arg name="waypoint_filename" default="home_2019-08-25-00-53-17.csv" />
+
+  <include file="$(find scripts)/includes/cirkit_waypoint_publisher.launch.xml" >
+    <arg name="waypoint_filename" value="$(arg waypoint_filename)" />
+  </include>
+
+</launch>

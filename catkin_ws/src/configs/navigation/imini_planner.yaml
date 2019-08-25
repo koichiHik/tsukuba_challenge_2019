@@ -98,9 +98,9 @@ move_base:
 
   # Costmap Common
   costmap_common:
-    footprint: [[0.3, 0.26], [0.3, -0.26], [-0.4, -0.26], [-0.4, 0.26]]
+    footprint: [[0.15, 0.15], [0.15, -0.15], [-0.25, -0.15], [-0.25, 0.15]]
     footprint_padding: 0.01
-    inflation_radius: 0.35
+    inflation_radius: 0.25
     laser_scan_sensor:
       clearing: true
       data_type: LaserScan
@@ -111,16 +111,16 @@ move_base:
 
   # Global Costmap
   global_costmap:
-    static_map: 5.0
-    update_frequency: true
+    static_map: true
+    update_frequency: 5.0
 
   # Local Costmap
   local_costmap:
     width: 6.0
     height: 6.0
     resolution: 0.05
-    inscribed_radius: 0.325
-    circumscribed_radius: 0.46
+    inscribed_radius: 0.27
+    circumscribed_radius: 0.30
     rolling_window: true
     static_map: false
     update_frequency: 2.0

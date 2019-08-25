@@ -1,8 +1,15 @@
 <launch>
   <arg name="robot" default="" />
-  <arg name="map_name" default="" />
+  <arg name="map_path" default="" />
 
-  <node pkg="map_server" type="map_server" name="map_server" args="$(find script_pkg)/map/$(arg map_name)" output="screen">
-    <param name="frame_id" value="map"/>
+  <node pkg="map_server" type="map_server" name="map_server" args="$(arg map_path)" output="screen">
+    
+    <!-- Topic Name -->
+    <remap from="map" to="/map_server/map" />
+    <remap from="map_metadata" to="/map_server/map_metadata" />
+    
+    <!-- Frame Name -->
+    <remap from="frame_id" to="/frame_name/map" />
+
   </node>
 </launch>
