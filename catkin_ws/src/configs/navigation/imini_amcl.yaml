@@ -52,3 +52,12 @@ amcl:
   odom_alpha3: 0.020
   odom_alpha4: 0.020
   odom_alpha5: 0.003
+
+  # Beam Skip
+  do_beamskip: false
+  beam_skip_distance: 0.5
+  beam_skip_threshold: 0.3
+  beam_skip_error_threshold_: 0.9
+
+  # Data Processing
+  bag_scan_period: -1.0

@@ -30,7 +30,7 @@
     <remap from="~resample_interval" to="/amcl/resample_interval"/>
     <remap from="~transform_tolerance" to="/amcl/transform_tolerance"/>
     <remap from="~recovery_alpha_slow" to="/amcl/recovery_alpha_slow"/>
-    <remap from="~recovery_alpha_fast" to="/amcl/tf_broadcast"/>
+    <remap from="~recovery_alpha_fast" to="/amcl/recovery_alpha_fast"/>
 
     <!-- Pose Related Parameters -->
     <remap from="~initial_pose_x" to="/amcl/initial_pose_x"/>

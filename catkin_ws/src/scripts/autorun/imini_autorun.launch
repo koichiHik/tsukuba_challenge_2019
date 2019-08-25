@@ -15,10 +15,6 @@
     <arg name="robot" value="$(arg robot)" />
   </include>  
 
-  <include file="$(find scripts)/includes/joy_control.launch.xml" >
-    <arg name="robot" value="$(arg robot)" />
-  </include>
-
   <include file="$(find scripts)/includes/ypspur_ros.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
     <arg name="cmd_vel" value="/move_base/cmd_vel" />    
