@@ -4,9 +4,10 @@ frame_name:
   base_link: base_link
   map: map
   lidar: lidar
+  zed:
+    left: zed_left
+    right: zed_right
   odometry:
     imu: odom
     whl: odom
     ypspur: odom
-
-

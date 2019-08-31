@@ -1,0 +1,36 @@
+<launch>
+
+  <arg name="robot" default="" />
+	<arg name="nodelet_mgr" default="pc_nodelet_mgr"/>  
+
+  <include file="$(find scripts)/includes/zed_tf.launch.xml" />
+
+  <!-- ZED Node -->>
+  <node pkg="nodelet" type="nodelet" name="ZEDWrapperNodelet" args="load zed_wrapper/ZEDWrapperNodelet $(arg nodelet_mgr)" output="screen">
+
+    <!-- ROS frame names -->
+    <remap from="~left_frame_id" to="/frame_name/zed/left" />
+    <remap from="~right_frame_id" to="/frame_name/zed/right" />
+
+    <!-- ROS topic names -->
+    <remap from="~left_topic" to="/topic_name/zed/left/rect/color" />
+    <remap from="~left_raw_topic" to="/topic_name/zed/left/raw/color" />
+    <remap from="~left_cam_info_topic" to="/topic_name/zed/left/rect/cam_info" />
+    <remap from="~left_raw_cam_info_topic" to="/topic_name/zed/left/raw/cam_info" />
+    <remap from="~right_topic" to="/topic_name/zed/right/rect/color" />
+    <remap from="~right_raw_topic" to="/topic_name/zed/right/raw/color" />
+    <remap from="~right_cam_info_topic" to="/topic_name/zed/right/rect/cam_info" />
+    <remap from="~right_raw_cam_info_topic" to="/topic_name/zed/right/raw/cam_info" />
+
+    <!-- ZED parameters -->
+    <remap from="~zed_id" to="/zed/zed_id" />
+    <remap from="~resolution" to="/zed/resolution" />
+    <remap from="~publish_raw" to="/zed/publish_raw" />
+    <remap from="~quality" to="/zed/quality" />
+    <remap from="~sensing_mode" to="/zed/sensing_mode" />
+    <remap from="~frame_rate" to="/zed/frame_rate" />
+    <remap from="~gpu_id" to="/zed/gpu_id" />
+
+  </node>
+
+</launch>

@@ -26,3 +26,12 @@ urg_node:
   tf_prefix: ""
   time_offset: 0.0
   tf_period_in_ms: 100
+
+zed:
+  zed_id: 0
+  resolution: 2
+  publish_raw: false
+  quality: 1
+  sensing_mode: 1
+  frame_rate: 10
+  gpu_id: -1

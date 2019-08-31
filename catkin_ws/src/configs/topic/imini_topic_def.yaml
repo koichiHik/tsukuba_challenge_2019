@@ -1,5 +1,5 @@
 
-#topic_name:
+topic_name:
 #  imu: imu
 #  joint_states: joint_states
 #  odom_imu: odom_imu
@@ -23,3 +23,18 @@
 #      ad6: /ypspur/ad/ad6
 #      ad7: /ypspur/ad/ad7
 
+  zed:
+    left:
+      raw:
+        cam_info: /zed/left/raw/camera_info
+        color: /zed/left/raw/image_color
+      rect:
+        cam_info: /zed/left/rect/camera_info
+        color: /zed/left/rect/image_color
+    right: 
+      raw:
+        cam_info: /zed/right/raw/camera_info
+        color: /zed/right/raw/image_color
+      rect:
+        cam_info: /zed/right/rect/camera_info
+        color: /zed/right/rect/image_color
