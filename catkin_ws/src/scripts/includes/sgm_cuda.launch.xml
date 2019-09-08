@@ -1,0 +1,26 @@
+<launch>
+
+  <arg name="robot" default="" />  
+  <arg name="nodelet_mgr" default="pc_nodelet_mgr"/>
+
+	<rosparam file="$(find configs)/perception/$(arg robot)_sgm.yaml" command="load" />
+  <node pkg="nodelet" type="nodelet" name="SgmCudaNodelet" args="load sgm_cuda/SgmCudaNodelet $(arg nodelet_mgr)" output="screen">
+    <!-- ROS frame names -->
+    <remap from="~disp_frame_id" to="/frame_name/disparity" />
+
+    <!-- ROS topic names -->
+    <remap from="~left_img_topic" to="/topic_name/zed/left/rect/color" />
+    <remap from="~right_img_topic" to="/topic_name/zed/right/rect/color" />
+    <remap from="~disparity_topic" to="/topic_name/sgm_cuda/disparity" />
+
+    <!-- SGM parameters -->
+    <remap from="~p1" to="/sgm/p1" />
+    <remap from="~p2" to="/sgm/p2" />
+    <remap from="~width" to="/sgm/left/width" />
+    <remap from="~height" to="/sgm/left/height" />
+    <remap from="~max_sync_diff" to="/sgm/max_sync_diff" />
+    <remap from="~sgm_freq" to="/sgm/sgm_freq" />
+
+  </node>
+
+</launch>

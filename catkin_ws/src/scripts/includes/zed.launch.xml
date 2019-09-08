@@ -1,9 +1,10 @@
 <launch>
 
   <arg name="robot" default="" />
-	<arg name="nodelet_mgr" default="pc_nodelet_mgr"/>  
+	<arg name="nodelet_mgr" default="zed_nodelet_mgr"/>  
 
   <include file="$(find scripts)/includes/zed_tf.launch.xml" />
+	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_mgr)" args="manager" output="screen"/>  
 
   <!-- ZED Node -->>
   <node pkg="nodelet" type="nodelet" name="ZEDWrapperNodelet" args="load zed_wrapper/ZEDWrapperNodelet $(arg nodelet_mgr)" output="screen">

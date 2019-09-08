@@ -1,0 +1,34 @@
+<launch>
+
+  <arg name="robot" value="imini" />
+  <arg name="zed_nodelet_mgr" value="zed_nodelet_mgr" />
+  <arg name="base_nodelet_mgr" value="pc_nodelet_mgr" />
+
+  <!--<include file="$(find scripts)/includes/$(arg nodelet_mgr).launch.xml"/>-->
+
+  <node pkg="nodelet" type="nodelet" name="$(arg base_nodelet_mgr)" args="manager" output="screen"/>
+
+  <include file="$(find scripts)/includes/common_param_loader.launch.xml" >
+    <arg name="robot" value="$(arg robot)" />    
+  </include>
+
+  <!-- Zed -->
+  <include file="$(find scripts)/includes/zed.launch.xml" >
+    <arg name="robot" value="$(arg robot)" />
+    <arg name="nodelet_mgr" value="$(arg zed_nodelet_mgr)" />
+  </include>
+
+  <!-- Sgm -->
+  <include file="$(find scripts)/includes/sgm_cuda.launch.xml" >
+    <arg name="robot" value="$(arg robot)" />
+    <arg name="nodelet_mgr" value="$(arg base_nodelet_mgr)" />
+  </include>
+
+  <!-- Stixel -->
+	<!-- <rosparam file="$(find configs)/perception/$(arg robot)_sgm.yaml" command="load" />-->
+  <include file="$(find scripts)/includes/stixel_cuda.launch.xml" >
+    <arg name="robot" value="$(arg robot)" />
+    <arg name="nodelet_mgr" value="$(arg base_nodelet_mgr)" />
+  </include>
+
+</launch>

@@ -38,3 +38,9 @@ topic_name:
       rect:
         cam_info: /zed/right/rect/camera_info
         color: /zed/right/rect/image_color
+
+  sgm_cuda:
+    disparity: /sgm_cuda/disparity
+
+  stixel_cuda:
+    stixel_img: /stixel_cuda/stixel_img

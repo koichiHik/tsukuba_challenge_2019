@@ -1,0 +1,68 @@
+<launch>
+
+  <arg name="robot" default="" />  
+  <arg name="nodelet_mgr" default="pc_nodelet_mgr"/>
+
+  <node pkg="nodelet" type="nodelet" name="standalone_nodelet" args="manager" output="screen"/>
+
+	<!--<rosparam file="$(find configs)/perception/$(arg robot)_sgm.yaml" command="load" />-->
+  <node pkg="nodelet" type="nodelet" name="StixelCudaNodelet" args="load stixel_cuda/StixelCudaNodelet $(arg nodelet_mgr)" output="screen">
+  <!--<node pkg="nodelet" type="nodelet" name="StixelCudaNodelet" args="load stixel_cuda/StixelCudaNodelet standalone_nodelet" output="screen">-->
+
+
+    <!-- ROS topic names -->
+    <remap from="~base_img_topic" to="/topic_name/zed/left/rect/color" />
+    <remap from="~disp_img_topic" to="/topic_name/sgm_cuda/disparity" />
+    <remap from="~stixel_img_topic" to="/topic_name/stixel_cuda/stixel_img" />
+
+    <!-- ROS frame names -->
+    <remap from="~disp_frame_id" to="/frame_name/disparity" />
+    <remap from="~base_frame_id" to="/frame_name/zed/left" />
+
+    <!-- Debug Parameter -->
+    <remap from="~stixel_img" to="/stixel/stixel_img" />
+    <remap from="~max_sync_diff" to="/stixel/max_sync_diff" />
+
+    <!-- SGM parameters (Disparity) -->
+    <remap from="~cols" to="/sgm/left/width" />
+    <remap from="~rows" to="/sgm/left/height" />
+    <remap from="~max_disp" to="/sgm/max_disp" />
+
+    <!-- SGM parameters (Probability) -->
+    <remap from="~pout" to="/stixel/prob/out" />    
+    <remap from="~pout_sky" to="/stixel/prob/out_sky" />
+    <remap from="~pord" to="/stixel/prob/ord" />
+    <remap from="~pgrav" to="/stixel/prob/grav" />
+    <remap from="~pblg" to="/stixel/prob/blg" />
+    <remap from="~pground_given_nexist" to="/stixel/prob/ground_given_nexist" />
+    <remap from="~pobject_given_nexist" to="/stixel/prob/object_given_nexist" />
+    <remap from="~psky_given_nexist" to="/stixel/prob/sky_given_nexist" />
+    <remap from="~pnexist_dis" to="/stixel/prob/nexist_dis" />
+    <remap from="~pground" to="/stixel/prob/ground" />
+    <remap from="~pobject" to="/stixel/prob/object" />
+    <remap from="~psky" to="/stixel/prob/sky" />
+    <remap from="~sigma_disparity_object" to="/stixel/prob/sigma_disparity_object" />
+    <remap from="~sigma_disparity_ground" to="/stixel/prob/sigma_disparity_ground" />
+    <remap from="~sigma_sky" to="/stixel/prob/sigma_sky" />
+
+    <!-- SGM parameters (Virtual Camera) -->
+    <remap from="~v_hor" to="/stixel/vcam/v_hor" />
+    <remap from="~focal" to="/stixel/vcam/focal" />
+    <remap from="~baseline" to="/stixel/vcam/baseline" />
+    <remap from="~camera_center_y" to="/stixel/vcam/camera_center_y" />
+    <remap from="~column_step" to="/stixel/vcam/column_step" />
+    <remap from="~width_margin" to="/stixel/vcam/width_margin" />
+    <remap from="~camera_tilt" to="/stixel/vcam/camera_tilt" />
+    <remap from="~sigma_camera_tilt" to="/stixel/vcam/sigma_camera_tilt" />
+    <remap from="~camera_height" to="/stixel/vcam/camera_height" />
+    <remap from="~sigma_camera_height" to="/stixel/vcam/sigma_camera_height" />
+    <remap from="~alpha_ground" to="/stixel/vcam/alpha_ground" />
+
+    <!-- SGM parameters (Model) -->
+    <remap from="~median_step" to="/stixel/model/median_step" />
+    <remap from="~epsilon" to="/stixel/model/epsilon" />
+    <remap from="~range_object_z" to="/stixel/model/range_object_z" />
+
+  </node>
+
+</launch>

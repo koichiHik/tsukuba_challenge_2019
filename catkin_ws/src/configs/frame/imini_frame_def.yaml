@@ -11,3 +11,4 @@ frame_name:
     imu: odom
     whl: odom
     ypspur: odom
+  disparity: zed_left

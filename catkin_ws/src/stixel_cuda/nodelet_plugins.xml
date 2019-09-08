@@ -1,0 +1,9 @@
+<library path="lib/libstixel_cuda_nodelet">
+  <class 	name="stixel_cuda/StixelCudaNodelet" 
+					type="koichi_robotics_lib::StixelCudaNodelet" 
+					base_class_type="nodelet::Nodelet">
+    <description>
+      StixelCudaNodelet.
+    </description>
+  </class>
+</library>
