@@ -1,6 +1,6 @@
 
 <launch>
-  <arg name="robot" value="imini" />
+  <arg name="robot" value="ter2" />
   <arg name="mgr" value="pc_nodelet_mgr" />
 
   <include file="$(find scripts)/includes/common_param_loader.launch.xml" >
@@ -9,9 +9,9 @@
 
   <include file="$(find scripts)/includes/$(arg mgr).launch.xml"/>
 
-  <include file="$(find scripts)/includes/joy_control.launch.xml" >
+  <include file="$(find scripts)/includes/imu_arduino.launch.xml">
     <arg name="robot" value="$(arg robot)" />
-  </include>
+  </include>  
 
   <include file="$(find scripts)/includes/ypspur_ros.launch.xml" >
     <arg name="robot" value="$(arg robot)" />

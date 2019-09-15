@@ -1,8 +1,20 @@
 
+robo:
+  wheel_base: 0.450
+  l_whl_diameter: 0.295
+  r_whl_diameter: 0.295
+  height: 1.0
+
+imu:
+  port: /dev/INVENSENSE_IMU
+  baud: 115200
+  gyro_1bit_in_rad: 0.00013317
+  acc_1bit: 0.00059821
+
 urg_node:
-  x: 0.2
+  x: 0.25
   y: 0.0
-  z: 0.0
+  z: 0.19
   yaw: 0.0
   pitch: 0.0
   roll: 0.0
@@ -14,3 +26,12 @@ urg_node:
   tf_prefix: ""
   time_offset: 0.0
   tf_period_in_ms: 100
+
+zed:
+  zed_id: 0
+  resolution: 2
+  publish_raw: false
+  quality: 1
+  sensing_mode: 1
+  frame_rate: 10
+  gpu_id: -1

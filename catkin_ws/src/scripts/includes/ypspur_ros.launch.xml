@@ -38,7 +38,7 @@
 
     <!-- YpSpur Configuration Parameters -->
     <remap from="~/compatible"          to="/ypspur/compatible" />
-    <remap from="~/port"                to="/ypspur/compatible" />
+    <remap from="~/port"                to="/ypspur/port" />
 
     <!-- YpSpur Settings -->
     <remap from="~/hz"                  to="/ypspur/hz" />

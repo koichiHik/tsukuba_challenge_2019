@@ -1,0 +1,46 @@
+
+topic_name:
+#  imu: imu
+#  joint_states: joint_states
+#  odom_imu: odom_imu
+#  odom_whl: odom_whl
+#  lidar: scan
+#
+#  ypspur:
+#    odom: /ypspur/odom_ypspur
+#    control_mode: /ypspur/control_mode
+#    diagnostics: /ypspur/diagnostics
+#    joint_position: /ypspur/joint_position
+#    joint_states: /ypspur/joint_states
+#    joint_trajectory: /ypspur/joint_trajectory
+#    ad:
+#      ad0: /ypspur/ad/ad0
+#      ad1: /ypspur/ad/ad1
+#      ad2: /ypspur/ad/ad2
+#      ad3: /ypspur/ad/ad3
+#      ad4: /ypspur/ad/ad4
+#      ad5: /ypspur/ad/ad5
+#      ad6: /ypspur/ad/ad6
+#      ad7: /ypspur/ad/ad7
+
+  zed:
+    left:
+      raw:
+        cam_info: /zed/left/raw/camera_info
+        color: /zed/left/raw/image_color
+      rect:
+        cam_info: /zed/left/rect/camera_info
+        color: /zed/left/rect/image_color
+    right: 
+      raw:
+        cam_info: /zed/right/raw/camera_info
+        color: /zed/right/raw/image_color
+      rect:
+        cam_info: /zed/right/rect/camera_info
+        color: /zed/right/rect/image_color
+
+  sgm_cuda:
+    disparity: /sgm_cuda/disparity
+
+  stixel_cuda:
+    stixel_img: /stixel_cuda/stixel_img

@@ -1,6 +1,6 @@
 
 <launch>
-  <arg name="robot" value="imini" />
+  <arg name="robot" value="ter2" />
   <arg name="mgr" value="pc_nodelet_mgr" />
 
   <include file="$(find scripts)/includes/common_param_loader.launch.xml" >
@@ -16,7 +16,7 @@
   <include file="$(find scripts)/includes/ypspur_ros.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
     <arg name="cmd_vel" value="/teleop_twist_joy/cmd_vel" />
-  </include>
+  </include>8
 
   <include file="$(find scripts)/includes/odometry.launch.xml" >
     <arg name="robot" value="$(arg robot)" />

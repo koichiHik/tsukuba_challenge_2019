@@ -1,0 +1,11 @@
+
+odometry:
+  standstill_thresh: 0.000001
+  use_left_pls: true
+  use_right_pls: true
+  cycle_time: 0.01
+  max_sync_diff: 6
+  dist_buffer: 10
+  imu_yaw_buffer: 1
+  whl_yaw_buffer: 1
+  odom_whl_only: false

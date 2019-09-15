@@ -1,0 +1,10 @@
+
+# Control Limitation.
+ctrl_limit:
+  max_vel_x: 1.00
+  max_vel_x_back: 0.50
+  max_vel_y: 0.0
+  max_vel_theta: 0.5
+  max_acc_x: 0.50
+  max_acc_y: 0.0
+  max_acc_theta: 0.50

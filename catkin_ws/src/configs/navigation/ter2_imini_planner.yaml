@@ -1,0 +1,228 @@
+
+planner_frame:
+  global_cost_map:
+    base: base_link
+    global: map
+  local_cost_map:
+    base: base_link
+    global: odom
+  local_planner_map:
+    global: odom
+
+planner_topic:
+  local_planner_odom: odom_whl
+
+move_base:
+
+  # Move Base Setting.
+  base_global_planner: navfn/NavfnROS
+  base_local_planner: teb_local_planner/TebLocalPlannerROS
+  planner_frequency: 0.0
+  controller_frequency: 10.0
+  planner_patience: 5.0
+  controller_patience: 15.0
+  max_planning_retries: -1
+  oscillation_timeout: 10.0
+  oscillation_distance: 0.5
+  clearing_radius: 0.46
+  conservative_reset_dist: 3.0
+  shutdown_costmaps: false
+  clearing_rotation_allowed: true
+  recovery_behavior_enabled: true
+
+  # Global Planner
+  NavfnROS:
+    planner_window_x: 0.0
+    planner_window_y: 0.0
+    default_tolerance: 0.1
+    visualize_potential: false
+    allow_unknown: true
+
+  # Local Planner
+  TebLocalPlannerROS:
+
+    # Trajectory
+    teb_autosize: true
+    dt_ref: 0.3
+    dt_hysteresis: 0.1
+    min_samples: 3
+    max_samples: 500
+    global_plan_overwrite_orientation: true
+    allow_init_with_backwards_motion: false
+    global_plan_viapoint_sep: -1
+    via_points_ordered: false
+    max_global_plan_lookahead_dist: 3.0
+    global_plan_prune_distance: 1
+    exact_arc_length: false
+    force_reinit_new_goal_dist: 1
+    feasibility_check_no_poses: 5
+    publish_feedback: false
+    min_resolution_collision_check_angular: 3.14159
+
+    # Robot
+    max_vel_x: 0.4
+    max_vel_x_backwards: 0.2
+    max_vel_y: 0.0
+    max_vel_theta: 0.3
+    acc_lim_x: 0.5
+    acc_lim_y: 0.5
+    acc_lim_theta: 0.5
+    min_turning_radius: 0.0
+    wheelbase: 1.0
+    cmd_angle_instead_rotvel: false
+    is_footprint_dynamic: false
+
+    # Goal Tolerance
+    xy_goal_tolerance: 0.2
+    yaw_goal_tolerance: 0.1
+    free_goal_vel: false
+    complete_global_plan: true
+
+    # Obstacles
+    min_obstacle_dist: 0.15
+    inflation_dist: 0.6
+    dynamic_obstacle_inflation_dist: 0.6
+    include_dynamic_obstacles: true
+    include_costmap_obstacles: true
+    costmap_obstacles_behind_robot_dist: 0.2
+    obstacle_poses_affected: 25
+    legacy_obstacle_association: false
+    obstacle_association_force_inclusion_factor: 1.5
+    obstacle_association_cutoff_factor: 5
+    costmap_converter_plugin: NONE
+    costmap_converter_spin_thread: true
+    costmap_converter_rate: 5
+
+    # Optimization
+    no_inner_iterations: 5
+    no_outer_iterations: 4
+    optimization_activate: true
+    optimization_verbose: false
+    penalty_epsilon: 0.01
+    weight_max_vel_x: 2
+    weight_max_vel_y: 2
+    weight_max_vel_theta: 1
+    weight_acc_lim_x: 1
+    weight_acc_lim_y: 1
+    weight_acc_lim_theta: 1
+    weight_kinematics_nh: 1000
+    weight_kinematics_forward_drive: 100
+    weight_kinematics_turning_radius: 0.1
+    weight_optimaltime: 1
+    weight_shortest_path: 0
+    weight_obstacle: 50
+    weight_inflation: 0.1
+    weight_dynamic_obstacle: 10
+    weight_dynamic_obstacle_inflation: 0.1
+    weight_viapoint: 1
+    weight_prefer_rotdir: 1
+    weight_adapt_factor: 50
+    obstacle_cost_exponent: 2.0
+
+    # Homotopy Class Planner
+    enable_homotopy_class_planning: true
+    enable_multithreading: true
+    simple_exploration: false
+    max_number_classes: 5
+    selection_obst_cost_scale: 100.0
+    selection_prefer_initial_plan: 0.95
+    selection_viapoint_cost_scale: 100.0
+    selection_cost_hysteresis: 1.0
+    selection_alternative_time_cost: false
+
+    obstacle_keypoint_offset: 0.1
+    obstacle_heading_threshold: 0.45
+    roadmap_graph_samples: 15
+    roadmap_graph_area_width: 6
+    roadmap_graph_area_length_scale: 1.0
+    h_signature_prescaler: 0.5
+    h_signature_threshold: 0.1
+    switching_blocking_period: 0.1
+
+    viapoints_all_candidates: true
+    visualize_hc_graph: false
+    visualize_with_time_as_z_axis_scale: 0.0
+    delete_detours_backwards: true
+    detours_orientation_tolerance: 1.570795
+    length_start_orientation_vector: 0.4
+    max_ratio_detours_duration_best_duration: 3.0
+
+    # Recovery
+    shrink_horizon_backup: true
+    shrink_horizon_min_duration: 10
+    oscillation_recovery: true
+    oscillation_v_eps: 0.1
+    oscillation_omega_eps: 0.1
+    oscillation_recovery_min_duration: 10
+    oscillation_filter_duration: 10
+
+    footprint_model: 
+      front_offset: 0.2
+      front_radius: 0.2
+      line_end: [0.3, 0.0]
+      line_start: [-0.3, 0.0]
+      radius: 0.2
+      rear_offset: 0.2
+      rear_radius: 0.2
+      type: polygon
+      vertices: [[0.3, 0.26], [0.3, -0.26], [-0.4, -0.26], [-0.4, 0.26]]
+
+  # Costmap Common
+  costmap_common:
+    footprint: [[0.15, 0.15], [0.15, -0.15], [-0.25, -0.15], [-0.25, 0.15]]
+    footprint_padding: 0.01
+    inflation_radius: 0.25
+    laser_scan_sensor:
+      clearing: true
+      data_type: LaserScan
+      marking: true
+    observation_sources: laser_scan_sensor
+    obstacle_range: 2.5
+    raytrace_range: 3.0
+
+  # Global Costmap
+  global_costmap:
+    static_map: true
+    update_frequency: 5.0
+    rolling_window: false
+    track_unknown_space: false
+    always_send_full_costmap: false
+
+  # Local Costmap
+  local_costmap:
+    width: 6.0
+    height: 6.0
+    resolution: 0.05
+    inscribed_radius: 0.27
+    circumscribed_radius: 0.30
+    static_map: false
+    update_frequency: 2.0
+    publish_frequency: 2.0
+    rolling_window: true
+    track_unknown_space: false
+    always_send_full_costmap: false
+
+
+# 4. recovery_behaviors:
+  #- name: 'conservative_reset1'
+    #type: 'clear_costmap_recovery/ClearCostmapRecovery'
+  #- name: 'clearing_rotation1'
+    #type: 'rotate_recovery/RotateRecovery'
+  #- name: 'aggressive_reset1'
+    #type: 'clear_costmap_recovery/ClearCostmapRecovery'
+
+#conservative_reset1:
+  #reset_distance: 1.5
+#aggressive_reset1:
+  #reset_distance: 0.0
+
+
+#costmap_common:
+
+#global_costmap:
+
+#local_costmap:
+
+#navfn:
+
+#teb_local_planner:
