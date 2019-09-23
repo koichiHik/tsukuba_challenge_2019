@@ -4,3 +4,6 @@
 [submodule "catkin_ws/src/teb_local_planner"]
 	path = catkin_ws/src/teb_local_planner
 	url = git@github.com:koichiHik/teb_local_planner.git
+[submodule "catkin_ws/src/ypspur_ros"]
+	path = catkin_ws/src/ypspur_ros
+	url = git@github.com:koichiHik/ypspur_ros.git
