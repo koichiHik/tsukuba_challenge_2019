@@ -16,3 +16,6 @@
 [submodule "catkin_ws/src/sgm_cuda/lib"]
 	path = catkin_ws/src/sgm_cuda/lib
 	url = git@github.com:koichiHik/sgm.git
+[submodule "catkin_ws/src/stixel_cuda/lib"]
+	path = catkin_ws/src/stixel_cuda/lib
+	url = git@github.com:koichiHik/stixels.git
