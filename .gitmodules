@@ -13,3 +13,6 @@
 [submodule "catkin_ws/src/cirkit_waypoint_manager_msgs"]
 	path = catkin_ws/src/cirkit_waypoint_manager_msgs
 	url = git@github.com:koichiHik/cirkit_waypoint_manager_msgs.git
+[submodule "catkin_ws/src/sgm_cuda/lib"]
+	path = catkin_ws/src/sgm_cuda/lib
+	url = git@github.com:koichiHik/sgm.git
