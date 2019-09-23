@@ -7,3 +7,9 @@
 [submodule "catkin_ws/src/ypspur_ros"]
 	path = catkin_ws/src/ypspur_ros
 	url = git@github.com:koichiHik/ypspur_ros.git
+[submodule "catkin_ws/src/cirkit_waypoint_manager"]
+	path = catkin_ws/src/cirkit_waypoint_manager
+	url = git@github.com:koichiHik/cirkit_waypoint_manager.git
+[submodule "catkin_ws/src/cirkit_waypoint_manager_msgs"]
+	path = catkin_ws/src/cirkit_waypoint_manager_msgs
+	url = git@github.com:koichiHik/cirkit_waypoint_manager_msgs.git
