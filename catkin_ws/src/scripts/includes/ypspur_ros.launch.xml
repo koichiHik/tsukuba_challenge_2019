@@ -50,7 +50,7 @@
     <remap from="~/odometry_mode"       to="/ypspur/odometry_mode" />    
 
     <!-- YpSpur Files -->
-    <param name="~/ypspur_bin"          value="$(find scripts)/../../../../3rdParty/yp-spur/install/bin/ypspur-coordinator" />
+    <param name="~/ypspur_bin"          value="$(find scripts)/../../../../3rd_party/ypspur/install/bin/ypspur-coordinator" />
     <param name="~/param_file"          value="$(find configs)/control/$(arg robot)_yp_spur.param" />
 
   </node>
