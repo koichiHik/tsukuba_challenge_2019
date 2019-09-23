@@ -13,15 +13,15 @@ set(CMAKE_CXX_STANDARD 11)
 
 # Libraries
 # OpenCV
-set(OpenCV_DIR "${CMAKE_SOURCE_DIR}/../../../3rdParty/opencv331/install/share/OpenCV/")
+set(OpenCV_DIR "${CMAKE_SOURCE_DIR}/../../../3rd_party/opencv/install/share/OpenCV/")
 find_package(OpenCV REQUIRED CONFIG PATHS ${OpenCV_DIR} NO_DEFAULT_PATH)
 include_directories(BEFORE ${OpenCV_INCLUDE_DIRS})
 
 # Eigen
-set(Eigen_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/../../../3rdParty/eigen337/install/include/eigen3")
+#set(Eigen_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/../../../3rdParty/eigen337/install/include/eigen3")
 
 # Cuda
-find_package(CUDA REQUIRED)
+find_package(CUDA 10 REQUIRED)
 
 # search for catkin within the workspace
 set(_cmd "catkin_find_pkg" "catkin" "${CMAKE_SOURCE_DIR}")
