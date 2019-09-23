@@ -1,0 +1,6 @@
+[submodule "catkin_ws/src/navigation"]
+	path = catkin_ws/src/navigation
+	url = git@github.com:koichiHik/navigation.git
+[submodule "catkin_ws/src/teb_local_planner"]
+	path = catkin_ws/src/teb_local_planner
+	url = git@github.com:koichiHik/teb_local_planner.git
