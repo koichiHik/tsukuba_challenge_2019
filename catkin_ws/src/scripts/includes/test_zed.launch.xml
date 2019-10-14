@@ -25,7 +25,6 @@
   </include>
 
   <!-- Stixel -->
-	<!-- <rosparam file="$(find configs)/perception/$(arg robot)_sgm.yaml" command="load" />-->
   <include file="$(find scripts)/includes/stixel_cuda.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
     <arg name="nodelet_mgr" value="$(arg base_nodelet_mgr)" />

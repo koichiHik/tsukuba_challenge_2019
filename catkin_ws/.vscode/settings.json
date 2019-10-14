@@ -1,0 +1,8 @@
+{
+    "C_Cpp.clang_format_path": "/usr/bin/clang-format-8",
+    "C_Cpp.clang_format_style": "{ BasedOnStyle: Google, IndentWidth: 2, ColumnLimit: 100, DerivePointerAlignment: false, PointerAlignment: Left }",
+    "editor.formatOnSave": true,
+    "[cpp]": {
+        "editor.tabSize": 2
+    }
+}
