@@ -19,6 +19,3 @@
 [submodule "catkin_ws/src/stixel_cuda/lib"]
 	path = catkin_ws/src/stixel_cuda/lib
 	url = ../stixels.gitls
-[submodule "costmap_converter"]
-	path = costmap_converter
-	url = git@github.com:koichiHik/costmap_converter.git
