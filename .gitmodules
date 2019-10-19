@@ -3,19 +3,19 @@
 	url = git@github.com:koichiHik/teb_local_planner.git
 [submodule "catkin_ws/src/ypspur_ros"]
 	path = catkin_ws/src/ypspur_ros
-	url = ../ypspur_ros.git
+	url = git@github.com:koichiHik/ypspur_ros.git
 [submodule "catkin_ws/src/cirkit_waypoint_manager"]
 	path = catkin_ws/src/cirkit_waypoint_manager
-	url = ../cirkit_waypoint_manager.git
+	url = git@github.com:koichiHik/cirkit_waypoint_manager.git
 [submodule "catkin_ws/src/cirkit_waypoint_manager_msgs"]
 	path = catkin_ws/src/cirkit_waypoint_manager_msgs
-	url = ../cirkit_waypoint_manager_msgs.git
+	url = git@github.com:koichiHik/cirkit_waypoint_manager_msgs.git
 [submodule "catkin_ws/src/sgm_cuda/lib"]
 	path = catkin_ws/src/sgm_cuda/lib
-	url = ../sgm.git
+	url = git@github.com:koichiHik/sgm.git
 [submodule "catkin_ws/src/stixel_cuda/lib"]
 	path = catkin_ws/src/stixel_cuda/lib
-	url = ../stixels.gitls
+	url = git@github.com:koichiHik/stixels.gitls
 [submodule "catkin_ws/src/costmap_converter"]
 	path = catkin_ws/src/costmap_converter
 	url = git@github.com:koichiHik/costmap_converter.git
