@@ -8,4 +8,4 @@ odometry:
   dist_buffer: 10
   imu_yaw_buffer: 1
   whl_yaw_buffer: 1
-  odom_whl_only: false
+  use_odom_whl: false

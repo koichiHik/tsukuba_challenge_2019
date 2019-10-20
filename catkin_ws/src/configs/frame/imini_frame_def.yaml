@@ -10,5 +10,5 @@ frame_name:
   odometry:
     imu: odom
     whl: odom
-    ypspur: odom
+    ypspur: odom_ypspur
   disparity: zed_left

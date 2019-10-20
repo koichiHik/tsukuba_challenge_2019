@@ -33,7 +33,7 @@
 		<remap from="~/dist_buffer" to="/odometry/dist_buffer" />
     <remap from="~/imu_yaw_buffer" to="/odometry/imu_yaw_buffer" />
     <remap from="~/whl_yaw_buffer" to="/odometry/whl_yaw_buffer" />
-		<remap from="~/odom_whl_only" to="/odometry/odom_whl_only" />
+		<remap from="~/use_odom_whl" to="/odometry/use_odom_whl" />
 
 	</node>
 </launch>
