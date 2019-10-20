@@ -24,6 +24,4 @@
 
   <include file="$(find scripts)/includes/urg_node.launch.xml" />
 
-  <node pkg="rostopic" type="rostopic" name="yp_spur_free" args="pub /ypspur/control_mode ypspur_ros/ControlMode 'vehicle_control_mode: 0' -r 10" output="screen" />
-
 </launch>
