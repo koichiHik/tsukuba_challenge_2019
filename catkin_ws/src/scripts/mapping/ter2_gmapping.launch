@@ -24,6 +24,6 @@
     <remap from="/odometry" to="/odometry/imu" />
   </include>
 
-  <node pkg="rviz" type="rviz" name="rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find configs)/rviz/gmapping_simulation.rviz" />
 
 </launch>

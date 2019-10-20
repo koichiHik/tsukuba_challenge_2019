@@ -7,7 +7,8 @@
 	<node pkg="nodelet" type="nodelet" name="OdometryNodelet" args="load odometry/OdometryNodelet $(arg nodelet_mgr)" output="screen" >
 		
 		<!-- Topic Name -->
-		<remap from="imu" to="/arduino/imu" />
+		<!-- <remap from="imu" to="/arduino/imu" /> -->
+		<remap from="imu" to="imu" />
 		<remap from="joint_states" to="/ypspur/joint_states" />
 		<remap from="odom_whl" to="/odometry/whl" />
 		<remap from="odom_imu" to="/odometry/imu" />
