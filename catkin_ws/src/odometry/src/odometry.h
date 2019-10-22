@@ -3,46 +3,38 @@
 #ifndef _ODOMETRY_H_
 #define _ODOMETRY_H_
 
-namespace koichi_robotics_lib
-{
-class OdomParams
-{
-public:
+namespace koichi_robotics_lib {
+class OdomParams {
+ public:
   OdomParams()
-    : useRightPls(true)
-    , useLeftPls(true)
-    , distBufferSize(10)
-    , imuYawBufferSize(1)
-    , whlYawBufferSize(1)
-    , rightDistPerRad(1.0)
-    , leftDistPerRad(1.0)
-    , gyro1BitInRad(1.0)
-    , standstillThresh(0.0)
-    , cycleTime(0.01)
-  {
-  }
+      : calc_offset(true),
+        offset_gyro_z(0),
+        useRightPls(true),
+        useLeftPls(true),
+        distBufferSize(10),
+        imuYawBufferSize(1),
+        whlYawBufferSize(1),
+        rightDistPerRad(1.0),
+        leftDistPerRad(1.0),
+        gyro1BitInRad(1.0),
+        standstillThresh(0.0),
+        cycleTime(0.01) {}
 
-public:
-  bool useRightPls, useLeftPls;
-  int distBufferSize, imuYawBufferSize, whlYawBufferSize;
+ public:
+  bool useRightPls, useLeftPls, calc_offset;
+  int distBufferSize, imuYawBufferSize, whlYawBufferSize, offset_gyro_z;
   double rightDistPerRad, leftDistPerRad, gyro1BitInRad;
   double wheelBase, standstillThresh;
   double cycleTime;
 };
 
-class OdomPos
-{
-public:
-  OdomPos() : x(0.0), y(0.0), z(0.0), angx(0.0), angy(0.0), angz(0.0), totDist(0.0)
-  {
-  }
+class OdomPos {
+ public:
+  OdomPos() : x(0.0), y(0.0), z(0.0), angx(0.0), angy(0.0), angz(0.0), totDist(0.0) {}
 
-  ~OdomPos()
-  {
-  }
+  ~OdomPos() {}
 
-  void reset()
-  {
+  void reset() {
     x = 0.0;
     y = 0.0;
     z = 0.0;
@@ -52,8 +44,7 @@ public:
     totDist = 0.0;
   }
 
-  void copy(OdomPos &pos)
-  {
+  void copy(OdomPos& pos) {
     this->x = pos.x;
     this->y = pos.y;
     this->z = pos.z;
@@ -68,19 +59,13 @@ public:
   double totDist;
 };
 
-class OdomVel
-{
-public:
-  OdomVel() : vx(0.0), vy(0.0), vz(0.0), wx(0.0), wy(0.0), wz(0.0)
-  {
-  }
+class OdomVel {
+ public:
+  OdomVel() : vx(0.0), vy(0.0), vz(0.0), wx(0.0), wy(0.0), wz(0.0) {}
 
-  ~OdomVel()
-  {
-  }
+  ~OdomVel() {}
 
-  void reset()
-  {
+  void reset() {
     vx = 0.0;
     vy = 0.0;
     vz = 0.0;
@@ -89,8 +74,7 @@ public:
     wz = 0.0;
   }
 
-  void copy(OdomVel &vel)
-  {
+  void copy(OdomVel& vel) {
     this->vx = vel.vx;
     this->vy = vel.vy;
     this->vz = vel.vz;
@@ -103,31 +87,31 @@ public:
   double wx, wy, wz;
 };
 
-class Odometry
-{
-public:
+class Odometry {
+ public:
   Odometry();
   ~Odometry();
 
-  bool Initialize(const OdomParams &params);
+  bool Initialize(const OdomParams& params);
   bool SetCurrentGyroZ(int gyroZ);
   bool SetCurrentPosition(double rRad, double lRad, double rAngVel, double lAngVel);
-  bool CalculateOdometry(OdomPos &odomWhl, OdomPos &odomImu, OdomVel &velWhl, OdomVel &velImu, double dT);
-  bool GetCurrentOdometry(OdomPos &odomWhl, OdomPos &odomImu, OdomVel &velWhl, OdomVel &velImu);
+  bool CalculateOdometry(OdomPos& odomWhl, OdomPos& odomImu, OdomVel& velWhl, OdomVel& velImu,
+                         double dT);
+  bool GetCurrentOdometry(OdomPos& odomWhl, OdomPos& odomImu, OdomVel& velWhl, OdomVel& velImu);
   bool Finalize();
 
-private:
+ private:
   double getImuYawRate();
   double getWhlYawRate(double dT);
-  void getIncrDist(double &distIncrAvg, double &distIncrLeft, double &distIncrRight);
-  void getWhlBasedVelocity(double &vx, double &vy);
-  void getDistBasedVelocity(double &vx, double &vy, double dT);
-  void calculatePosition(OdomPos &odom, double distIncr, double yawRate, double dT);
-  void calculateWhlVelocity(OdomVel &vel);
-  void calculateImuVelocity(OdomVel &vel, double dT);
+  void getIncrDist(double& distIncrAvg, double& distIncrLeft, double& distIncrRight);
+  void getWhlBasedVelocity(double& vx, double& vy);
+  void getDistBasedVelocity(double& vx, double& vy, double dT);
+  void calculatePosition(OdomPos& odom, double distIncr, double yawRate, double dT);
+  void calculateWhlVelocity(OdomVel& vel);
+  void calculateImuVelocity(OdomVel& vel, double dT);
   void updateBuffer(double distIncr, double whlYawRate, double imuYawRate);
 
-private:
+ private:
   // boost::mutex odomMutex, pulseMutex, gyroMutex;
 
   OdomParams param;
@@ -146,6 +130,6 @@ private:
 
   double *distIncrAvgHistory, *yawRateHistoryImu, *yawRateHistoryWhl;
 };
-}
+}  // namespace koichi_robotics_lib
 
 #endif

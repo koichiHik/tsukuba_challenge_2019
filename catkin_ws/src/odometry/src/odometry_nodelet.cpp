@@ -54,8 +54,8 @@ class OdometryNodelet : public nodelet::Nodelet {
   std::string imuTopicName, jointStatesTopicName, odomWhlTopicName, odomImuTopicName;
   std::string odomImuFrameName, odomWhlFrameName, baselinkFrameName;
 
-  int maxSyncDiff;
-  bool use_odom_whl;
+  int maxSyncDiff, offset_gyro_z;
+  bool use_odom_whl, calc_offset;
   double cycle_time, last_pub_stamp;
 
   ros::NodeHandle nh, nh_ns;
@@ -169,6 +169,8 @@ void OdometryNodelet::readParams(OdomParams& odomParams) {
   cycle_time = odomParams.cycleTime;
   readParam("max_sync_diff", nh_ns.param<int>("max_sync_diff", maxSyncDiff, 8));
   readParam("use_odom_whl", nh_ns.param<bool>("use_odom_whl", use_odom_whl, false));
+  readParam("calc_offset", nh_ns.param<bool>("calc_offset", odomParams.calc_offset, true));
+  readParam("offset_gyro_z", nh_ns.param<int>("offset_gyro_z", odomParams.offset_gyro_z, 0));
 
   // Buffer Size
   readParam("imu_yaw_buffer", nh_ns.param<int>("imu_yaw_buffer", odomParams.imuYawBufferSize, 0.0));

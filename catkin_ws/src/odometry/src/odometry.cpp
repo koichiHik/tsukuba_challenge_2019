@@ -7,81 +7,70 @@
 // Original
 #include "odometry.h"
 
-namespace koichi_robotics_lib
-{
+namespace koichi_robotics_lib {
 Odometry::Odometry()
-  : initDone(false)
-  , curRightRad(0)
-  , curLeftRad(0)
-  , curGyroZ(0)
-  , prevGyroZ(0)
-  , gyroZFirst100(0)
-  , offsetGyroZ(0)
-  , distIncrAvgHistory(nullptr)
-  , yawRateHistoryImu(nullptr)
-  , yawRateHistoryWhl(nullptr)
-{
-}
+    : initDone(false),
+      curRightRad(0),
+      curLeftRad(0),
+      curGyroZ(0),
+      prevGyroZ(0),
+      gyroZFirst100(0),
+      offsetGyroZ(0),
+      distIncrAvgHistory(nullptr),
+      yawRateHistoryImu(nullptr),
+      yawRateHistoryWhl(nullptr) {}
 
-Odometry::~Odometry()
-{
-}
+Odometry::~Odometry() {}
 
-bool Odometry::Initialize(const OdomParams &params)
-{
+bool Odometry::Initialize(const OdomParams& params) {
   param = params;
   this->distIncrAvgHistory = new double[param.distBufferSize];
   this->yawRateHistoryImu = new double[param.imuYawBufferSize];
   this->yawRateHistoryWhl = new double[param.whlYawBufferSize];
 
-  for (int i = 0; i < param.distBufferSize; i++)
-  {
+  for (int i = 0; i < param.distBufferSize; i++) {
     this->distIncrAvgHistory[i] = 0;
   }
 
-  for (int i = 0; i < param.imuYawBufferSize; i++)
-  {
+  for (int i = 0; i < param.imuYawBufferSize; i++) {
     this->yawRateHistoryImu[i] = 0;
   }
 
-  for (int i = 0; i < param.whlYawBufferSize; i++)
-  {
+  for (int i = 0; i < param.whlYawBufferSize; i++) {
     this->yawRateHistoryWhl[i] = 0;
   }
 
   return true;
 }
 
-bool Odometry::SetCurrentGyroZ(int gyroZ)
-{
+bool Odometry::SetCurrentGyroZ(int gyroZ) {
   static int cnt = 0;
 
   {
-    // boost::mutex::scoped_lock(gyroMutex);
-
-    if (cnt >= 200)
-    {
+    if (param.calc_offset) {
+      if (cnt >= 200) {
+        initDone = true;
+        offsetGyroZ = gyroZFirst100 / 100;
+        prevGyroZ = curGyroZ;
+        curGyroZ = gyroZ;
+      } else if (100 <= cnt && cnt < 200) {
+        gyroZFirst100 += gyroZ;
+        cnt++;
+      } else {
+        cnt++;
+      }
+    } else {
       initDone = true;
-      offsetGyroZ = gyroZFirst100 / 100;
+      offsetGyroZ = param.offset_gyro_z;
       prevGyroZ = curGyroZ;
       curGyroZ = gyroZ;
-    }
-    else if (100 <= cnt && cnt < 200)
-    {
-      gyroZFirst100 += gyroZ;
-      cnt++;
-    }
-    else
-    {
-      cnt++;
     }
   }
 
   return true;
 }
 
-bool Odometry::SetCurrentPosition(double rRad, double lRad, double rAngVel, double lAngVel)
-{
+bool Odometry::SetCurrentPosition(double rRad, double lRad, double rAngVel, double lAngVel) {
   {
     // boost::mutex::scoped_lock(pulseMutex);
     curRightRad = rRad;
@@ -93,8 +82,7 @@ bool Odometry::SetCurrentPosition(double rRad, double lRad, double rAngVel, doub
   return true;
 }
 
-void Odometry::calculatePosition(OdomPos &odom, double distIncr, double yawRate, double dT)
-{
+void Odometry::calculatePosition(OdomPos& odom, double distIncr, double yawRate, double dT) {
   double prevYaw = odom.angz;
   odom.angz = prevYaw + yawRate * dT;
 
@@ -104,10 +92,9 @@ void Odometry::calculatePosition(OdomPos &odom, double distIncr, double yawRate,
   odom.totDist = odom.totDist + distIncr;
 }
 
-bool Odometry::CalculateOdometry(OdomPos &odomWhl, OdomPos &odomImu, OdomVel &velWhl, OdomVel &velImu, double dT)
-{
-  if (!initDone)
-  {
+bool Odometry::CalculateOdometry(OdomPos& odomWhl, OdomPos& odomImu, OdomVel& velWhl,
+                                 OdomVel& velImu, double dT) {
+  if (!initDone) {
     odomWhl.reset();
     odomImu.reset();
     velWhl.reset();
@@ -128,30 +115,23 @@ bool Odometry::CalculateOdometry(OdomPos &odomWhl, OdomPos &odomImu, OdomVel &ve
   double absdist = std::abs(distIncrLeft) + std::abs(distIncrRight);
 
   bool standstill = false;
-  if (absdist < param.standstillThresh)
-  {
+  if (absdist < param.standstillThresh) {
     standstill = true;
   }
 
   // Calculate Position & Velocity Based on Yawrate from IMU.
   double imuYawRate = getImuYawRate();
-  if (standstill)
-  {
+  if (standstill) {
     calculatePosition(odomImu, 0.0, 0.0, dT);
-  }
-  else
-  {
+  } else {
     calculatePosition(odomImu, distIncrAvg, imuYawRate, dT);
   }
 
   // Calculate Position & Velocity Based on Yawrate from Wheel diff.
   double whlYawRate = getWhlYawRate(dT);
-  if (standstill)
-  {
+  if (standstill) {
     calculatePosition(odomWhl, 0.0, 0.0, dT);
-  }
-  else
-  {
+  } else {
     calculatePosition(odomWhl, distIncrAvg, whlYawRate, dT);
   }
 
@@ -172,8 +152,7 @@ bool Odometry::CalculateOdometry(OdomPos &odomWhl, OdomPos &odomImu, OdomVel &ve
   return true;
 }
 
-void Odometry::getIncrDist(double &distIncrAvg, double &distIncrLeft, double &distIncrRight)
-{
+void Odometry::getIncrDist(double& distIncrAvg, double& distIncrLeft, double& distIncrRight) {
   static double prevLeftRad = curLeftRad;
   static double prevRightRad = curRightRad;
   {
@@ -184,22 +163,16 @@ void Odometry::getIncrDist(double &distIncrAvg, double &distIncrLeft, double &di
     prevRightRad = curRightRad;
   }
 
-  if (param.useRightPls && param.useLeftPls)
-  {
+  if (param.useRightPls && param.useLeftPls) {
     distIncrAvg = (distIncrLeft + distIncrRight) / 2.0;
-  }
-  else if (param.useRightPls)
-  {
+  } else if (param.useRightPls) {
     distIncrAvg = distIncrRight;
-  }
-  else if (param.useLeftPls)
-  {
+  } else if (param.useLeftPls) {
     distIncrAvg = distIncrLeft;
   }
 }
 
-double Odometry::getImuYawRate()
-{
+double Odometry::getImuYawRate() {
   double omegaZCorrected = 0.0;
   {
     // boost::mutex::scoped_lock(gyroMutex);
@@ -208,8 +181,7 @@ double Odometry::getImuYawRate()
   return omegaZCorrected;
 }
 
-double Odometry::getWhlYawRate(double dT)
-{
+double Odometry::getWhlYawRate(double dT) {
   double wz = 0.0, dl = 0.0, dr = 0.0;
 
   {
@@ -226,11 +198,9 @@ double Odometry::getWhlYawRate(double dT)
   return wz;
 }
 
-void Odometry::getDistBasedVelocity(double &vx, double &vy, double dT)
-{
+void Odometry::getDistBasedVelocity(double& vx, double& vy, double dT) {
   double sumDist = 0;
-  for (int i = 0; i < param.distBufferSize; i++)
-  {
+  for (int i = 0; i < param.distBufferSize; i++) {
     sumDist += this->distIncrAvgHistory[i];
   }
 
@@ -238,8 +208,7 @@ void Odometry::getDistBasedVelocity(double &vx, double &vy, double dT)
   vy = 0;
 }
 
-void Odometry::getWhlBasedVelocity(double &vx, double &vy)
-{
+void Odometry::getWhlBasedVelocity(double& vx, double& vy) {
   double vxl = 0.0, vxr = 0.0;
   {
     // boost::mutex::scoped_lock(pulseMutex);
@@ -250,8 +219,7 @@ void Odometry::getWhlBasedVelocity(double &vx, double &vy)
   vy = 0;
 }
 
-void Odometry::updateBuffer(double distIncr, double whlYawRate, double imuYawRate)
-{
+void Odometry::updateBuffer(double distIncr, double whlYawRate, double imuYawRate) {
   static int distBufIdx = 0, whlYawBuffIdx = 0, imuYawBuffIdx = 0;
 
   this->distIncrAvgHistory[distBufIdx] = distIncr;
@@ -264,8 +232,7 @@ void Odometry::updateBuffer(double distIncr, double whlYawRate, double imuYawRat
   whlYawBuffIdx = (++whlYawBuffIdx) % param.whlYawBufferSize;
 }
 
-void Odometry::calculateWhlVelocity(OdomVel &vel)
-{
+void Odometry::calculateWhlVelocity(OdomVel& vel) {
   double vx, vy;
   getWhlBasedVelocity(vx, vy);
   vel.vx = vx;
@@ -275,8 +242,7 @@ void Odometry::calculateWhlVelocity(OdomVel &vel)
   // Yawrate Filtering.
   {
     double sumz = 0;
-    for (int i = 0; i < param.whlYawBufferSize; i++)
-    {
+    for (int i = 0; i < param.whlYawBufferSize; i++) {
       sumz += this->yawRateHistoryWhl[i];
     }
     vel.wx = 0.0;
@@ -285,8 +251,7 @@ void Odometry::calculateWhlVelocity(OdomVel &vel)
   }
 }
 
-void Odometry::calculateImuVelocity(OdomVel &vel, double dT)
-{
+void Odometry::calculateImuVelocity(OdomVel& vel, double dT) {
   // Velocity Filtering.
   double vx, vy;
   getDistBasedVelocity(vx, vy, dT);
@@ -297,8 +262,7 @@ void Odometry::calculateImuVelocity(OdomVel &vel, double dT)
   // Yawrate Filtering.
   {
     double sumz = 0;
-    for (int i = 0; i < param.imuYawBufferSize; i++)
-    {
+    for (int i = 0; i < param.imuYawBufferSize; i++) {
       sumz += this->yawRateHistoryImu[i];
     }
     vel.wx = 0.0;
@@ -307,8 +271,8 @@ void Odometry::calculateImuVelocity(OdomVel &vel, double dT)
   }
 }
 
-bool Odometry::GetCurrentOdometry(OdomPos &odomWhl, OdomPos &odomImu, OdomVel &velWhl, OdomVel &velImu)
-{
+bool Odometry::GetCurrentOdometry(OdomPos& odomWhl, OdomPos& odomImu, OdomVel& velWhl,
+                                  OdomVel& velImu) {
   {
     // boost::mutex::scoped_lock(odomMutex);
     odomWhl.copy(this->odomPosWhl);
@@ -320,12 +284,11 @@ bool Odometry::GetCurrentOdometry(OdomPos &odomWhl, OdomPos &odomImu, OdomVel &v
   return true;
 }
 
-bool Odometry::Finalize()
-{
+bool Odometry::Finalize() {
   delete[] this->distIncrAvgHistory;
   delete[] this->yawRateHistoryImu;
   delete[] this->yawRateHistoryWhl;
 
   return true;
 }
-}
+}  // namespace koichi_robotics_lib

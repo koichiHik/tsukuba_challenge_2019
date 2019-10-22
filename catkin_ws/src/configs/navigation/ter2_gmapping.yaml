@@ -13,7 +13,7 @@ gmapping:
   lsigma: 0.3
   ogain: 3.0
   lskip: 0
-  minimumScore: 50.0
+  minimumScore: 300.0
   str: 0.00050
   stt: 0.00050
   srr: 0.00001

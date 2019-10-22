@@ -34,6 +34,8 @@
     <remap from="~/imu_yaw_buffer" to="/odometry/imu_yaw_buffer" />
     <remap from="~/whl_yaw_buffer" to="/odometry/whl_yaw_buffer" />
 		<remap from="~/use_odom_whl" to="/odometry/use_odom_whl" />
+		<remap from="~/calc_offset" to="/odometry/calc_offset" />
+		<remap from="~/offset_gyro_z" to="/odometry/offset_gyro_z" />		
 
 	</node>
 </launch>

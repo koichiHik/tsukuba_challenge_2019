@@ -9,3 +9,5 @@ odometry:
   imu_yaw_buffer: 1
   whl_yaw_buffer: 1
   use_odom_whl: false
+  calc_offset: false
+  offset_gyro_z: -108
