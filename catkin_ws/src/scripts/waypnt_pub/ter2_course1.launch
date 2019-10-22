@@ -1,0 +1,11 @@
+
+<launch>
+
+  <arg name="waypoint_filename_" default="/home/koichi/workspace/tsukuba_challenge_2019/catkin_ws/src/data/waypoint/tc/2019-10-20-19-09-19.csv" />
+  <arg name="waypnt_dir" default="$(find data)/waypoint/tc/" />	
+
+  <include file="$(find scripts)/includes/cirkit_waypoint_publisher.launch.xml" >
+    <arg name="waypoint_filename" value="$(arg waypoint_filename_)" />
+  </include>
+
+</launch>
