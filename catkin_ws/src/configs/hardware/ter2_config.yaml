@@ -33,5 +33,5 @@ zed:
   publish_raw: false
   quality: 1
   sensing_mode: 1
-  frame_rate: 10
+  frame_rate: 5
   gpu_id: -1

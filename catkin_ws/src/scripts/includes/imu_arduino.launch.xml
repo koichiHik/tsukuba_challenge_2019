@@ -4,6 +4,11 @@
   <rosparam file="$(find configs)/hardware/$(arg robot)_config.yaml" command="load" />  
 
 	<node pkg="rosserial_python" type="serial_node.py" name="rosserial_imu" output="screen" >
+
+		<!-- Topic -->
+		<remap from="~imu" to="/arduino/imu" />
+
+		<!-- Parameters -->
 		<remap from="~port" to="/imu/port" />
 		<remap from="~baud" to="/imu/baud" />
 	</node>
