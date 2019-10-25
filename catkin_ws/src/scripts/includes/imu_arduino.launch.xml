@@ -6,7 +6,7 @@
 	<node pkg="rosserial_python" type="serial_node.py" name="rosserial_imu" output="screen" >
 
 		<!-- Topic -->
-		<remap from="~imu" to="/arduino/imu" />
+		<!-- <remap from="imu" to="/arduino/imu" /> -->
 
 		<!-- Parameters -->
 		<remap from="~port" to="/imu/port" />

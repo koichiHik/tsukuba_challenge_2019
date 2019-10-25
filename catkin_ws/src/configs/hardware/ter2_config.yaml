@@ -31,7 +31,7 @@ zed:
   zed_id: 0
   resolution: 2
   publish_raw: false
-  quality: 1
+  quality: 0
   sensing_mode: 1
-  frame_rate: 5
+  frame_rate: 2
   gpu_id: -1
