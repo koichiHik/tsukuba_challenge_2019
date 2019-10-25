@@ -27,8 +27,8 @@
     <remap from="wrench" to="/ypspur/wrench" />
 
     <!-- YpSpur Frame Name Parameters -->  
-    <param name="~/odom_id"             value="/frame_name/odometry/ypspur" />
-    <param name="~/base_link_id"        value="/frame_name/base_link" />
+    <remap from="~/odom_id"             to="/frame_name/odometry/ypspur" />
+    <remap from="~/base_link_id"        to="/frame_name/base_link" />
 
     <!-- YpSpur Control Limitation Parameters -->
     <remap from="~/vel"                 to="/ctrl_limit/max_vel_x" />
@@ -47,7 +47,8 @@
     <remap from="~/joint0_name"         to="/ypspur/joint0_name" />
     <remap from="~/joint1_enable"       to="/ypspur/joint1_enable" />
     <remap from="~/joint1_name"         to="/ypspur/joint1_name" />
-    <remap from="~/odometry_mode"       to="/ypspur/odometry_mode" />    
+    <remap from="~/odometry_mode"       to="/ypspur/odometry_mode" />
+    <remap from="~/publish_ypspur_odom" to="/ypspur/publish_ypspur_odom" />        
 
     <!-- YpSpur Files -->
     <param name="~/ypspur_bin"          value="$(find scripts)/../../../../3rd_party/ypspur/install/bin/ypspur-coordinator" />

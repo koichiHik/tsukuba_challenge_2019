@@ -15,3 +15,4 @@ ypspur:
   joint1_enable: true
   joint1_name: left
   odometry_mode: diff
+  publish_ypspur_odom: false
