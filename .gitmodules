@@ -24,4 +24,4 @@
 	url = ../navigation.git
 [submodule "catkin_ws/src/imu_tools"]
 	path = catkin_ws/src/imu_tools
-	url = git@github.com:koichiHik/imu_tools.git
+	url = ../imu_tools.git
