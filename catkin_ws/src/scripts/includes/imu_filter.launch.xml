@@ -1,0 +1,44 @@
+
+<launch>
+
+  <arg name="robot" default="" />
+  <node pkg="imu_complementary_filter" type="complementary_filter_node"
+      name="complementary_filter_gain_node" output="screen">
+
+    <!-- Frame Name -->
+    <remap from="~fixed_frame" to="/imu_filter/fixed_frame" />
+
+    <!-- Topic Name (Pub) -->
+    <remap from="/imu/data" to="/imu_filtered" />
+    <remap from="/imu/rpy/filtered" to="/imu_filtered/rpy" />
+    <remap from="/imu/steady_state" to="/imu_filtered/steady_state" />
+
+    <!-- Topic Name (Sub) -->
+    <remap from="/imu/data_raw" to="/imu" />
+    <remap from="/imu/mag" to="/mag" />    
+
+    <!-- Parameter -->  
+    <remap from="~use_mag" to="/imu_filter/use_mag" />
+    <remap from="~publish_tf" to="/imu_filter/publish_tf" />
+    <remap from="~reverse_tf" to="/imu_filter/reverse_tf" />
+    <remap from="~constant_dt" to="/imu_filter/constant_dt" />
+    <remap from="~publish_debug_topics" to="/imu_filter/publish_debug_topics" />
+    <remap from="~gain_acc" to="/imu_filter/gain_acc" />
+    <remap from="~gain_mag" to="/imu_filter/gain_mag" />
+    <remap from="~do_bias_estimation" to="/imu_filter/do_bias_estimation" />
+    <remap from="~bias_alpha" to="/imu_filter/bias_alpha" />
+    <remap from="~do_adaptive_gain" to="/imu_filter/do_adaptive_gain" />
+    <remap from="~orientation_stddev" to="/imu_filter/orientation_stddev" />
+
+    <remap from="~acc_conv_ratio" to="/imu/acc_1bit" />
+    <remap from="~ang_conv_ratio" to="/imu/gyro_1bit_in_rad" />
+    <remap from="~offset_acc_x" to="/imu_filter/offset_acc_x" />
+    <remap from="~offset_acc_y" to="/imu_filter/offset_acc_y" />
+    <remap from="~offset_acc_z" to="/imu_filter/offset_acc_z" />
+    <remap from="~offset_gyro_x" to="/imu_filter/offset_gyro_x" />    
+    <remap from="~offset_gyro_y" to="/imu_filter/offset_gyro_y" />
+    <remap from="~offset_gyro_z" to="/imu_filter/offset_gyro_z" />
+
+  </node>
+
+</launch>
