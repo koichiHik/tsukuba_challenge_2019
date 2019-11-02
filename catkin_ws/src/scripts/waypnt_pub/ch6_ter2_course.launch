@@ -1,0 +1,11 @@
+
+<launch>
+
+  <arg name="waypoint_filename_" value="ch6_2019-10-26-13-21-23.csv" />
+  <arg name="waypnt_dir" default="$(find data)/waypoint/tc/" />	
+
+  <include file="$(find scripts)/includes/cirkit_waypoint_publisher.launch.xml" >
+    <arg name="waypoint_filename" value="$(arg waypnt_dir)$(arg waypoint_filename_)" />
+  </include>
+
+</launch>
