@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="map_filename" value="map.yaml" />
+  <arg name="map_filename" default="map.yaml" />
   <arg name="map_dir" default="$(find data)/map/tc/" />
 
   <arg name="robot" value="ter2" />
@@ -40,7 +40,7 @@
 
   </node>
 
-  <node pkg="rviz" type="rviz" name="rviz" args="$(find configs)/rviz/amcl_simulation.rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find configs)/rviz/amcl_simulation.rviz" />
 
 
 </launch>
