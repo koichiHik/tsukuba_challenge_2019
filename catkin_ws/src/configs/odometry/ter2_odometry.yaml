@@ -11,7 +11,7 @@ odometry:
   use_odom_whl: false
   calc_offset: false
   #offset_gyro_z: -104
-  offset_gyro_z: -100
+  offset_gyro_z: -120
 
 imu_filter:
   fixed_frame: odom
