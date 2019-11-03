@@ -20,10 +20,11 @@
     <remap from="joy" to="/ps3_joy/joy" />
     <remap from="cmd_vel" to="/teleop_twist_joy/cmd_vel" />
 
-    <remap from="~/axis_linear" to="/teleop_twist_joy/axis_linear/x" />
-    <remap from="~/scale_lienar" to="/teleop_twist_joy/scale_lienar/x" />
-    <remap from="~/axis_angular" to="/teleop_twist_joy/axis_angular/yaw" />
-    <remap from="~/scale_angular" to="/teleop_twist_joy/scale_angular/yaw" />
+    <remap from="~/axis_linear" to="/teleop_twist_joy/axis_linear" />
+    <remap from="~/scale_lienar" to="/teleop_twist_joy/scale_lienar" />
+    <remap from="~/scale_lienar_turbo" to="/teleop_twist_joy/scale_lienar_turbo" />
+    <remap from="~/axis_angular" to="/teleop_twist_joy/axis_angular" />
+    <remap from="~/scale_angular" to="/teleop_twist_joy/scale_angular" />
     <remap from="~/enable_button" to="/teleop_twist_joy/enable_button" />
     <remap from="~/enable_turbo_button" to="/teleop_twist_joy/enable_turbo_button" />
   </node>

@@ -11,6 +11,9 @@ teleop_twist_joy:
   scale_linear:
     x: 1.0
     y: 0.0
+  scale_linear_turbo:
+    x: 1.5
+    y: 0.0
   axis_angular:
     yaw: 4
   scale_angular:
