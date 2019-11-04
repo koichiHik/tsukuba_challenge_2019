@@ -7,7 +7,8 @@ global_costmap:
   robot_base_frame: base_link
   # Setting
   rolling_window: false
-  track_unknown_space: true
+  #track_unknown_space: true
+  track_unknown_space: false
   always_send_full_costmap: false
   # Hz
   transform_tolerance: 0.3

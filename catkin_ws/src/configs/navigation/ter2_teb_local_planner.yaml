@@ -42,7 +42,8 @@ TebLocalPlannerROS:
     rear_offset: 0.2
     rear_radius: 0.2
     type: polygon
-    vertices: [[0.3, 0.26], [0.3, -0.26], [-0.4, -0.26], [-0.4, 0.26]]
+    footprint: [[0.27, 0.22], [0.27, -0.22], [-0.40, -0.22], [-0.40, 0.22]]
+    #footprint: [[0.27, 0.27], [0.27, -0.27], [-0.40, -0.27], [-0.40, 0.27]]
 
   # GoalTolerance
   xy_goal_tolerance: 0.2
@@ -51,12 +52,15 @@ TebLocalPlannerROS:
   complete_global_plan: True
     
   # Obstacles 
-  min_obstacle_dist: 0.25 # This value must also include our robot radius, since footprint_model is set to "point".
-  inflation_dist: 0.6
-  dynamic_obstacle_inflation_dist: 0.6
+  #min_obstacle_dist: 0.25 # This value must also include our robot radius, since footprint_model is set to "point".
+  min_obstacle_dist: 0.05
+  #inflation_dist: 0.6
+  inflation_dist: 0.01
+  #dynamic_obstacle_inflation_dist: 0.6
+  dynamic_obstacle_inflation_dist: 0.01
   costmap_obstacles_behind_robot_dist: 1.0
   include_dynamic_obstacles: true
-  include_costmap_obstacles: True
+  include_costmap_obstacles: true
   costmap_obstacles_behind_robot_dist: 0.2
   obstacle_poses_affected: 15
   legacy_obstacle_association: false
