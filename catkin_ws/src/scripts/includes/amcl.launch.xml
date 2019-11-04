@@ -1,73 +1,25 @@
 <launch>
 
   <arg name="robot" default="" />
-  <rosparam file="$(find configs)/navigation/$(arg robot)_amcl.yaml" command="load" />
 
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
 
     <!-- Topic Name -->
+    <!-- Subscribe -->    
     <remap from="scan" to="/urg_node/scan"/>
     <remap from="map" to="/map_server/map"/>
-    <remap from="scan" to="/urg_node/scan"/>
+    <remap from="initialpose" to="/amcl/initialpose"/>
+
+    <!-- Publish -->
     <remap from="amcl_pose" to="/amcl/amcl_pose"/>
     <remap from="particlecloud" to="/amcl/particlecloud"/>
 
-    <!-- Frame Name -->
-    <remap from="~odom_frame_id" to="/frame_name/odometry/whl"/>
-    <remap from="~global_frame_id" to="/frame_name/map"/>
-    <remap from="~base_frame_id" to="/frame_name/base_link"/>
+    <!-- Service -->
+    <remap from="global_localization" to="/amcl/global_localization" />
+    <remap from="request_nomotion_update" to="/amcl/request_nomotion_update" />
+    <remap from="set_map" to="/amcl/set_map" />
 
-    <!-- Tf Related -->
-    <remap from="~tf_broadcast" to="/amcl/tf_broadcast"/>
-
-    <!-- Filter Parameters -->
-    <remap from="~min_particles" to="/amcl/min_particles"/>
-    <remap from="~max_particles" to="/amcl/max_particles"/>
-    <remap from="~kld_err" to="/amcl/kld_err"/>
-    <remap from="~kld_z" to="/amcl/kld_z"/>
-    <remap from="~update_min_d" to="/amcl/update_min_d"/>
-    <remap from="~update_min_a" to="/amcl/update_min_a"/>
-    <remap from="~resample_interval" to="/amcl/resample_interval"/>
-    <remap from="~transform_tolerance" to="/amcl/transform_tolerance"/>
-    <remap from="~recovery_alpha_slow" to="/amcl/recovery_alpha_slow"/>
-    <remap from="~recovery_alpha_fast" to="/amcl/recovery_alpha_fast"/>
-
-    <!-- Pose Related Parameters -->
-    <remap from="~initial_pose_x" to="/amcl/initial_pose_x"/>
-    <remap from="~initial_pose_y" to="/amcl/initial_pose_y"/>
-    <remap from="~initial_pose_a" to="/amcl/initial_pose_a"/>
-    <remap from="~initial_cov_xx" to="/amcl/initial_cov_xx"/>
-    <remap from="~initial_cov_yy" to="/amcl/initial_cov_yy"/>
-    <remap from="~initial_cov_aa" to="/amcl/initial_cov_aa"/>
-
-    <!-- Visualization -->
-    <remap from="~gui_publish_rate" to="/amcl/gui_publish_rate"/>
-    <remap from="~save_pose_rate" to="/amcl/save_pose_rate"/>
-
-    <!-- Subscribe -->
-    <remap from="~use_map_topic" to="/amcl/use_map_topic"/>
-    <remap from="~first_map_only" to="/amcl/first_map_only"/>
-
-    <!-- Laser Model Parameters -->
-    <remap from="~laser_min_range" to="/amcl/laser_min_range"/>
-    <remap from="~laser_max_range" to="/amcl/laser_max_range"/>
-    <remap from="~laser_max_beams" to="/amcl/laser_max_beams"/>
-    <remap from="~laser_z_hit" to="/amcl/laser_z_hit"/>
-    <remap from="~laser_z_short" to="/amcl/laser_z_short"/>
-    <remap from="~laser_z_max" to="/amcl/laser_z_max"/>
-    <remap from="~laser_z_rand" to="/amcl/laser_z_rand"/>
-    <remap from="~laser_sigma_hit" to="/amcl/laser_sigma_hit"/>
-    <remap from="~laser_lambda_short" to="/amcl/laser_lambda_short"/>
-    <remap from="~laser_likelihood_max_dist" to="/amcl/laser_likelihood_max_dist"/>
-    <remap from="~laser_model_type" to="/amcl/laser_model_type"/>
-
-    <!-- Odometry Related Parameters -->
-    <remap from="~odom_model_type" to="/amcl/odom_model_type"/>
-    <remap from="~odom_alpha1" to="/amcl/odom_alpha1"/>
-    <remap from="~odom_alpha2" to="/amcl/odom_alpha2"/>
-    <remap from="~odom_alpha3" to="/amcl/odom_alpha3"/>
-    <remap from="~odom_alpha4" to="/amcl/odom_alpha4"/>
-    <remap from="~odom_alpha5" to="/amcl/odom_alpha5"/>
+    <rosparam file="$(find configs)/navigation/$(arg robot)_amcl.yaml" command="load" />
 
   </node>
 </launch>

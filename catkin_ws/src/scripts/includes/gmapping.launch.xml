@@ -1,7 +1,7 @@
 <launch>
 
   <arg name="robot" default="" />
-  <rosparam file="$(find configs)/navigation/$(arg robot)_gmapping.yaml" command="load" />  
+  <rosparam file="$(find configs)/mapping/$(arg robot)_gmapping.yaml" command="load" />  
 
   <node pkg="gmapping" type="slam_gmapping" name="gm_slam" output="screen">
     

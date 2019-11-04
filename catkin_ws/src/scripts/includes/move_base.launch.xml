@@ -1,210 +1,31 @@
 <launch>
 
   <arg name="robot" default="" />
-  <rosparam file="$(find configs)/navigation/$(arg robot)_planner.yaml" command="load" />  
 
   <!-- Basic Configurations -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
 
     <!-- Topic Rename -->
     <remap from="/cmd_vel" to="/move_base/cmd_vel" />
-    <remap from="/odom" to="/odometry/whl" />
+    <remap from="/odom" to="/odometry/imu" />
     <remap from="/map" to="/map_server/map" />
 
-    <!-- Frame Setting -->
-    <remap from="~global_costmap/robot_base_frame" to="/planner_frame/global_cost_map/base" />
-    <remap from="~global_costmap/global_frame" to="/planner_frame/global_cost_map/global" />
-    <remap from="~local_costmap/robot_base_frame" to="/planner_frame/local_cost_map/base" />
-    <remap from="~local_costmap/global_frame" to="/planner_frame/local_cost_map/global" />
-    <remap from="~TebLocalPlannerROS/map_frame" to="/planner_frame/local_planner_map/global" />
-
     <!-- Move Base Setting -->
-    <remap from="~base_global_planner" to="/move_base/base_global_planner" />
-    <remap from="~base_local_planner" to="/move_base/base_local_planner" />
-    <remap from="~planner_frequency" to="/move_base/planner_frequency" />
-    <remap from="~controller_frequency" to="/move_base/controller_frequency" />
-    <remap from="~planner_patience" to="/move_base/planner_patience" />
-    <remap from="~controller_patience" to="/move_base/controller_patience" />
-    <remap from="~max_planning_retries" to="/move_base/max_planning_retries" />
-    <remap from="~oscillation_timeout" to="/move_base/oscillation_timeout" />    
-    <remap from="~oscillation_distance" to="/move_base/oscillation_distance" />
-    <remap from="~clearing_radius" to="/move_base/clearing_radius" />
-    <remap from="~conservative_reset_dist" to="/move_base/conservative_reset_dist" />
-    <remap from="~shutdown_costmaps" to="/move_base/shutdown_costmaps" />
-    <remap from="~clearing_rotation_allowed" to="/move_base/clearing_rotation_allowed" />
-    <remap from="~recovery_behavior_enabled" to="/move_base/recovery_behavior_enabled" />
+    <rosparam file="$(find configs)/navigation/$(arg robot)_movebase.yaml" command="load" />
 
     <!-- Global Planner -->
-    <remap from="~NavfnROS/planner_window_x" to="/move_base/NavfnROS/planner_window_x" />
-    <remap from="~NavfnROS/planner_window_y" to="/move_base/NavfnROS/planner_window_y" />
-    <remap from="~NavfnROS/default_tolerance" to="/move_base/NavfnROS/default_tolerance" />
-    <remap from="~NavfnROS/visualize_potential" to="/move_base/NavfnROS/visualize_potential" />
-    <remap from="~NavfnROS/allow_unknown" to="/move_base/NavfnROS/allow_unknown" />
+    <rosparam file="$(find configs)/navigation/$(arg robot)_navfn_ros.yaml" command="load" />
 
     <!-- Teb Local Planner Setting -->
-    <!-- Teb Local Planner Setting (Topic)-->
-    <remap from="~TebLocalPlannerROS/odom_topic" to="planner_topic/local_planner_odom" />
-
-    <!-- Teb Local Planner Setting (Trajectory) -->
-    <remap from="~TebLocalPlannerROS/teb_autosize" to="/move_base/TebLocalPlannerROS/teb_autosize" />
-    <remap from="~TebLocalPlannerROS/dt_ref" to="/move_base/TebLocalPlannerROS/dt_ref" />
-    <remap from="~TebLocalPlannerROS/dt_hysteresis" to="/move_base/TebLocalPlannerROS/dt_hysteresis" />
-    <remap from="~TebLocalPlannerROS/min_samples" to="/move_base/TebLocalPlannerROS/min_samples" />
-    <remap from="~TebLocalPlannerROS/max_samples" to="/move_base/TebLocalPlannerROS/max_samples" />
-    <remap from="~TebLocalPlannerROS/global_plan_overwrite_orientation" to="/move_base/TebLocalPlannerROS/global_plan_overwrite_orientation" />
-    <remap from="~TebLocalPlannerROS/allow_init_with_backwards_motion" to="/move_base/TebLocalPlannerROS/allow_init_with_backwards_motion" />
-    <remap from="~TebLocalPlannerROS/global_plan_viapoint_sep" to="/move_base/TebLocalPlannerROS/global_plan_viapoint_sep" />
-    <remap from="~TebLocalPlannerROS/via_points_ordered" to="/move_base/TebLocalPlannerROS/via_points_ordered" />
-    <remap from="~TebLocalPlannerROS/max_global_plan_lookahead_dist" to="/move_base/TebLocalPlannerROS/max_global_plan_lookahead_dist" />
-    <remap from="~TebLocalPlannerROS/global_plan_prune_distance" to="/move_base/TebLocalPlannerROS/global_plan_prune_distance" />
-    <remap from="~TebLocalPlannerROS/exact_arc_length" to="/move_base/TebLocalPlannerROS/exact_arc_length" />
-    <remap from="~TebLocalPlannerROS/force_reinit_new_goal_dist" to="/move_base/TebLocalPlannerROS/force_reinit_new_goal_dist" />
-    <remap from="~TebLocalPlannerROS/feasibility_check_no_poses" to="/move_base/TebLocalPlannerROS/feasibility_check_no_poses" />
-    <remap from="~TebLocalPlannerROS/publish_feedback" to="/move_base/TebLocalPlannerROS/publish_feedback" />
-    <remap from="~TebLocalPlannerROS/min_resolution_collision_check_angular" to="/move_base/TebLocalPlannerROS/min_resolution_collision_check_angular" />
-
-    <!-- Teb Local Planner Setting (Robot) -->
-    <remap from="~TebLocalPlannerROS/max_vel_x" to="/ctrl_limit/max_vel_x" />
-    <remap from="~TebLocalPlannerROS/max_vel_x_backwards" to="/ctrl_limit/max_vel_x_back" />
-    <remap from="~TebLocalPlannerROS/max_vel_y" to="/ctrl_limit/max_vel_y" />
-    <remap from="~TebLocalPlannerROS/max_vel_theta" to="/ctrl_limit/max_vel_theta" />
-    <remap from="~TebLocalPlannerROS/acc_lim_x" to="/ctrl_limit/max_acc_x" />
-    <remap from="~TebLocalPlannerROS/acc_lim_y" to="/ctrl_limit/max_acc_y" />
-    <remap from="~TebLocalPlannerROS/acc_lim_theta" to="/ctrl_limit/max_acc_theta" />
-    <remap from="~TebLocalPlannerROS/min_turning_radius" to="/move_base/TebLocalPlannerROS/min_turning_radius" />
-    <remap from="~TebLocalPlannerROS/wheelbase" to="/robo/wheel_base" />
-    <remap from="~TebLocalPlannerROS/cmd_angle_instead_rotvel" to="/move_base/TebLocalPlannerROS/cmd_angle_instead_rotvel" />
-    <remap from="~TebLocalPlannerROS/is_footprint_dynamic" to="/move_base/TebLocalPlannerROS/is_footprint_dynamic" />
-
-    <!-- Teb Local Planner Setting (Goal Tolerance) -->
-    <remap from="~TebLocalPlannerROS/xy_goal_tolerance" to="/move_base/TebLocalPlannerROS/xy_goal_tolerance" />
-    <remap from="~TebLocalPlannerROS/yaw_goal_tolerance" to="/move_base/TebLocalPlannerROS/yaw_goal_tolerance" />
-    <remap from="~TebLocalPlannerROS/free_goal_vel" to="/move_base/TebLocalPlannerROS/free_goal_vel" />
-    <remap from="~TebLocalPlannerROS/complete_global_plan" to="/move_base/TebLocalPlannerROS/complete_global_plan" />
-
-    <!-- Teb Local Planner Setting (Obstacles) -->
-    <remap from="~TebLocalPlannerROS/min_obstacle_dist" to="/move_base/TebLocalPlannerROS/min_obstacle_dist" />
-    <remap from="~TebLocalPlannerROS/inflation_dist" to="/move_base/TebLocalPlannerROS/inflation_dist" />
-    <remap from="~TebLocalPlannerROS/dynamic_obstacle_inflation_dist" to="/move_base/TebLocalPlannerROS/dynamic_obstacle_inflation_dist" />
-    <remap from="~TebLocalPlannerROS/include_dynamic_obstacles" to="/move_base/TebLocalPlannerROS/include_dynamic_obstacles" />
-    <remap from="~TebLocalPlannerROS/include_costmap_obstacles" to="/move_base/TebLocalPlannerROS/include_costmap_obstacles" />
-    <remap from="~TebLocalPlannerROS/costmap_obstacles_behind_robot_dist" to="/move_base/TebLocalPlannerROS/costmap_obstacles_behind_robot_dist" />
-    <remap from="~TebLocalPlannerROS/obstacle_poses_affected" to="/move_base/TebLocalPlannerROS/obstacle_poses_affected" />
-    <remap from="~TebLocalPlannerROS/legacy_obstacle_association" to="/move_base/TebLocalPlannerROS/legacy_obstacle_association" />
-    <remap from="~TebLocalPlannerROS/obstacle_association_force_inclusion_factor" to="/move_base/TebLocalPlannerROS/obstacle_association_force_inclusion_factor" />
-    <remap from="~TebLocalPlannerROS/obstacle_association_cutoff_factor" to="/move_base/TebLocalPlannerROS/obstacle_association_cutoff_factor" />
-    <remap from="~TebLocalPlannerROS/costmap_converter_plugin" to="/move_base/TebLocalPlannerROS/costmap_converter_plugin" />
-    <remap from="~TebLocalPlannerROS/costmap_converter_spin_thread" to="/move_base/TebLocalPlannerROS/costmap_converter_spin_thread" />
-    <remap from="~TebLocalPlannerROS/costmap_converter_rate" to="/move_base/TebLocalPlannerROS/costmap_converter_rate" />
-
-    <!-- Teb Local Planner Setting (Optimization) -->
-    <remap from="~TebLocalPlannerROS/no_inner_iterations" to="/move_base/TebLocalPlannerROS/no_inner_iterations" />
-    <remap from="~TebLocalPlannerROS/no_outer_iterations" to="/move_base/TebLocalPlannerROS/no_outer_iterations" />
-    <remap from="~TebLocalPlannerROS/optimization_activate" to="/move_base/TebLocalPlannerROS/optimization_activate" />
-    <remap from="~TebLocalPlannerROS/optimization_verbose" to="/move_base/TebLocalPlannerROS/optimization_verbose" />
-    <remap from="~TebLocalPlannerROS/penalty_epsilon" to="/move_base/TebLocalPlannerROS/penalty_epsilon" />
-    <remap from="~TebLocalPlannerROS/weight_max_vel_x" to="/move_base/TebLocalPlannerROS/weight_max_vel_x" />
-    <remap from="~TebLocalPlannerROS/weight_max_vel_y" to="/move_base/TebLocalPlannerROS/weight_max_vel_y" />
-    <remap from="~TebLocalPlannerROS/weight_max_vel_theta" to="/move_base/TebLocalPlannerROS/weight_max_vel_theta" />
-    <remap from="~TebLocalPlannerROS/weight_acc_lim_x" to="/move_base/TebLocalPlannerROS/weight_acc_lim_x" />
-    <remap from="~TebLocalPlannerROS/weight_acc_lim_y" to="/move_base/TebLocalPlannerROS/weight_acc_lim_y" />
-    <remap from="~TebLocalPlannerROS/weight_acc_lim_theta" to="/move_base/TebLocalPlannerROS/weight_acc_lim_theta" />
-    <remap from="~TebLocalPlannerROS/weight_kinematics_nh" to="/move_base/TebLocalPlannerROS/weight_kinematics_nh" />
-    <remap from="~TebLocalPlannerROS/weight_kinematics_forward_drive" to="/move_base/TebLocalPlannerROS/weight_kinematics_forward_drive" />
-    <remap from="~TebLocalPlannerROS/weight_kinematics_turning_radius" to="/move_base/TebLocalPlannerROS/weight_kinematics_turning_radius" />
-    <remap from="~TebLocalPlannerROS/weight_optimaltime" to="/move_base/TebLocalPlannerROS/weight_optimaltime" />
-    <remap from="~TebLocalPlannerROS/weight_shortest_path" to="/move_base/TebLocalPlannerROS/weight_shortest_path" />
-    <remap from="~TebLocalPlannerROS/weight_obstacle" to="/move_base/TebLocalPlannerROS/weight_obstacle" />
-    <remap from="~TebLocalPlannerROS/weight_inflation" to="/move_base/TebLocalPlannerROS/weight_inflation" />
-    <remap from="~TebLocalPlannerROS/weight_dynamic_obstacle" to="/move_base/TebLocalPlannerROS/weight_dynamic_obstacle" />
-    <remap from="~TebLocalPlannerROS/weight_dynamic_obstacle_inflation" to="/move_base/TebLocalPlannerROS/weight_dynamic_obstacle_inflation" />
-    <remap from="~TebLocalPlannerROS/weight_viapoint" to="/move_base/TebLocalPlannerROS/weight_viapoint" />
-    <remap from="~TebLocalPlannerROS/weight_prefer_rotdir" to="/move_base/TebLocalPlannerROS/weight_prefer_rotdir" />
-    <remap from="~TebLocalPlannerROS/weight_adapt_factor" to="/move_base/TebLocalPlannerROS/weight_adapt_factor" />
-    <remap from="~TebLocalPlannerROS/obstacle_cost_exponent" to="/move_base/TebLocalPlannerROS/obstacle_cost_exponent" />
-
-    <!-- Teb Local Planner Setting (Homotopy Class Planner) -->
-    <remap from="~TebLocalPlannerROS/enable_homotopy_class_planning" to="/move_base/TebLocalPlannerROS/enable_homotopy_class_planning" />
-    <remap from="~TebLocalPlannerROS/enable_multithreading" to="/move_base/TebLocalPlannerROS/enable_multithreading" />
-    <remap from="~TebLocalPlannerROS/simple_exploration" to="/move_base/TebLocalPlannerROS/simple_exploration" />
-    <remap from="~TebLocalPlannerROS/max_number_classes" to="/move_base/TebLocalPlannerROS/max_number_classes" />
-    <remap from="~TebLocalPlannerROS/selection_obst_cost_scale" to="/move_base/TebLocalPlannerROS/selection_obst_cost_scale" />
-    <remap from="~TebLocalPlannerROS/selection_prefer_initial_plan" to="/move_base/TebLocalPlannerROS/selection_prefer_initial_plan" />
-    <remap from="~TebLocalPlannerROS/selection_viapoint_cost_scale" to="/move_base/TebLocalPlannerROS/selection_viapoint_cost_scale" />
-    <remap from="~TebLocalPlannerROS/selection_cost_hysteresis" to="/move_base/TebLocalPlannerROS/selection_cost_hysteresis" />
-    <remap from="~TebLocalPlannerROS/selection_alternative_time_cost" to="/move_base/TebLocalPlannerROS/selection_alternative_time_cost" />
-    <remap from="~TebLocalPlannerROS/obstacle_keypoint_offset" to="/move_base/TebLocalPlannerROS/obstacle_keypoint_offset" />
-    <remap from="~TebLocalPlannerROS/obstacle_heading_threshold" to="/move_base/TebLocalPlannerROS/obstacle_heading_threshold" />
-    <remap from="~TebLocalPlannerROS/roadmap_graph_samples" to="/move_base/TebLocalPlannerROS/roadmap_graph_samples" />
-    <remap from="~TebLocalPlannerROS/roadmap_graph_area_width" to="/move_base/TebLocalPlannerROS/roadmap_graph_area_width" />
-    <remap from="~TebLocalPlannerROS/roadmap_graph_area_length_scale" to="/move_base/TebLocalPlannerROS/roadmap_graph_area_length_scale" />
-    <remap from="~TebLocalPlannerROS/h_signature_prescaler" to="/move_base/TebLocalPlannerROS/h_signature_prescaler" />
-    <remap from="~TebLocalPlannerROS/h_signature_threshold" to="/move_base/TebLocalPlannerROS/h_signature_threshold" />
-    <remap from="~TebLocalPlannerROS/switching_blocking_period" to="/move_base/TebLocalPlannerROS/switching_blocking_period" />
-    <remap from="~TebLocalPlannerROS/viapoints_all_candidates" to="/move_base/TebLocalPlannerROS/viapoints_all_candidates" />
-    <remap from="~TebLocalPlannerROS/visualize_hc_graph" to="/move_base/TebLocalPlannerROS/visualize_hc_graph" />
-    <remap from="~TebLocalPlannerROS/visualize_with_time_as_z_axis_scale" to="/move_base/TebLocalPlannerROS/visualize_with_time_as_z_axis_scale" />
-    <remap from="~TebLocalPlannerROS/delete_detours_backwards" to="/move_base/TebLocalPlannerROS/delete_detours_backwards" />
-    <remap from="~TebLocalPlannerROS/detours_orientation_tolerance" to="/move_base/TebLocalPlannerROS/detours_orientation_tolerance" />
-    <remap from="~TebLocalPlannerROS/length_start_orientation_vector" to="/move_base/TebLocalPlannerROS/length_start_orientation_vector" />
-    <remap from="~TebLocalPlannerROS/max_ratio_detours_duration_best_duration" to="/move_base/TebLocalPlannerROS/max_ratio_detours_duration_best_duration" />
-    
-
-    <!-- Teb Local Planner Setting (Recovery) -->
-    <remap from="~TebLocalPlannerROS/shrink_horizon_backup" to="/move_base/TebLocalPlannerROS/shrink_horizon_backup" />
-    <remap from="~TebLocalPlannerROS/shrink_horizon_min_duration" to="/move_base/TebLocalPlannerROS/shrink_horizon_min_duration" />
-    <remap from="~TebLocalPlannerROS/oscillation_recovery" to="/move_base/TebLocalPlannerROS/oscillation_recovery" />
-    <remap from="~TebLocalPlannerROS/oscillation_v_eps" to="/move_base/TebLocalPlannerROS/oscillation_v_eps" />
-    <remap from="~TebLocalPlannerROS/oscillation_omega_eps" to="/move_base/TebLocalPlannerROS/oscillation_omega_eps" />
-    <remap from="~TebLocalPlannerROS/oscillation_recovery_min_duration" to="/move_base/TebLocalPlannerROS/oscillation_recovery_min_duration" />
-    <remap from="~TebLocalPlannerROS/oscillation_filter_duration" to="/move_base/TebLocalPlannerROS/oscillation_filter_duration" />
-    <remap from="~TebLocalPlannerROS/footprint_model/front_offset" to="/move_base/TebLocalPlannerROS/footprint_model/front_offset" />
-    <remap from="~TebLocalPlannerROS/footprint_model/front_radius" to="/move_base/TebLocalPlannerROS/footprint_model/front_radius" />
-    <remap from="~TebLocalPlannerROS/footprint_model/line_end" to="/move_base/TebLocalPlannerROS/footprint_model/line_end" />
-    <remap from="~TebLocalPlannerROS/footprint_model/line_start" to="/move_base/TebLocalPlannerROS/footprint_model/line_start" />
-    <remap from="~TebLocalPlannerROS/footprint_model/radius" to="/move_base/TebLocalPlannerROS/footprint_model/radius" />
-    <remap from="~TebLocalPlannerROS/footprint_model/rear_offset" to="/move_base/TebLocalPlannerROS/footprint_model/rear_offset" />
-    <remap from="~TebLocalPlannerROS/footprint_model/rear_radius" to="/move_base/TebLocalPlannerROS/footprint_model/rear_radius" />
-    <remap from="~TebLocalPlannerROS/footprint_model/type" to="/move_base/TebLocalPlannerROS/footprint_model/type" />
-    <remap from="~TebLocalPlannerROS/footprint_model/vertices" to="/move_base/TebLocalPlannerROS/footprint_model/vertices" />
-
+    <rosparam file="$(find configs)/navigation/$(arg robot)_teb_local_planner.yaml" command="load" />
 
     <!-- Global Cost Map -->
-    <remap from="~global_costmap/static_map" to="/move_base/global_costmap/static_map" />
-    <remap from="~global_costmap/update_frequency" to="/move_base/global_costmap/update_frequency" />    
-    <remap from="~global_costmap/footprint" to="/move_base/costmap_common/footprint" />
-    <remap from="~global_costmap/footprint_padding" to="/move_base/costmap_common/footprint_padding" />
-    <remap from="~global_costmap/inflation_radius" to="/move_base/costmap_common/inflation_radius" />
-    <remap from="~global_costmap/laser_scan_sensor/clearing" to="/move_base/costmap_common/laser_scan_sensor/clearing" />
-    <remap from="~global_costmap/laser_scan_sensor/data_type" to="/move_base/costmap_common/laser_scan_sensor/data_type" />
-    <remap from="~global_costmap/laser_scan_sensor/marking" to="/move_base/costmap_common/laser_scan_sensor/marking" />
-    <remap from="~global_costmap/laser_scan_sensor/sensor_frame" to="/frame_name/lidar" />
-    <remap from="~global_costmap/laser_scan_sensor/topic" to="/urg_node/scan" />
-    <remap from="~global_costmap/observation_sources" to="/move_base/costmap_common/observation_sources" />
-    <remap from="~global_costmap/obstacle_range" to="/move_base/costmap_common/obstacle_range" />
-    <remap from="~global_costmap/raytrace_range" to="/move_base/costmap_common/raytrace_range" />
+    <rosparam file="$(find configs)/costmap/$(arg robot)_common_costmap.yaml" command="load" ns="global_costmap"/>
+    <rosparam file="$(find configs)/costmap/$(arg robot)_global_costmap.yaml" command="load" />
 
     <!-- Local Cost Map -->
-    <remap from="~local_costmap/width" to="/move_base/local_costmap/width" />
-    <remap from="~local_costmap/height" to="/move_base/local_costmap/height" />
-    <remap from="~local_costmap/resolution" to="/move_base/local_costmap/resolution" />
-    <remap from="~local_costmap/inscribed_radius" to="/move_base/local_costmap/inscribed_radius" />
-    <remap from="~local_costmap/circumscribed_radius" to="/move_base/local_costmap/circumscribed_radius" />
-    <remap from="~local_costmap/rolling_window" to="/move_base/local_costmap/rolling_window" />
-    <remap from="~local_costmap/static_map" to="/move_base/local_costmap/static_map" />
-    <remap from="~local_costmap/update_frequency" to="/move_base/local_costmap/update_frequency" />
-    <remap from="~local_costmap/publish_frequency" to="/move_base/local_costmap/publish_frequency" />
-    <remap from="~local_costmap/footprint" to="/move_base/costmap_common/footprint" />
-    <remap from="~local_costmap/footprint_padding" to="/move_base/costmap_common/footprint_padding" />
-    <remap from="~local_costmap/inflation_radius" to="/move_base/costmap_common/inflation_radius" />
-    <remap from="~local_costmap/laser_scan_sensor/clearing" to="/move_base/costmap_common/laser_scan_sensor/clearing" />
-    <remap from="~local_costmap/laser_scan_sensor/data_type" to="/move_base/costmap_common/laser_scan_sensor/data_type" />
-    <remap from="~local_costmap/laser_scan_sensor/marking" to="/move_base/costmap_common/laser_scan_sensor/marking" />
-    <remap from="~local_costmap/laser_scan_sensor/sensor_frame" to="/frame_name/lidar" />
-    <remap from="~local_costmap/laser_scan_sensor/topic" to="/urg_node/scan" />
-    <remap from="~local_costmap/observation_sources" to="/move_base/costmap_common/observation_sources" />
-    <remap from="~local_costmap/obstacle_range" to="/move_base/costmap_common/obstacle_range" />
-    <remap from="~local_costmap/raytrace_range" to="/move_base/costmap_common/raytrace_range" />
+    <rosparam file="$(find configs)/costmap/$(arg robot)_common_costmap.yaml" command="load" ns="local_costmap"/>
+    <rosparam file="$(find configs)/costmap/$(arg robot)_local_costmap.yaml" command="load" />    
 
   </node>
 </launch>
