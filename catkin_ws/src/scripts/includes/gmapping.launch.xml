@@ -1,8 +1,6 @@
 <launch>
 
   <arg name="robot" default="" />
-  <rosparam file="$(find configs)/mapping/$(arg robot)_gmapping.yaml" command="load" />  
-
   <node pkg="gmapping" type="slam_gmapping" name="gm_slam" output="screen">
     
     <!-- Topic Renaming (Pub) -->
@@ -13,46 +11,8 @@
     <!-- Topic Renaming (Sub) -->
     <remap from="/scan" to="/urg_node/scan" />
 
-    <!-- Frame Name -->
-    <remap from="base_frame" to="/frame_name/base_link" />
-    <remap from="map_frame" to="/frame_name/map" />
-    <remap from="odom_frame" to="/frame_name/odometry/whl" />
-
-    <!-- Parameter -->
-    <remap from="~inverted_laser" to="/gmapping/inverted_laser" />
-    <remap from="~throttle_scans" to="/gmapping/throttle_scans" />
-    <remap from="~map_update_interval" to="/gmapping/map_update_interval" />
-    <remap from="~maxUrange" to="/gmapping/maxUrange" />
-    <remap from="~sigma" to="/gmapping/sigma" />
-    <remap from="~kernelSize" to="/gmapping/kernelSize" />
-    <remap from="~lstep" to="/gmapping/lstep" />
-    <remap from="~astep" to="/gmapping/astep" />
-    <remap from="~iterations" to="/gmapping/iterations" />
-    <remap from="~lsigma" to="/gmapping/lsigma" />
-    <remap from="~ogain" to="/gmapping/ogain" />
-    <remap from="~lskip" to="/gmapping/lskip" />
-    <remap from="~minimumScore" to="/gmapping/minimumScore" />
-    <remap from="~str" to="/gmapping/str" />
-    <remap from="~stt" to="/gmapping/stt" />
-    <remap from="~srr" to="/gmapping/srr" />
-    <remap from="~srt" to="/gmapping/srt" />
-    <remap from="~linearUpdate" to="/gmapping/linearUpdate" />
-    <remap from="~angularUpdate" to="/gmapping/angularUpdate" />
-    <remap from="~temporalUpdate" to="/gmapping/temporalUpdate" />
-    <remap from="~resampleThreshold" to="/gmapping/resampleThreshold" />
-    <remap from="~particles" to="/gmapping/particles" />
-    <remap from="~xmin" to="/gmapping/xmin" />
-    <remap from="~ymin" to="/gmapping/ymin" />
-    <remap from="~xmax" to="/gmapping/xmax" />
-    <remap from="~ymax" to="/gmapping/ymax" />
-    <remap from="~delta" to="/gmapping/delta" />
-    <remap from="~llsamplerange" to="/gmapping/llsamplerange" />
-    <remap from="~llsamplestep" to="/gmapping/llsamplestep" />
-    <remap from="~lasamplerange" to="/gmapping/lasamplerange" />
-    <remap from="~lasamplestep" to="/gmapping/lasamplestep" />
-    <remap from="~transform_publish_period" to="/gmapping/transform_publish_period" />
-    <remap from="~occ_thresh" to="/gmapping/occ_thresh" />
-    <remap from="~maxRange" to="/gmapping/maxRange" />
+    <!-- Load Parameter -->
+    <rosparam file="$(find configs)/navigation/$(arg robot)_amcl.yaml" command="load" />
   </node>
 
 </launch>
