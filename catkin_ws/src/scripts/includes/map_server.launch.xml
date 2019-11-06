@@ -1,12 +1,13 @@
 <launch>
   <arg name="robot" default="" />
   <arg name="map_path" default="" />
+  <arg name="map_server_name" default="" />
 
-  <node pkg="map_server" type="map_server" name="map_server" args="$(arg map_path)" output="screen">
+  <node pkg="map_server" type="map_server" name="$(arg map_server_name)" args="$(arg map_path)" output="screen">
     
     <!-- Topic Name -->
-    <remap from="map" to="/map_server/map" />
-    <remap from="map_metadata" to="/map_server/map_metadata" />
+    <remap from="map" to="/$(arg map_server_name)/map" />
+    <remap from="map_metadata" to="/$(arg map_server_name)/map_metadata" />
     
     <!-- Frame Name -->
     <remap from="frame_id" to="/frame_name/map" />

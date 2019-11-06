@@ -1,6 +1,6 @@
 TebLocalPlannerROS:
 
-  odom_topic: odom_imu
+  odom_topic: /odometry/imu
   map_frame: map
 
   # Trajectory
@@ -38,11 +38,12 @@ TebLocalPlannerROS:
     front_radius: 0.2
     line_end: [0.3, 0.0]
     line_start: [-0.3, 0.0]
-    radius: 0.2
+    radius: 0.5
     rear_offset: 0.2
     rear_radius: 0.2
-    type: polygon
-    footprint: [[0.27, 0.22], [0.27, -0.22], [-0.40, -0.22], [-0.40, 0.22]]
+    #type: polygon
+    type: circular
+    #footprint: [[0.27, 0.22], [0.27, -0.22], [-0.40, -0.22], [-0.40, 0.22]]
     #footprint: [[0.27, 0.27], [0.27, -0.27], [-0.40, -0.27], [-0.40, 0.27]]
 
   # GoalTolerance
@@ -55,9 +56,9 @@ TebLocalPlannerROS:
   #min_obstacle_dist: 0.25 # This value must also include our robot radius, since footprint_model is set to "point".
   min_obstacle_dist: 0.05
   #inflation_dist: 0.6
-  inflation_dist: 0.01
+  inflation_dist: 0.20
   #dynamic_obstacle_inflation_dist: 0.6
-  dynamic_obstacle_inflation_dist: 0.01
+  dynamic_obstacle_inflation_dist: 0.05
   costmap_obstacles_behind_robot_dist: 1.0
   include_dynamic_obstacles: true
   include_costmap_obstacles: true
@@ -83,12 +84,15 @@ TebLocalPlannerROS:
   weight_acc_lim_y: 1
   weight_acc_lim_theta: 1
   weight_kinematics_nh: 1000
-  weight_kinematics_forward_drive: 100
+  #weight_kinematics_forward_drive: 100
+  weight_kinematics_forward_drive: 10000
   weight_kinematics_turning_radius: 0.1
   weight_optimaltime: 1
   weight_shortest_path: 0
-  weight_obstacle: 50
-  weight_inflation: 0.1
+  #weight_obstacle: 50
+  weight_obstacle: 100
+  #weight_inflation: 0.1
+  weight_inflation: 10.0
   weight_dynamic_obstacle: 10
   weight_dynamic_obstacle_inflation: 0.1
   weight_viapoint: 1
@@ -120,7 +124,8 @@ TebLocalPlannerROS:
   delete_detours_backwards: true
   detours_orientation_tolerance: 1.570795
   length_start_orientation_vector: 0.4
-  max_ratio_detours_duration_best_duration: 3.0
+  #max_ratio_detours_duration_best_duration: 3.0
+  max_ratio_detours_duration_best_duration: 20.0
 
   # Recovery
   shrink_horizon_backup: true

@@ -8,7 +8,7 @@ footprint_padding: 0.01
 
 static_layer:
   enabled: true
-  map_topic: /map_server/map
+  map_topic: /root_map_server/map
   unknown_cost_value: -1
   lethal_cost_threshold: 100
   track_unknown_space: true

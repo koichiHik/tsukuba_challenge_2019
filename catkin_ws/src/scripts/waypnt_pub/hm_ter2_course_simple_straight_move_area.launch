@@ -5,7 +5,7 @@
 
   <arg name="map_dir" default="$(find data)/map/home/" />
   <arg name="map_filename" value="map.yaml" />
-  <arg name="root_map_filename" value="map.yaml" />
+  <arg name="root_map_filename" value="map_move_area.yaml" />
 
   <arg name="waypoint_filename_" value="hm_simple_straight.csv" />
   <arg name="waypnt_dir" default="$(find data)/waypoint/home/" />	
