@@ -1,6 +1,9 @@
 <launch>
 
   <arg name="robot" default="" />
+  <arg name="init_x" default="0.0" />
+  <arg name="init_y" default="0.0" />
+  <arg name="init_a" default="0.0" />
 
   <node pkg="amcl" type="amcl" name="amcl" output="screen">
 
@@ -18,6 +21,10 @@
     <remap from="global_localization" to="/amcl/global_localization" />
     <remap from="request_nomotion_update" to="/amcl/request_nomotion_update" />
     <remap from="set_map" to="/amcl/set_map" />
+
+    <param name="initial_pose_x" value="$(arg init_x)" />
+    <param name="initial_pose_y" value="$(arg init_y)" />
+    <param name="initial_pose_a" value="$(arg init_a)" />
 
     <rosparam file="$(find configs)/navigation/$(arg robot)_amcl.yaml" command="load" />
 

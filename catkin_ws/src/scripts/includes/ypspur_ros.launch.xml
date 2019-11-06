@@ -27,8 +27,8 @@
     <remap from="wrench" to="/ypspur/wrench" />
 
     <!-- YpSpur Frame Name Parameters -->  
-    <remap from="~/odom_id"             to="/frame_name/odometry/ypspur" />
-    <remap from="~/base_link_id"        to="/frame_name/base_link" />
+    <param name="~/odom_id"             value="odom_ypspur" />
+    <param name="~/base_link_id"        value="base_link" />
 
     <!-- YpSpur Control Limitation Parameters -->
     <remap from="~/vel"                 to="/ctrl_limit/max_vel_x" />

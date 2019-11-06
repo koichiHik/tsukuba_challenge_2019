@@ -3,8 +3,11 @@
   <arg name="robot" default="" />
   <node pkg="static_transform_publisher_param_support" type="static_transform_publisher_param_support" name="laser_broadcaster" >
 
-    <remap from="~/frame_id"          to="/frame_name/base_link" />
-    <remap from="~/child_frame_id"    to="/frame_name/lidar" />
+    <!-- Frame Name -->
+    <param name="~/frame_id"          value="base_link" />
+    <param name="~/child_frame_id"    value="lidar" />
+
+    <!-- Parameter Name -->    
     <remap from="~/x"                 to="/urg_node/x" />
     <remap from="~/y"                 to="/urg_node/y" />
     <remap from="~/z"                 to="/urg_node/z" />

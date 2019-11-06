@@ -11,13 +11,13 @@
 
 
     <!-- ROS topic names -->
-    <remap from="~base_img_topic" to="/topic_name/zed/left/rect/color" />
-    <remap from="~disp_img_topic" to="/topic_name/sgm_cuda/disparity" />
-    <remap from="~stixel_img_topic" to="/topic_name/stixel_cuda/stixel_img" />
+    <remap from="~base_img_topic" to="/zed/left/rect/image_color" />
+    <remap from="~disp_img_topic" to="/sgm_cuda/disparity" />
+    <remap from="~stixel_img_topic" to="/stixel_cuda/stixel_img" />
 
     <!-- ROS frame names -->
-    <remap from="~disp_frame_id" to="/frame_name/disparity" />
-    <remap from="~base_frame_id" to="/frame_name/zed/left" />
+    <param name="~disp_frame_id" value="zed_left" />
+    <param name="~base_frame_id" value="zed_left" />
 
     <!-- Debug Parameter -->
     <remap from="~stixel_img" to="/stixel/stixel_img" />

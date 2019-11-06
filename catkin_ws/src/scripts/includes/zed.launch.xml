@@ -10,18 +10,18 @@
   <node pkg="nodelet" type="nodelet" name="ZEDWrapperNodelet" args="load zed_wrapper/ZEDWrapperNodelet $(arg nodelet_mgr)" output="screen">
 
     <!-- ROS frame names -->
-    <remap from="~left_frame_id" to="/frame_name/zed/left" />
-    <remap from="~right_frame_id" to="/frame_name/zed/right" />
+    <param name="~left_frame_id" value="zed_left" />
+    <param name="~right_frame_id" value="zed_right" />
 
     <!-- ROS topic names -->
-    <remap from="~left_topic" to="/topic_name/zed/left/rect/color" />
-    <remap from="~left_raw_topic" to="/topic_name/zed/left/raw/color" />
-    <remap from="~left_cam_info_topic" to="/topic_name/zed/left/rect/cam_info" />
-    <remap from="~left_raw_cam_info_topic" to="/topic_name/zed/left/raw/cam_info" />
-    <remap from="~right_topic" to="/topic_name/zed/right/rect/color" />
-    <remap from="~right_raw_topic" to="/topic_name/zed/right/raw/color" />
-    <remap from="~right_cam_info_topic" to="/topic_name/zed/right/rect/cam_info" />
-    <remap from="~right_raw_cam_info_topic" to="/topic_name/zed/right/raw/cam_info" />
+    <remap from="~left_topic" to="/zed/left/rect/image_color" />
+    <remap from="~left_raw_topic" to="/zed/left/raw/image_color" />
+    <remap from="~left_cam_info_topic" to=" /zed/left/rect/camera_info" />
+    <remap from="~left_raw_cam_info_topic" to="/zed/left/raw/camera_info" />
+    <remap from="~right_topic" to="/zed/right/rect/image_color" />
+    <remap from="~right_raw_topic" to="/zed/right/raw/image_color" />
+    <remap from="~right_cam_info_topic" to="/zed/right/rect/camera_info" />
+    <remap from="~right_raw_cam_info_topic" to="/zed/right/raw/camera_info" />
 
     <!-- ZED parameters -->
     <remap from="~zed_id" to="/zed/zed_id" />

@@ -8,13 +8,12 @@
 		
 		<!-- Topic Name -->
 		<remap from="imu" to="imu" />
-		<remap from="odom" to="/odom" />
+		<remap from="odom" to="odom" />
 		<remap from="joint_states" to="/ypspur/joint_states" />
 
 		<!-- Frame Name -->
-		<remap from="~/base_link_frame_name" to="/frame_name/base_link" />
-		<remap from="~/odometry_imu_frame_name" to="/frame_name/odometry/imu" />
-		<remap from="~/odometry_whl_frame_name" to="/frame_name/odometry/whl" />
+		<param name="~/base_link_frame_name" value="base_link" />
+		<param name="~/odometry_frame_name" value="odom" />
 
 		<!-- Parameters Name -->
 		<remap from="~/wheel_base" to="/robo/wheel_base" />

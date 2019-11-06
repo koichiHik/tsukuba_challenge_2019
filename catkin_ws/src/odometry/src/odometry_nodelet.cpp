@@ -52,7 +52,7 @@ class OdometryNodelet : public nodelet::Nodelet {
  private:
   // Topic Name
   std::string imuTopicName, jointStatesTopicName, odomWhlTopicName, odomImuTopicName;
-  std::string odomImuFrameName, odomWhlFrameName, baselinkFrameName;
+  std::string odomFrameName, baselinkFrameName;
 
   int maxSyncDiff, offset_gyro_z;
   bool use_odom_whl, calc_offset;
@@ -125,10 +125,8 @@ void OdometryNodelet::onInit() {
 
 void OdometryNodelet::readParams(OdomParams& odomParams) {
   // Frame Name
-  readParam("odometry_imu_frame_name",
-            nh_ns.param<std::string>("odometry_imu_frame_name", odomImuFrameName, ""));
-  readParam("odometry_whl_frame_name",
-            nh_ns.param<std::string>("odometry_whl_frame_name", odomWhlFrameName, ""));
+  readParam("odometry_frame_name",
+            nh_ns.param<std::string>("odometry_frame_name", odomFrameName, ""));
   readParam("base_link_frame_name",
             nh_ns.param<std::string>("base_link_frame_name", baselinkFrameName, ""));
 
@@ -195,8 +193,8 @@ void OdometryNodelet::sensorCallback(const sensor_msgs::JointStateConstPtr& join
     // Published Whl Based Odometry.
     {
       nav_msgs::Odometry odomWhlMsg;
-      fillOdomMessage(odomWhlMsg, odomWhlFrameName, jointPos->header.stamp, odomWhl, velWhl);
-      publishTransform(odomWhlMsg, odomWhlFrameName);
+      fillOdomMessage(odomWhlMsg, odomFrameName, jointPos->header.stamp, odomWhl, velWhl);
+      publishTransform(odomWhlMsg, odomFrameName);
       odomPub.publish(odomWhlMsg);
     }
   }
@@ -244,16 +242,16 @@ void OdometryNodelet::calcAndPublishOdom(const ros::Time& stamp) {
     // Published IMU based odometry.
     {
       nav_msgs::Odometry odomImuMsg;
-      fillOdomMessage(odomImuMsg, odomImuFrameName, stamp, odomImu, velImu);
-      publishTransform(odomImuMsg, odomImuFrameName);
+      fillOdomMessage(odomImuMsg, odomFrameName, stamp, odomImu, velImu);
+      publishTransform(odomImuMsg, odomFrameName);
       odomPub.publish(odomImuMsg);
     }
   } else {
     // Published Whl Based Odometry.
     {
       nav_msgs::Odometry odomWhlMsg;
-      fillOdomMessage(odomWhlMsg, odomWhlFrameName, stamp, odomWhl, velWhl);
-      publishTransform(odomWhlMsg, odomWhlFrameName);
+      fillOdomMessage(odomWhlMsg, odomFrameName, stamp, odomWhl, velWhl);
+      publishTransform(odomWhlMsg, odomFrameName);
       odomPub.publish(odomWhlMsg);
     }
   }

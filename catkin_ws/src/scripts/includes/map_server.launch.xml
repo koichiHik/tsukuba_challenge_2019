@@ -10,7 +10,7 @@
     <remap from="map_metadata" to="/$(arg map_server_name)/map_metadata" />
     
     <!-- Frame Name -->
-    <remap from="frame_id" to="/frame_name/map" />
+    <param name="frame_id" value="map" />
 
   </node>
 </launch>
