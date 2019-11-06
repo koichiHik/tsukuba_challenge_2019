@@ -7,11 +7,9 @@
 	<node pkg="nodelet" type="nodelet" name="OdometryNodelet" args="load odometry/OdometryNodelet $(arg nodelet_mgr)" output="screen" >
 		
 		<!-- Topic Name -->
-		<!-- <remap from="imu" to="/arduino/imu" /> -->
 		<remap from="imu" to="imu" />
+		<remap from="odom" to="/odom" />
 		<remap from="joint_states" to="/ypspur/joint_states" />
-		<remap from="odom_whl" to="/odometry/whl" />
-		<remap from="odom_imu" to="/odometry/imu" />
 
 		<!-- Frame Name -->
 		<remap from="~/base_link_frame_name" to="/frame_name/base_link" />
@@ -29,10 +27,10 @@
 		<remap from="~/use_left_pls" to="/odometry/use_left_pls" />
 		<remap from="~/use_right_pls" to="/odometry/use_right_pls" />
 		<remap from="~/cycle_time" to="/odometry/cycle_time" />
-    <remap from="~/max_sync_diff" to="/odometry/max_sync_diff" />
+    	<remap from="~/max_sync_diff" to="/odometry/max_sync_diff" />
 		<remap from="~/dist_buffer" to="/odometry/dist_buffer" />
-    <remap from="~/imu_yaw_buffer" to="/odometry/imu_yaw_buffer" />
-    <remap from="~/whl_yaw_buffer" to="/odometry/whl_yaw_buffer" />
+		<remap from="~/imu_yaw_buffer" to="/odometry/imu_yaw_buffer" />
+		<remap from="~/whl_yaw_buffer" to="/odometry/whl_yaw_buffer" />
 		<remap from="~/use_odom_whl" to="/odometry/use_odom_whl" />
 		<remap from="~/calc_offset" to="/odometry/calc_offset" />
 		<remap from="~/offset_gyro_z" to="/odometry/offset_gyro_z" />		

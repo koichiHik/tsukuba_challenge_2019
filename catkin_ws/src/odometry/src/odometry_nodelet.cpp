@@ -71,7 +71,7 @@ class OdometryNodelet : public nodelet::Nodelet {
   message_filters::Synchronizer<OdomSyncPolicy>* odomSync;
 
   // ROS Publisher
-  ros::Publisher odomPubWhl, odomPubImu;
+  ros::Publisher odomPub;
   tf::TransformBroadcaster* odomBroadCaster;
 
   // Class
@@ -120,28 +120,10 @@ void OdometryNodelet::onInit() {
     odomSync->registerCallback(boost::bind(&OdometryNodelet::sensorCallback, this, _1, _2));
   }
 
-  // odomPubWhl = nh.advertise<nav_msgs::Odometry>(odomWhlTopicName, 100);
-  // odomPubImu = nh.advertise<nav_msgs::Odometry>(odomImuTopicName, 100);
-  odomPubWhl = nh.advertise<nav_msgs::Odometry>("odom_whl", 100);
-  odomPubImu = nh.advertise<nav_msgs::Odometry>("odom_imu", 100);
+  odomPub = nh.advertise<nav_msgs::Odometry>("odom", 100);
 }
 
 void OdometryNodelet::readParams(OdomParams& odomParams) {
-  // Topic Name
-  /**
-  readParam("imu_topic_name",
-            nh_ns.param<std::string>("imu_topic_name", imuTopicName, ""));
-  readParam("joint_states_topic_name",
-            nh_ns.param<std::string>("joint_states_topic_name",
-                                     jointStatesTopicName, ""));
-  readParam(
-      "odom_whl_topic_name",
-      nh_ns.param<std::string>("odom_whl_topic_name", odomWhlTopicName, ""));
-  readParam(
-      "odom_imu_topic_name",
-      nh_ns.param<std::string>("odom_imu_topic_name", odomImuTopicName, ""));
-  **/
-
   // Frame Name
   readParam("odometry_imu_frame_name",
             nh_ns.param<std::string>("odometry_imu_frame_name", odomImuFrameName, ""));
@@ -215,7 +197,7 @@ void OdometryNodelet::sensorCallback(const sensor_msgs::JointStateConstPtr& join
       nav_msgs::Odometry odomWhlMsg;
       fillOdomMessage(odomWhlMsg, odomWhlFrameName, jointPos->header.stamp, odomWhl, velWhl);
       publishTransform(odomWhlMsg, odomWhlFrameName);
-      odomPubWhl.publish(odomWhlMsg);
+      odomPub.publish(odomWhlMsg);
     }
   }
 }
@@ -264,7 +246,7 @@ void OdometryNodelet::calcAndPublishOdom(const ros::Time& stamp) {
       nav_msgs::Odometry odomImuMsg;
       fillOdomMessage(odomImuMsg, odomImuFrameName, stamp, odomImu, velImu);
       publishTransform(odomImuMsg, odomImuFrameName);
-      odomPubImu.publish(odomImuMsg);
+      odomPub.publish(odomImuMsg);
     }
   } else {
     // Published Whl Based Odometry.
@@ -272,7 +254,7 @@ void OdometryNodelet::calcAndPublishOdom(const ros::Time& stamp) {
       nav_msgs::Odometry odomWhlMsg;
       fillOdomMessage(odomWhlMsg, odomWhlFrameName, stamp, odomWhl, velWhl);
       publishTransform(odomWhlMsg, odomWhlFrameName);
-      odomPubWhl.publish(odomWhlMsg);
+      odomPub.publish(odomWhlMsg);
     }
   }
 }

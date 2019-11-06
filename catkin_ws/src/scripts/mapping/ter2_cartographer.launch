@@ -53,7 +53,7 @@
       output="screen">
     <remap from="scan" to="/urg_node/scan" />
     <remap from="imu" to="/imu_filtered" />
-    <remap from="odom" to="/odometry/imu" />    
+    <remap from="odom" to="/odom" />    
   </node>
 
   <node name="cartographer_occupancy_grid_node" pkg="cartographer_ros"
