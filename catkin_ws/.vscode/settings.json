@@ -71,6 +71,7 @@
         "condition_variable": "cpp",
         "random": "cpp",
         "mutex": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "core": "cpp"
     }
 }
