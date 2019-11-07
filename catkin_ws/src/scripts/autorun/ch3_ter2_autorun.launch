@@ -44,6 +44,9 @@
 
   <include file="$(find scripts)/includes/amcl.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
+    <arg name="init_x" value="2.67" />
+    <arg name="init_y" value="1.82" />
+    <arg name="init_a" value="1.51" />
   </include>
 
   <include file="$(find scripts)/includes/move_base.launch.xml" >

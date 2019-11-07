@@ -24,7 +24,8 @@ TRAJECTORY_BUILDER_2D = {
   --max_z = 0.25,
   missing_data_ray_length = 5.,
   num_accumulated_range_data = 1,
-  voxel_filter_size = 0.025,
+  --voxel_filter_size = 0.025,
+  voxel_filter_size = 0.05,
 
   adaptive_voxel_filter = {
     max_length = 0.5,
@@ -38,8 +39,8 @@ TRAJECTORY_BUILDER_2D = {
     max_range = 50.,
   },
 
-  --use_online_correlative_scan_matching = false,
   use_online_correlative_scan_matching = false,
+  --use_online_correlative_scan_matching = true,
   real_time_correlative_scan_matcher = {
     linear_search_window = 0.1,
     --linear_search_window = 0.5,
@@ -51,13 +52,13 @@ TRAJECTORY_BUILDER_2D = {
   },
 
   ceres_scan_matcher = {
-    occupied_space_weight = 1.,
-    translation_weight = 10.,
-    rotation_weight = 40.,
+    occupied_space_weight = 1e0,
+    translation_weight = 1e4,
+    rotation_weight = 2e4,
     ceres_solver_options = {
       use_nonmonotonic_steps = false,
       max_num_iterations = 20,
-      num_threads = 1,
+      num_threads = 4,
     },
   },
 
@@ -70,7 +71,8 @@ TRAJECTORY_BUILDER_2D = {
   imu_gravity_time_constant = 10.,
 
   submaps = {
-    num_range_data = 90,
+    --num_range_data = 90,
+    num_range_data = 10,
     grid_options_2d = {
       grid_type = "PROBABILITY_GRID",
       resolution = 0.05,
