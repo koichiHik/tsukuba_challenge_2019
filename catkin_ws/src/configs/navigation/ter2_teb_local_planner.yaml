@@ -7,6 +7,7 @@ TebLocalPlannerROS:
   teb_autosize: True
   dt_ref: 0.3
   dt_hysteresis: 0.1
+  #min_samples: 3
   min_samples: 3
   max_samples: 500
   global_plan_overwrite_orientation: True
@@ -17,7 +18,8 @@ TebLocalPlannerROS:
   global_plan_prune_distance: 1
   exact_arc_length: False
   force_reinit_new_goal_dist: 1
-  feasibility_check_no_poses: 5
+  #feasibility_check_no_poses: 5
+  feasibility_check_no_poses: 10
   publish_feedback: False
   min_resolution_collision_check_angular: 3.14159
     
@@ -34,15 +36,15 @@ TebLocalPlannerROS:
   cmd_angle_instead_rotvel: false
   is_footprint_dynamic: false
   footprint_model: 
-    front_offset: 0.2
-    front_radius: 0.2
-    line_end: [0.3, 0.0]
-    line_start: [-0.3, 0.0]
-    radius: 0.5
-    rear_offset: 0.2
-    rear_radius: 0.2
-    #type: polygon
     type: circular
+    radius: 0.3
+    #front_offset: 0.2
+    #front_radius: 0.2
+    #line_end: [0.3, 0.0]
+    #line_start: [-0.3, 0.0]
+    #rear_offset: 0.2
+    #rear_radius: 0.2
+    #type: polygon
     #footprint: [[0.27, 0.22], [0.27, -0.22], [-0.40, -0.22], [-0.40, 0.22]]
     #footprint: [[0.27, 0.27], [0.27, -0.27], [-0.40, -0.27], [-0.40, 0.27]]
 
@@ -56,14 +58,13 @@ TebLocalPlannerROS:
   #min_obstacle_dist: 0.25 # This value must also include our robot radius, since footprint_model is set to "point".
   min_obstacle_dist: 0.05
   #inflation_dist: 0.6
-  inflation_dist: 0.20
+  inflation_dist: 0.2
   #dynamic_obstacle_inflation_dist: 0.6
-  dynamic_obstacle_inflation_dist: 0.05
+  dynamic_obstacle_inflation_dist: 0.6
   costmap_obstacles_behind_robot_dist: 1.0
   include_dynamic_obstacles: true
   include_costmap_obstacles: true
-  costmap_obstacles_behind_robot_dist: 0.2
-  obstacle_poses_affected: 15
+  obstacle_poses_affected: 5
   legacy_obstacle_association: false
   obstacle_association_force_inclusion_factor: 1.5
   obstacle_association_cutoff_factor: 5
@@ -85,7 +86,7 @@ TebLocalPlannerROS:
   weight_acc_lim_theta: 1
   weight_kinematics_nh: 1000
   #weight_kinematics_forward_drive: 100
-  weight_kinematics_forward_drive: 10000
+  weight_kinematics_forward_drive: 100000000
   weight_kinematics_turning_radius: 0.1
   weight_optimaltime: 1
   weight_shortest_path: 0
@@ -99,6 +100,7 @@ TebLocalPlannerROS:
   weight_prefer_rotdir: 1
   weight_adapt_factor: 50
   obstacle_cost_exponent: 2.0
+  #obstacle_cost_exponent: 10.0
 
   # Homotopy Class Planner
   enable_homotopy_class_planning: true
@@ -106,9 +108,11 @@ TebLocalPlannerROS:
   simple_exploration: false
   max_number_classes: 5
   selection_obst_cost_scale: 100.0
-  selection_prefer_initial_plan: 0.95
+  #selection_prefer_initial_plan: 0.95
+  selection_prefer_initial_plan: 0.6
   selection_viapoint_cost_scale: 100.0
   selection_cost_hysteresis: 1.0
+  #selection_cost_hysteresis: 10.0
   selection_alternative_time_cost: false
   obstacle_keypoint_offset: 0.1
   obstacle_heading_threshold: 0.45
@@ -118,6 +122,7 @@ TebLocalPlannerROS:
   h_signature_prescaler: 0.5
   h_signature_threshold: 0.1
   switching_blocking_period: 0.1
+  #switching_blocking_period: 0.5
   viapoints_all_candidates: true
   visualize_hc_graph: false
   visualize_with_time_as_z_axis_scale: 0.0

@@ -1,7 +1,6 @@
 <launch>
 
   <arg name="waypoint_filename" />
-  <arg name="waypoint_dir" default="$(find data)/waypoint/" />
   <arg name="start_waypoint" default="0"/>
 
   <node name="cirkit_waypoint_navigator_node" pkg="cirkit_waypoint_navigator" type="cirkit_waypoint_navigator_node" output="screen">
