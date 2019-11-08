@@ -56,7 +56,8 @@ TebLocalPlannerROS:
     #footprint: [[0.27, 0.27], [0.27, -0.27], [-0.40, -0.27], [-0.40, 0.27]]
 
   # GoalTolerance
-  xy_goal_tolerance: 0.2
+  #xy_goal_tolerance: 0.20
+  xy_goal_tolerance: 0.1
   yaw_goal_tolerance: 0.1
   free_goal_vel: False
   complete_global_plan: True
