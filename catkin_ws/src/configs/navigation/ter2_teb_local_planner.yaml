@@ -23,12 +23,18 @@ TebLocalPlannerROS:
   publish_feedback: False
   min_resolution_collision_check_angular: 3.14159
     
-  # Robot   
-  max_vel_x: 0.4
+  # Robot
+  # Tsukuba Challenge
+  max_vel_x: 1.0
+  # Home
+  #max_vel_x: 0.4
   max_vel_x_backwards: 0.2
   max_vel_y: 0.1
   max_vel_theta: 0.3
-  acc_lim_x: 0.5
+  #Tsukuba Challlenge
+  acc_lim_x: 1.0  
+  #Home
+  #acc_lim_x: 0.5
   acc_lim_y: 0.2
   acc_lim_theta: 0.5
   min_turning_radius: 0.0
