@@ -4,16 +4,16 @@ ctrl_limit:
   # Maximum
   #max_vel_x: 1.67
   # Tsukuba Challenge
-  max_vel_x: 1.0
+  max_vel_x: 0.6
   # Home
   #max_vel_x: 0.3
   #max_vel_x_back: 0.50
   max_vel_x_back: 0.20
   max_vel_y: 0.0
-  max_vel_theta: 1.0
+  max_vel_theta: 0.5
   # Tsukuba Challenge
-  max_acc_x: 1.00
+  max_acc_x: 0.5
   # Home
   #max_acc_x: 0.3
   max_acc_y: 0.0
-  max_acc_theta: 1.00
+  max_acc_theta: 0.5
