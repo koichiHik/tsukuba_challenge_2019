@@ -1,7 +1,7 @@
 <launch>
 
-  <!--<arg name="map_filename" default="map.yaml" />
-  <arg name="map_dir" default="$(find data)/map/" />-->
+  <arg name="map_filename" default="map.yaml" />
+  <arg name="map_dir" default="$(find data)/map/" />
 
   <arg name="robot" value="ter2" />
   <arg name="mgr" value="pc_nodelet_mgr" />
@@ -21,12 +21,10 @@
     <arg name="robot" value="$(arg robot)" />
   </include>
 
-  <!--
   <include file="$(find scripts)/includes/map_server.launch.xml" >
     <arg name="robot" value="$(arg robot)" />  
     <arg name="map_path" value="$(arg map_dir)$(arg map_filename)" />
   </include>
-  -->
 
   <include file="$(find scripts)/includes/amcl.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
