@@ -3,6 +3,7 @@
 
   <arg name="robot" value="ter2" />
   <arg name="mgr" value="pc_nodelet_mgr" />
+  <param name="use_sim_time" value="true" />
 
   <include file="$(find scripts)/includes/common_param_loader.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
@@ -12,14 +13,18 @@
     <arg name="robot" value="$(arg robot)" />
   </include>  
 
+  <!--
   <include file="$(find scripts)/includes/ypspur_ros.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
     <arg name="cmd_vel" value="/move_base/cmd_vel" />    
   </include>
+  -->
 
+  <!--
   <include file="$(find scripts)/includes/imu_arduino.launch.xml">
     <arg name="robot" value="$(arg robot)" />
   </include>  
+  -->
 
   <include file="$(find scripts)/includes/odometry.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
@@ -29,9 +34,11 @@
     <arg name="robot" value="$(arg robot)" />    
   </include>
 
+  <!--
   <include file="$(find scripts)/includes/urg_node.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
   </include>
+  -->
 
   <include file="$(find scripts)/includes/amcl.launch.xml" >
     <arg name="robot" value="$(arg robot)" />

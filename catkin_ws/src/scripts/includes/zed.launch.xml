@@ -14,6 +14,7 @@
     <param name="~right_frame_id" value="zed_right" />
 
     <!-- ROS topic names -->
+    <!--
     <remap from="~left_topic" to="/zed/left/rect/image_color" />
     <remap from="~left_raw_topic" to="/zed/left/raw/image_color" />
     <remap from="~left_cam_info_topic" to=" /zed/left/rect/camera_info" />
@@ -22,6 +23,15 @@
     <remap from="~right_raw_topic" to="/zed/right/raw/image_color" />
     <remap from="~right_cam_info_topic" to="/zed/right/rect/camera_info" />
     <remap from="~right_raw_cam_info_topic" to="/zed/right/raw/camera_info" />
+    -->
+    <param name="~left_topic" value="/zed/left/rect/image_color" />
+    <param name="~left_raw_topic" value="/zed/left/raw/image_color" />
+    <param name="~left_cam_info_topic" value=" /zed/left/rect/camera_info" />
+    <param name="~left_raw_cam_info_topic" value="/zed/left/raw/camera_info" />
+    <param name="~right_topic" value="/zed/right/rect/image_color" />
+    <param name="~right_raw_topic" value="/zed/right/raw/image_color" />
+    <param name="~right_cam_info_topic" value="/zed/right/rect/camera_info" />
+    <param name="~right_raw_cam_info_topic" value="/zed/right/raw/camera_info" />
 
     <!-- ZED parameters -->
     <remap from="~zed_id" to="/zed/zed_id" />

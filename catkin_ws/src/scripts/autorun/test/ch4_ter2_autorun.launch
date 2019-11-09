@@ -17,9 +17,11 @@
     <arg name="cmd_vel" value="/move_base/cmd_vel" />    
   </include>
 
+  <!--
   <include file="$(find scripts)/includes/imu_arduino.launch.xml">
     <arg name="robot" value="$(arg robot)" />
   </include>  
+  -->
 
   <include file="$(find scripts)/includes/odometry.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
@@ -35,9 +37,9 @@
 
   <include file="$(find scripts)/includes/amcl.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
-    <arg name="init_x" value="0.0" />
-    <arg name="init_y" value="0.0" />
-    <arg name="init_a" value="0.0" />
+    <arg name="init_x" value="15.6766" />
+    <arg name="init_y" value="-12.1182" />
+    <arg name="init_a" value="1.5700" />
   </include>
 
   <include file="$(find scripts)/includes/move_base.launch.xml" >
