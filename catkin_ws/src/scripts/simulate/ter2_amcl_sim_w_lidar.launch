@@ -31,7 +31,7 @@
   <include file="$(find scripts)/includes/amcl.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
     <arg name="init_x" value="0.0" />
-    <arg name="init_y" value="0.0" />
+    <arg name="init_y" value="2.6" />
     <arg name="init_a" value="0.0" />
   </include>    
   
