@@ -7,7 +7,7 @@
   <arg name="map_filename" value="map5.yaml" />
   <arg name="root_map_filename" value="map5.yaml" />
 
-  <arg name="waypoint_filename_" value="ch5_2019-10-26-12-05-39.csv" />
+  <arg name="waypoint_filename_" value="ch5_2019-11-09-15-37-11.csv" />
   <arg name="waypnt_dir" default="$(find data)/waypoint/tc/" />	
 
   <include file="$(find scripts)/includes/map_server.launch.xml" >
