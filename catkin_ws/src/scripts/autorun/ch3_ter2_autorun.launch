@@ -17,9 +17,11 @@
     <arg name="cmd_vel" value="/move_base/cmd_vel" />    
   </include>
 
+  <!--
   <include file="$(find scripts)/includes/imu_arduino.launch.xml">
     <arg name="robot" value="$(arg robot)" />
-  </include>  
+  </include>
+  --> 
 
   <include file="$(find scripts)/includes/odometry.launch.xml" >
     <arg name="robot" value="$(arg robot)" />
@@ -44,6 +46,6 @@
     <arg name="robot" value="$(arg robot)" />
   </include>
 
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find configs)/rviz/autorun.rviz" />
+  <!-- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find configs)/rviz/autorun.rviz" /> -->
 
 </launch>
