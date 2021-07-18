@@ -1,0 +1,29 @@
+
+<launch>
+
+  <arg name="robot" value="ter2" />
+
+  <arg name="map_dir" default="$(find data)/map/tc/" />
+  <arg name="map_filename" value="map1.yaml" />
+  <arg name="root_map_filename" value="map1.yaml" />
+
+  <arg name="waypoint_filename_" value="ch1_right_2019-10-26-14-29-40.csv" />
+  <arg name="waypnt_dir" default="$(find data)/waypoint/tc/" />	
+
+  <include file="$(find scripts)/includes/map_server.launch.xml" >
+    <arg name="map_server_name" value="map_server" />
+    <arg name="robot" value="$(arg robot)" />  
+    <arg name="map_path" value="$(arg map_dir)$(arg map_filename)" />
+  </include>
+
+  <include file="$(find scripts)/includes/map_server.launch.xml" >
+    <arg name="map_server_name" value="root_map_server" />
+    <arg name="robot" value="$(arg robot)" />  
+    <arg name="map_path" value="$(arg map_dir)$(arg root_map_filename)" />
+  </include>
+
+  <include file="$(find scripts)/includes/cirkit_waypoint_publisher.launch.xml" >
+    <arg name="waypoint_filename" value="$(arg waypnt_dir)$(arg waypoint_filename_)" />
+  </include>
+
+</launch>
