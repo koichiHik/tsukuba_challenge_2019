@@ -1,9 +1,0 @@
-<library path="lib/libsgm_cuda_nodelet">
-  <class 	name="sgm_cuda/SgmCudaNodelet" 
-					type="koichi_robotics_lib::SgmCudaNodelet" 
-					base_class_type="nodelet::Nodelet">
-    <description>
-      SgmCudaNodelet.
-    </description>
-  </class>
-</library>

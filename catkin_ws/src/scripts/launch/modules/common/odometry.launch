@@ -1,0 +1,27 @@
+<launch>
+  <arg name="base_frame_id" default="base_link" />
+  <arg name="odom_frame_id" default="odom" />
+  <arg name="robot_yaml_filepath" default="$(find scripts)/params/common/robot.yaml" />
+  <arg name="odom_yaml_filepath" default="$(find scripts)/params/common/odometry.yaml" />
+	<arg name="nodelet_mgr" default="odom_nodelet_mgr"/>
+
+	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_mgr)" args="manager" output="screen"/>
+	<node pkg="nodelet" type="nodelet" name="OdometryNodelet" args="load odometry/OdometryNodelet $(arg nodelet_mgr)" output="screen" >
+		
+    <!-- Topic Name IN -->
+    <remap from="imu" to="imu" />
+    <remap from="joint_states" to="/ypspur/joint_states" />
+
+    <!-- Topic Name OUT -->
+    <remap from="odom" to="odom" />
+
+    <!-- Frame Name -->
+    <param name="~base_link_frame_name" value="$(arg base_frame_id)" />
+    <param name="~odometry_frame_name" value="$(arg odom_frame_id)" />
+
+    <!-- Load paramters-->
+    <rosparam file="$(arg robot_yaml_filepath)" command="load" />
+    <rosparam file="$(arg odom_yaml_filepath)" command="load" />
+
+	</node>
+</launch>

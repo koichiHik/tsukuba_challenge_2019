@@ -1,0 +1,20 @@
+<launch>
+  <arg name="astar_avoid_yamlpath" default="$(find scripts)/params/autoware/astar_avoid.yaml" />
+
+  <node pkg="waypoint_planner" type="astar_avoid" name="astar_avoid" required="True" output="screen" >
+    <rosparam command="load" file="$(arg astar_avoid_yamlpath)" />
+
+    <!-- Topic (IN) -->
+    <remap from="costmap" to="/semantics/costmap_generator/occupancy_grid" />
+    <remap from="current_pose" to="current_pose" />
+    <remap from="current_velocity" to="current_velocity" />
+    <remap from="base_waypoints" to="base_waypoints" />
+    <remap from="closest_waypoint" to="closest_waypoint" />
+    <remap from="obstacle_waypoint" to="obstacle_waypoint" />
+
+    <!-- Topic (OUT) -->
+    <remap from="safety_waypoints" to="safety_waypoints" />
+
+  </node>
+
+</launch>

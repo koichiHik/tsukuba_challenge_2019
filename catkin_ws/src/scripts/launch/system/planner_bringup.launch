@@ -1,0 +1,31 @@
+<launch>
+  <arg name="astar_avoid_yamlpath" default="$(find scripts)/params/autoware/astar_avoid.yaml" />
+  <arg name="velocity_set_yamlpath" default="$(find scripts)/params/autoware/velocity_set.yaml" />
+  <arg name="pure_pursuit_controller_yamlpath" default="$(find scripts)/params/autoware/pure_pursuit_controller.yaml" />
+  <arg name="lane_navi_yamlpath" default="$(find scripts)/params/autoware/lane_navi.yaml" />
+  <arg name="lane_rule_yamlpath" default="$(find scripts)/params/autoware/lane_rule.yaml" />
+  <arg name="lane_select_yamlpath" default="$(find scripts)/params/autoware/lane_select.yaml" />
+
+  <!-- A Star Avoid Planner-->
+  <include file="$(find scripts)/launch/modules/autoware/astar_avoid.launch" >
+    <arg name="astar_avoid_yamlpath" value="$(arg astar_avoid_yamlpath)" />
+  </include>
+
+  <!-- Velocity Set -->
+  <include file="$(find scripts)/launch/modules/autoware/velocity_set.launch" >
+    <arg name="velocity_set_yamlpath" value="$(arg velocity_set_yamlpath)" />
+  </include>
+
+  <!-- Pure Pursuit Controller -->
+  <include file="$(find scripts)/launch/modules/autoware/pure_pursuit_controller.launch" >
+    <arg name="pure_pursuit_controller_yamlpath" value="$(arg pure_pursuit_controller_yamlpath)" />
+  </include>
+
+  <!-- Lane Planner -->
+  <include file="$(find scripts)/launch/modules/autoware/lane_planner.launch" >
+    <arg name="lane_navi_yamlpath" value="$(arg lane_navi_yamlpath)" />
+    <arg name="lane_rule_yamlpath" value="$(arg lane_rule_yamlpath)" />
+    <arg name="lane_select_yamlpath" value="$(arg lane_select_yamlpath)" />
+  </include>
+
+</launch>

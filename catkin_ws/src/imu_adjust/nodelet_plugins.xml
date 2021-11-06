@@ -1,0 +1,10 @@
+
+<library path="lib/libimu_adjust">
+  <class 	name="imu_adjust/NodeletImuAdjust" 
+					type="imu_adjust::NodeletImuAdjust" 
+					base_class_type="nodelet::Nodelet">
+    <description>
+      NodeletImuAdjust.
+    </description>
+  </class>
+</library>

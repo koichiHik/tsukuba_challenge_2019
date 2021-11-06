@@ -1,4 +1,0 @@
-<launch>
-  <arg name="robot" default="" />
-	<node pkg="nodelet" type="nodelet" name="pc_nodelet_mgr" args="manager" output="screen"/>
-</launch>

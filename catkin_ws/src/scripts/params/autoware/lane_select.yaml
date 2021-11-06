@@ -1,0 +1,7 @@
+
+lane_change_interval: 2.0
+distance_threshold: 3.0
+search_closest_waypoint_minimum_dt: 5
+lane_change_target_ratio: 2.0
+lane_change_target_minimum: 5.0
+vector_length_hermite_curve: 10.0

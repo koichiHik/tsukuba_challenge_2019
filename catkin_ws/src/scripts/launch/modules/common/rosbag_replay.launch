@@ -1,0 +1,21 @@
+
+<launch>
+  <arg name="bagfile_path" />
+  <arg name="start" />
+  <arg name="duration" />
+  <arg name="rate" />
+  <arg name="wait" />
+
+  <!-- X. Set parameter -->
+  <param name="use_sim_time" type="bool" value="true" />  
+
+  <!-- X. Rosbag play -->
+  <group if="$(eval duration > 0.0)">
+    <node pkg="rosbag" type="play" name="player" output="screen" required="true" 
+          args="-s $(arg start) -u $(arg duration) --clock -r $(arg rate) -d $(arg wait) $(arg bagfile_path)" />
+  </group>
+  <group unless="$(eval duration > 0.0)">
+    <node pkg="rosbag" type="play" name="player" output="screen" required="true" 
+          args="-s $(arg start) --clock -r $(arg rate) -d $(arg wait) $(arg bagfile_path)" />
+  </group>
+</launch>

@@ -1,0 +1,17 @@
+
+velodyne:
+  device_ip: 192.168.1.201
+  model: VLP16
+  pcap: ""
+  port: 2368
+  read_fast: false
+  read_once: false
+  repeat_delay: 0.0
+  rpm: 600.0
+  cut_angle: -0.01
+  laserscan_ring: -1
+  laserscan_resolution: 0.007
+  max_range: 130
+  min_range: 0.9
+  resolution: 0.007
+  ring: -1

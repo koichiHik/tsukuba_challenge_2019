@@ -1,0 +1,52 @@
+<launch>
+  <arg name="cmd_vel_topic_name" default="cmd_vel" />
+  <arg name="base_frame_id" default="base_link" />
+  <arg name="ypspur_odom_frame_id" default="odom_ypspur" />
+  <arg name="yp_spur_yaml_filepath" default="$(find scripts)/params/common/yp_spur.yaml" />
+  <arg name="control_limit_filepath" default="$(find scripts)/params/common/control_limit.yaml" />
+  <arg name="ypspur_bin_filepath" default="$(find scripts)/../../../../3rdparty/install/yp_spur/bin/ypspur-coordinator" />
+  <arg name="ypspur_param_filepath" default="$(find scripts)/params/common/yp_spur.param" />
+
+  <node pkg="ypspur_ros" type="ypspur_ros" name="ypspur" output="screen">
+
+    <!-- Input Topic Name -->
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic_name)" />
+
+    <!-- Output Topic Name -->
+    <remap from="odom" to="/ypspur/odom" />
+    <remap from="ad/ad0" to="/ypspur/ad/ad0" />
+    <remap from="ad/ad1" to="/ypspur/ad/ad1" />
+    <remap from="ad/ad2" to="/ypspur/ad/ad2" />
+    <remap from="ad/ad3" to="/ypspur/ad/ad3" />
+    <remap from="ad/ad4" to="/ypspur/ad/ad4" />
+    <remap from="ad/ad5" to="/ypspur/ad/ad5" />
+    <remap from="ad/ad6" to="/ypspur/ad/ad6" />
+    <remap from="ad/ad7" to="/ypspur/ad/ad7" />
+    <remap from="control_mode" to="/ypspur/control_mode" />
+    <remap from="diagnostics" to="/ypspur/diagnostics" />
+    <remap from="joint_position" to="/ypspur/joint_position" />
+    <remap from="joint_states" to="/ypspur/joint_states" />
+    <remap from="joint_trajectory" to="/ypspur/joint_trajectory" />
+    <remap from="wrench" to="/ypspur/wrench" />
+
+    <!-- Frame Name -->  
+    <param name="~/base_link_id" value="$(arg base_frame_id)" />
+    <param name="~/odom_id" value="$(arg ypspur_odom_frame_id)" />
+
+    <!-- Control Limitation Parameters -->
+    <remap from="~/vel" to="~/ctrl_limit/max_vel_x" />
+    <remap from="~/acc" to="~/ctrl_limit/max_acc_x" />
+    <remap from="~/angvel" to="~/ctrl_limit/max_vel_theta" />
+    <remap from="~/angacc" to="~/ctrl_limit/max_acc_theta" />
+
+    <!-- Load paramters-->
+    <rosparam file="$(arg yp_spur_yaml_filepath)" command="load" />
+    <rosparam file="$(arg control_limit_filepath)" command="load" />
+
+    <!-- YpSpur Files -->
+    <param name="~/ypspur_bin" value="$(arg ypspur_bin_filepath)" />
+    <param name="~/param_file" value="$(arg ypspur_param_filepath)" />
+
+  </node>
+
+</launch>

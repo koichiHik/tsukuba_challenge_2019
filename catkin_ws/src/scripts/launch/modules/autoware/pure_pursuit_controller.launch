@@ -1,0 +1,29 @@
+
+<launch>
+  <arg name="pure_pursuit_controller_yamlpath" default="$(find scripts)/params/autoware/pure_pursuit_controller.yaml" />
+
+  <!-- rosrun waypoint_follower pure_pursuit -->
+  <node pkg="pure_pursuit" type="pure_pursuit" name="pure_pursuit" output="log">
+    <!-- Load parameters -->
+    <rosparam command="load" file="$(arg pure_pursuit_controller_yamlpath)" />
+
+    <!-- Topic (IN) -->
+    <remap from="final_waypoints" to="final_waypoints" />
+    <remap from="current_pose" to="current_pose" />
+    <remap from="config/waypoint_follower" to="config/waypoint_follower" />
+    <remap from="current_velocity" to="current_velocity" />
+
+    <!-- Topic (OUT) -->
+    <remap from="twist_raw" to="twist_raw" />
+    <remap from="ctrl_raw" to="ctrl_raw" />
+    <remap from="next_waypoint_mark" to="next_waypoint_mark" />
+    <remap from="next_target_mark" to="next_target_mark" />
+    <remap from="search_circle_mark" to="search_circle_mark" />
+    <remap from="line_point_mark" to="line_point_mark" />
+    <remap from="trajectory_circle_mark" to="trajectory_circle_mark" />
+    <remap from="angular_gravity" to="angular_gravity" />
+    <remap from="deviation_of_current_position" to="deviation_of_current_position" />
+    <remap from="expanded_waypoints_mark" to="expanded_waypoints_mark" />
+
+  </node>
+</launch>

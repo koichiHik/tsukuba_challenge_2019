@@ -1,0 +1,18 @@
+
+sub_vmap_queue_size: 1
+sub_waypoint_queue_size: 1
+sub_config_queue_size: 1
+pub_waypoint_queue_size: 1
+pub_waypoint_latch: 1
+  
+waypoint_max: 10000
+search_radius: 10
+curve_weight: 0.6
+crossroad_weight: 0.9
+clothoid_weight: 0.215
+frame_id: map
+acceleration: 1
+number_of_smoothing_count: 0
+number_of_zeros_ahead: 0
+number_of_zeros_behind: 0
+stopline_search_radius: 1

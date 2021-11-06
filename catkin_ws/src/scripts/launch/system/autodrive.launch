@@ -1,0 +1,117 @@
+<launch>
+  <arg name="urdf_file" default="$(find scripts)/urdf/robot.urdf" />
+  <arg name="base_frame_id" default="base_link" />
+  <arg name="odom_frame_id" default="odom" />
+  <arg name="map_frame_id" default="map" />
+  <arg name="lidar_frame_id" default="laser3d_link" />
+  <arg name="imu_frame_id" default="imu_link" />
+  <arg name="urg_frame_id" default="laser2d_link" />
+  <arg name="ypspur_odom_frame_id" default="odom_ypspur" />
+  <!-- ypspur_ros node -->
+  <arg name="ypspur_cmd_vel" default="cmd_vel" />
+  <arg name="yp_spur_yaml_filepath" default="$(find scripts)/params/common/yp_spur.yaml" />
+  <arg name="control_limit_filepath" default="$(find scripts)/params/common/control_limit.yaml" />
+  <arg name="ypspur_bin_filepath" default="$(find scripts)/../../../../3rdparty/install/yp_spur/bin/ypspur-coordinator" />
+  <arg name="ypspur_param_filepath" default="$(find scripts)/params/common/yp_spur.param" />
+  <arg name="imu_port" default="/dev/RT_USB_IMU" />
+  <!-- urg node-->
+  <arg name="urg_node_yaml_filepath" default="$(find scripts)/params/common/urg_node.yaml" />
+  <!-- velodyne node-->
+  <arg name="velodyne_calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+  <arg name="velodyne_param_filepath" default="$(find scripts)/params/common/velodyne.yaml" />
+  <arg name="rviz_config_file" default="$(find scripts)/rviz/config.rviz" />
+  <!-- odom node-->
+  <arg name="robot_yaml_filepath" default="$(find scripts)/params/common/robot.yaml" />
+  <arg name="odom_yaml_filepath" default="$(find scripts)/params/common/odometry.yaml" />
+  <arg name="imu_adjust_param_filepath" default="$(find scripts)/params/common/imu_adjust.yaml" />
+	<arg name="nmea_driver_param_filepath" default="$(find scripts)/params/common/nmea_navsat_driver.yaml" />
+  <arg name="plane_number" default="9" />
+  <!-- map loader -->
+  <arg name="pcd_filelist" />
+  <!-- points down sampler -->
+  <arg name="raw_points_topic" />
+  <arg name="downsampler_node_name" />
+  <!-- ndt matching -->
+  <arg name="common_yaml_filepath" default="$(find scripts)/params/autoware/common.yaml" />
+  <arg name="ndt_matching_yaml_filepath" default="$(find scripts)/params/autoware/ndt_matching.yaml" />
+  <arg name="world_to_map_json" />
+  <!-- init pos -->
+  <arg name="x" />
+  <arg name="y" />
+  <arg name="z" />
+  <arg name="roll" />
+  <arg name="yaw" />
+  <arg name="pitch" />
+  <arg name="lidar_cluster_filepath" default="$(find scripts)/params/autoware/lidar_euclidean_cluster_detect.yaml" />
+  <arg name="costmap_generator_filepath" default="$(find scripts)/params/autoware/costmap_generator.yaml" />
+  <arg name="astar_avoid_yamlpath" default="$(find scripts)/params/autoware/astar_avoid.yaml" />
+  <arg name="velocity_set_yamlpath" default="$(find scripts)/params/autoware/velocity_set.yaml" />
+  <arg name="pure_pursuit_controller_yamlpath" default="$(find scripts)/params/autoware/pure_pursuit_controller.yaml" />
+  <arg name="lane_navi_yamlpath" default="$(find scripts)/params/autoware/lane_navi.yaml" />
+  <arg name="lane_select_yamlpath" default="$(find scripts)/params/autoware/lane_select.yaml" />
+
+  <!-- Hardware nodes bringup -->
+  <include file="$(find scripts)/launch/system/hardware_bringup.launch" >
+    <arg name="base_frame_id" value="$(arg base_frame_id)" />
+    <arg name="imu_frame_id" value="$(arg imu_frame_id)" />
+    <arg name="urg_frame_id" value="$(arg urg_frame_id)" />
+    <arg name="velodyne_frame_id" value="$(arg lidar_frame_id)" />
+    <arg name="ypspur_odom_frame_id" value="$(arg ypspur_odom_frame_id)" />
+    <arg name="ypspur_cmd_vel" value="$(arg ypspur_cmd_vel)" />
+    <arg name="yp_spur_yaml_filepath" value="$(arg yp_spur_yaml_filepath)" />
+    <arg name="control_limit_filepath" value="$(arg control_limit_filepath)" />
+    <arg name="ypspur_bin_filepath" value="$(arg ypspur_bin_filepath)" />
+    <arg name="ypspur_param_filepath" value="$(arg ypspur_param_filepath)" />
+    <arg name="imu_port" value="$(arg imu_port)" />
+    <arg name="urg_node_yaml_filepath" value="$(arg urg_node_yaml_filepath)" />
+    <arg name="velodyne_calibration" value="$(arg velodyne_calibration)"/>
+    <arg name="velodyne_param_filepath" value="$(arg velodyne_param_filepath)" />
+		<arg name="nmea_driver_param_filepath" value="$(arg nmea_driver_param_filepath)" />
+  </include>
+  
+  <!-- Base nodes bringup -->
+  <include file="$(find scripts)/launch/system/basenodes_bringup.launch" >
+    <arg name="urdf_file" value="$(arg urdf_file)" />
+    <arg name="base_frame_id" value="$(arg base_frame_id)" />
+    <arg name="odom_frame_id" value="$(arg odom_frame_id)" />
+    <arg name="robot_yaml_filepath" value="$(arg robot_yaml_filepath)" />
+    <arg name="odom_yaml_filepath" value="$(arg odom_yaml_filepath)" />
+    <arg name="imu_adjust_param_filepath" value="$(arg imu_adjust_param_filepath)" />
+    <arg name="rviz_config_file" value="$(arg rviz_config_file)" />
+  </include>
+
+  <!-- Localizer nodes bringup -->
+  <include file="$(find scripts)/launch/system/localizer_bringup.launch">
+    <arg name="plane_number" value="$(arg plane_number)" />
+    <arg name="pcd_filelist" value="$(arg pcd_filelist)" />
+    <arg name="raw_points_topic" value="$(arg raw_points_topic)" />
+    <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
+    <arg name="common_yaml_filepath" value="$(arg common_yaml_filepath)" />
+    <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
+    <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
+    <arg name="x" value="$(arg x)" />
+    <arg name="y" value="$(arg y)" />
+    <arg name="z" value="$(arg z)" />
+    <arg name="roll" value="$(arg roll)" />
+    <arg name="pitch" value="$(arg pitch)" />
+    <arg name="yaw" value="$(arg yaw)" />
+  </include>
+
+  <!-- Perception nodes bringup -->
+  <include file="$(find scripts)/launch/system/perception_bringup.launch">
+    <arg name="map_frame_id" value="$(arg map_frame_id)" />
+    <arg name="lidar_frame_id" value="$(arg lidar_frame_id)" />
+    <arg name="lidar_cluster_filepath" value="$(arg lidar_cluster_filepath)" />
+    <arg name="costmap_generator_filepath" value="$(arg costmap_generator_filepath)" />
+  </include>
+
+  <!-- Planner nodes bringup -->
+  <include file="$(find scripts)/launch/system/planner_bringup.launch" >
+    <arg name="astar_avoid_yamlpath" value="$(arg astar_avoid_yamlpath)" />
+    <arg name="velocity_set_yamlpath" value="$(arg velocity_set_yamlpath)" />
+    <arg name="pure_pursuit_controller_yamlpath" value="$(arg pure_pursuit_controller_yamlpath)" />
+    <arg name="lane_navi_yamlpath" value="$(arg lane_navi_yamlpath)" />
+    <arg name="lane_select_yamlpath" value="$(arg lane_select_yamlpath)" />
+  </include>
+
+</launch>

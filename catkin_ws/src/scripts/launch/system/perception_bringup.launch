@@ -1,0 +1,20 @@
+
+<launch>
+  <arg name="map_frame_id" default="map" />
+  <arg name="lidar_frame_id" default="laser3d_link" />
+  <arg name="lidar_cluster_filepath" default="$(find scripts)/params/autoware/lidar_euclidean_cluster_detect.yaml" />
+  <arg name="costmap_generator_filepath" default="$(find scripts)/params/autoware/costmap_generator.yaml" />
+
+  <!-- Lidar Clustering -->
+  <include file="$(find scripts)/launch/modules/autoware/lidar_euclidean_cluster_detect.launch">
+    <arg name="lidar_cluster_filepath" value="$(arg lidar_cluster_filepath)" />
+  </include>
+
+  <!-- Cost Generator -->
+  <include file="$(find scripts)/launch/modules/autoware/costmap_generator.launch" >
+    <arg name="map_frame_id" value="$(arg map_frame_id)" />
+    <arg name="lidar_frame_id" value="$(arg lidar_frame_id)" />
+    <arg name="costmap_generator_filepath" value="$(arg costmap_generator_filepath)" />
+  </include>
+
+</launch>

@@ -1,0 +1,9 @@
+
+is_linear_interpolation: True
+publishes_for_steering_robot: False
+add_virtual_end_waypoints: True
+const_lookahead_distance: 1.5
+const_velocity: 2.5 # Input is kph. 1m/s = 3.6kph, 1kph = 0.278m/s, 
+lookahead_ratio: 1.0
+minimum_lookahead_distance: 0.5
+velocity_source: 0 # 0 = waypoints, 1 = provided constant velocity

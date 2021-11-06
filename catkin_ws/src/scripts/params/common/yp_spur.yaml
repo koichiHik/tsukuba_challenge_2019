@@ -1,0 +1,14 @@
+
+# Configuration Parameters
+compatible: 1
+port: /dev/TFROG_DRIVER
+
+# Setting
+hz: 200.0
+max_joint_id: 2
+joint0_enable: true
+joint0_name: right
+joint1_enable: true
+joint1_name: left
+odometry_mode: diff
+publish_ypspur_odom: false

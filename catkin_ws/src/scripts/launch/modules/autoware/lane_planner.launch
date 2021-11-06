@@ -1,0 +1,64 @@
+<launch>
+  <arg name="lane_navi_yamlpath" default="$(find scripts)/params/autoware/lane_navi.yaml" />
+  <arg name="lane_rule_yamlpath" default="$(find scripts)/params/autoware/lane_rule.yaml" />
+  <arg name="lane_select_yamlpath" default="$(find scripts)/params/autoware/lane_select.yaml" />
+
+  <node pkg="lane_planner" type="lane_navi" name="lane_navi" required="True" >
+
+    <rosparam command="load" file="$(arg lane_navi_yamlpath)" />
+
+    <!-- Topic (IN) -->
+    <remap from="/route_cmd" to="/route_cmd" />
+    <remap from="/vector_map_info/point" to="/vector_map_info/point" />
+    <remap from="/vector_map_info/lane" to="/vector_map_info/lane" />
+    <remap from="/vector_map_info/node" to="/vector_map_info/node" />
+
+    <!-- Topic (OUT) -->
+    <remap from="/lane_waypoints_array" to="/lane_waypoints_array" />
+
+  </node>
+
+  <node pkg="lane_planner" type="lane_rule" name="lane_rule" required="True" >
+
+    <rosparam command="load" file="$(arg lane_rule_yamlpath)" />
+
+    <!-- Topic (IN) -->
+    <remap from="/lane_waypoints_array" to="/lane_waypoints_array" />
+    <remap from="/vector_map_info/point" to="/vector_map_info/point" />
+    <remap from="/vector_map_info/lane" to="/vector_map_info/lane" />
+    <remap from="/vector_map_info/node" to="/vector_map_info/node" />
+    <remap from="/vector_map_info/stop_line" to="/vector_map_info/stop_line" />
+    <remap from="/vector_map_info/dtlane" to="/vector_map_info/dtlane" />
+    <remap from="/config/lane_rule" to="/config/lane_rule" />
+
+    <!-- Topic (OUT) -->
+    <remap from="/traffic_waypoints_array" to="/traffic_waypoints_array" />
+    <remap from="/red_waypoints_array" to="/red_waypoints_array" />
+    <remap from="/green_waypoints_array" to="/green_waypoints_array" />
+
+  </node>
+
+  <node pkg="lane_planner" type="lane_select" name="lane_select" required="True" >
+
+    <rosparam command="load" file="$(arg lane_select_yamlpath)" />
+
+    <!-- Topic (IN) -->
+    <remap from="traffic_waypoints_array" to="traffic_waypoints_array" />
+    <remap from="current_pose" to="current_pose" />
+    <remap from="current_velocity" to="current_velocity" />
+    <remap from="state" to="state" />
+    <remap from="/config/lane_select" to="/config/lane_select" />
+    <remap from="/decision_maker/state" to="/decision_maker/state" />
+
+    <!-- Topic (OUT) -->
+    <remap from="base_waypoints" to="base_waypoints" />
+    <remap from="closest_waypoint" to="closest_waypoint" />
+    <remap from="change_flag" to="change_flag" />
+    <remap from="/current_lane_id" to="/current_lane_id" />
+    <remap from="vehicle_location" to="vehicle_location" />
+    <remap from="lane_select_marker" to="lane_select_marker" />
+
+  </node>
+
+
+</launch>

@@ -1,0 +1,11 @@
+
+<launch>
+  <arg name="pcd_filelist" />
+
+  <node pkg="map_file" type="points_map_loader" name="points_map_loader" output="log" required="True" >
+    <rosparam param="pcd_paths" subst_value="True">$(arg pcd_filelist)</rosparam>
+    <param name="area" value="noupdate" />
+    <param name="mode" value="" />
+  </node>
+
+</launch>

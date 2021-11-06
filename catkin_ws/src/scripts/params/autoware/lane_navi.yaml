@@ -1,0 +1,12 @@
+
+lane_navi:
+  sub_vmap_queue_size: 1
+  sub_route_queue_size: 1
+  pub_waypoint_queue_size: 1
+  pub_waypoint_latch: True
+  waypoint_max: 10000
+  search_radius: 10
+  velocity: 10.8
+  frame_id: map
+  output_file: "/tmp/lane_waypoint.csv"
+

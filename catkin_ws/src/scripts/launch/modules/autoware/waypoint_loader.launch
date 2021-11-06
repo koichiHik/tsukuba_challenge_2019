@@ -1,0 +1,43 @@
+<launch>
+  <arg name="multi_lane_csv" />
+  <arg name="waypoint_replanner_yamlpath" />
+
+  <node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader" output="screen" >
+    <param name="multi_lane_csv" value="$(arg multi_lane_csv)" />
+
+    <!-- Topic (OUT) -->
+    <remap from="/based/lane_waypoints_raw" to="/based/lane_waypoints_raw" />
+
+  </node>
+  
+  <node pkg="waypoint_maker" type="waypoint_replanner" name="waypoint_replanner" output="screen">
+
+    <!-- Load parameters -->
+    <rosparam command="load" file="$(arg waypoint_replanner_yamlpath)" />
+
+    <!-- Topic (IN) -->
+    <remap from="/based/lane_waypoints_raw" to="/based/lane_waypoints_raw" />
+    <remap from="/config/waypoint_replanner" to="/config/waypoint_replanner" />
+
+    <!-- Topic (OUT) -->
+    <remap from="/based/lane_waypoints_array" to="/based/lane_waypoints_array" />
+    <remap from="/lane_waypoints_array" to="/lane_waypoints_array" />
+
+  </node>
+
+  <node pkg="waypoint_maker" type="waypoint_marker_publisher" name="waypoint_marker_publisher" >
+
+    <!-- Topic (IN) -->
+    <remap from="light_color" to="light_color" />
+    <remap from="light_color_managed" to="light_color_managed" />
+    <remap from="lane_waypoints_array" to="lane_waypoints_array" />
+    <remap from="traffic_waypoints_array" to="traffic_waypoints_array" />
+    <remap from="closest_waypoint" to="closest_waypoint" />
+    <remap from="config/lane_stop" to="config/lane_stop" />
+
+    <!-- Topic (OUT) -->
+    <remap from="local_waypoints_mark" to="local_waypoints_mark" />
+    <remap from="global_waypoints_mark" to="global_waypoints_mark" />
+
+  </node>
+</launch>

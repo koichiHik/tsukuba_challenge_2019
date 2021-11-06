@@ -1,8 +1,0 @@
-
-<launch>
-
-  <arg name="robot" default="" />
-  <rosparam file="$(find configs)/hardware/$(arg robot)_config.yaml" command="load" />
-  <rosparam file="$(find configs)/control/$(arg robot)_control_limit.yaml" command="load" />
-
-</launch>

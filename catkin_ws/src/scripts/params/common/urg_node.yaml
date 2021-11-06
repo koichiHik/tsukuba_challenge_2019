@@ -1,0 +1,8 @@
+
+ip_address: 10.0.0.200
+angle_max: 1.74532778
+angle_min: -1.74532778
+cluster: 1
+skip: 0
+tf_prefix: ""
+time_offset: 0.0

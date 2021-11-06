@@ -1,9 +1,4 @@
 
-
-//
-#include <sys/time.h>
-#include <cstddef>
-
 // ROS
 #include <message_filters/subscriber.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -11,16 +6,239 @@
 #include <nav_msgs/Odometry.h>
 #include <nodelet/nodelet.h>
 #include <ros/ros.h>
+#include <sensor_msgs/Imu.h>
 #include <sensor_msgs/JointState.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
 #include <string>
 
-// 3rd party include
-#include "kmsgs/Imu.h"
-#include "odometry.h"
+// Eigen
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+
+// STL
+#include <sys/time.h>
+#include <cmath>
+#include <cstddef>
+#include <mutex>
+
+namespace {
+
+struct JointInfo {
+ public:
+  JointInfo()
+      : timestamp_(),
+        r_rad_(0.0),
+        l_rad_(0.0),
+        r_vel_(0.0),
+        l_vel_(0.0),
+        T_3d_(Eigen::Vector3d::Zero()),
+        v_3d_(Eigen::Vector3d::Zero()),
+        T_2d_(Eigen::Vector3d::Zero()),
+        v_2d_(Eigen::Vector3d::Zero()) {}
+
+  ros::Time timestamp_;
+  double r_rad_, l_rad_;
+  double r_vel_, l_vel_;
+  Eigen::Vector3d T_3d_;
+  Eigen::Vector3d v_3d_;
+  Eigen::Vector3d T_2d_;
+  Eigen::Vector3d v_2d_;
+};
+
+struct ImuInfo {
+ public:
+  ImuInfo()
+      : timestamp_(),
+        R_3d_(Eigen::Matrix3d::Identity()),
+        w_3d_(Eigen::Vector3d::Zero()),
+        R_2d_(Eigen::Matrix3d::Identity()),
+        w_2d_(Eigen::Vector3d::Zero()) {}
+
+  ros::Time timestamp_;
+  Eigen::Matrix3d R_3d_;
+  Eigen::Vector3d w_3d_;
+  Eigen::Matrix3d R_2d_;
+  Eigen::Vector3d w_2d_;
+};
+
+struct LockedBuffer {
+ public:
+  void SetJointInfo(const JointInfo &joint_info) {
+    std::lock_guard<std::mutex> lock(joint_mtx_);
+    joint_info_ = joint_info;
+  }
+
+  JointInfo GetJointInfo() {
+    std::lock_guard<std::mutex> lock(joint_mtx_);
+    return joint_info_;
+  }
+
+  void SetImuInfo(const ImuInfo &imu_info) {
+    std::lock_guard<std::mutex> lock(imu_mtx_);
+    imu_info_ = imu_info;
+  }
+
+  ImuInfo GetImuInfo() {
+    std::lock_guard<std::mutex> lock(imu_mtx_);
+    return imu_info_;
+  }
+
+ private:
+  JointInfo joint_info_;
+  ImuInfo imu_info_;
+
+  std::mutex joint_mtx_;
+  std::mutex imu_mtx_;
+};
+
+void ParseJointStateMsg(const sensor_msgs::JointStateConstPtr &jointPos,
+                        double &r_rad, double &l_rad, double &r_vel,
+                        double &l_vel) {
+  for (int i = 0; i < jointPos->name.size(); i++) {
+    std::string name = jointPos->name[i];
+    double jntPos = jointPos->position[i];
+    double jntVel = jointPos->velocity[i];
+
+    if (name == "right") {
+      r_rad = -jntPos;
+      r_vel = -jntVel;
+    } else if (name == "left") {
+      l_rad = jntPos;
+      l_vel = jntVel;
+    } else {
+      ROS_ERROR("Unexpected Joint Name : %s", name.c_str());
+    }
+  }
+}
+
+void ComputeIncrementalDistance(const double distance_per_radian_right,
+                                const double distance_per_radian_left,
+                                const JointInfo &last_joint_info,
+                                const JointInfo &joint_info,
+                                double &increment_avg, double &increment_right,
+                                double &increment_left) {
+  increment_right =
+      (joint_info.r_rad_ - last_joint_info.r_rad_) * distance_per_radian_right;
+  increment_left =
+      (joint_info.l_rad_ - last_joint_info.l_rad_) * distance_per_radian_left;
+  increment_avg = (increment_right + increment_left) / 2.0;
+}
+
+Eigen::Matrix3d UpdateOrientation(const Eigen::Matrix3d &cur_R,
+                                  const sensor_msgs::Imu &imu,
+                                  const double dt) {
+  double kx = imu.angular_velocity.x * dt;
+  double ky = imu.angular_velocity.y * dt;
+  double kz = imu.angular_velocity.z * dt;
+
+  Eigen::Matrix3d K;
+  K << 0.0, -kz, ky, kz, 0.0, -kx, -ky, kx, 0.0;
+
+  Eigen::Vector3d rot_vec;
+  rot_vec << kx, ky, kz;
+  double norm_rot = rot_vec.norm();
+
+  // X. Compute infinitesimal rotation.
+  Eigen::Matrix3d dR = Eigen::Matrix3d::Identity();
+  if (std::numeric_limits<double>::epsilon() < std::pow(norm_rot, 2.0)) {
+    dR = Eigen::Matrix3d::Identity() + std::sin(norm_rot) * K / norm_rot +
+         (1 - std::cos(norm_rot)) * K * K / std::pow(norm_rot, 2);
+  } else {
+    dR = Eigen::Matrix3d::Identity() + K;
+  }
+
+  // X. Compute orientation relative to odometry frame.
+  Eigen::Matrix3d dR_wld = cur_R * dR * cur_R.transpose();
+  Eigen::Quaterniond q(dR_wld * cur_R);
+  return q.normalized().toRotationMatrix();
+}
+
+nav_msgs::Odometry CreateOdomMessage(const ros::Time &stamp,
+                                     const std::string &odom_frame_name,
+                                     const std::string &base_frame_name,
+                                     const Eigen::Vector3d &T,
+                                     const Eigen::Matrix3d &R,
+                                     const Eigen::Vector3d &v,
+                                     const Eigen::Vector3d &w) {
+  nav_msgs::Odometry odom;
+
+  // X. Header
+  odom.header.frame_id = odom_frame_name;
+  odom.child_frame_id = base_frame_name;
+  odom.header.stamp = stamp;
+
+  // X. Pose Translation.
+  odom.pose.pose.position.x = T(0);
+  odom.pose.pose.position.y = T(1);
+  odom.pose.pose.position.z = T(2);
+
+  // X. Pose Rotation.
+  Eigen::Quaterniond q(R);
+  Eigen::Quaterniond qn = q.normalized();
+  odom.pose.pose.orientation.x = qn.x();
+  odom.pose.pose.orientation.y = qn.y();
+  odom.pose.pose.orientation.z = qn.z();
+  odom.pose.pose.orientation.w = qn.w();
+
+  // X. Twist Linear
+  odom.twist.twist.linear.x = v(0);
+  odom.twist.twist.linear.y = v(1);
+  odom.twist.twist.linear.z = v(2);
+
+  // X. Twist Angular
+  odom.twist.twist.angular.x = w(0);
+  odom.twist.twist.angular.y = w(1);
+  odom.twist.twist.angular.z = w(2);
+
+  return odom;
+}
+
+struct OdometryParams {
+ public:
+  bool use_odom_2d;
+  double right_distance_per_rad;
+  double left_distance_per_rad;
+  double wheel_base;
+
+  std::string odom_frame_name;
+  std::string baselink_frame_name;
+};
+
+void ReadParam(const std::string &paramName, bool result) {
+  if (!result) {
+    ROS_FATAL("Param read failure. : %s", paramName.c_str());
+  }
+}
+
+void ReadParams(ros::NodeHandle &pnh_, OdometryParams &params) {
+  ReadParam("use_odom_2d",
+            pnh_.param<bool>("use_odom_2d", params.use_odom_2d, false));
+
+  // Frame Name
+  ReadParam("odometry_frame_name",
+            pnh_.param<std::string>("odometry_frame_name",
+                                    params.odom_frame_name, ""));
+  ReadParam("base_link_frame_name",
+            pnh_.param<std::string>("base_link_frame_name",
+                                    params.baselink_frame_name, ""));
+
+  // Hardware Related
+  double r_whl_dia, l_whl_dia;
+  ReadParam(
+      "l_whl_diameter",
+      pnh_.param<double>("l_whl_diameter", params.left_distance_per_rad, 0.0));
+  ReadParam(
+      "r_whl_diameter",
+      pnh_.param<double>("r_whl_diameter", params.right_distance_per_rad, 0.0));
+  ReadParam("wheel_base",
+            pnh_.param<double>("wheel_base", params.wheel_base, 1.0));
+}
+
+}  // namespace
 
 namespace koichi_robotics_lib {
+
 class OdometryNodelet : public nodelet::Nodelet {
  public:
   OdometryNodelet();
@@ -30,256 +248,180 @@ class OdometryNodelet : public nodelet::Nodelet {
   virtual void onInit();
 
  private:
-  void publishTransform(const nav_msgs::Odometry& odomMsg, std::string frameName);
+  void jointStateCallback(const sensor_msgs::JointStateConstPtr &jointPos);
 
-  void sensorCallback(const sensor_msgs::JointStateConstPtr& jointPos);
-
-  void sensorCallback(const kmsgs::ImuConstPtr& imuMsg,
-                      const sensor_msgs::JointStateConstPtr& jointPos);
-
-  void calcAndPublishOdom(const ros::Time& stamp);
-
-  void readParams(OdomParams& odomParam);
-
-  void readParam(std::string paramName, bool result);
-
-  void parseJointStatesMsg(const sensor_msgs::JointStateConstPtr& jointPos, double& rRad,
-                           double& lRad, double& rVel, double& lVel);
-
-  void fillOdomMessage(nav_msgs::Odometry& odomMsg, std::string frameName, const ros::Time& stamp,
-                       const OdomPos& odomPos, const OdomVel& odomVel);
+  void imuCallback(const sensor_msgs::ImuConstPtr &imuMsg);
 
  private:
-  // Topic Name
-  std::string imuTopicName, jointStatesTopicName, odomWhlTopicName, odomImuTopicName;
-  std::string odomFrameName, baselinkFrameName;
+  // Parameters
+  OdometryParams params_;
 
-  int maxSyncDiff, offset_gyro_z;
-  bool use_odom_whl, calc_offset;
-  double cycle_time, last_pub_stamp;
-
-  ros::NodeHandle nh, nh_ns;
+  ros::NodeHandle nh_, pnh_;
   nav_msgs::Odometry curOdom;
 
-  // ROS Subsceibers
-  message_filters::Subscriber<kmsgs::Imu>* subImu;
-  message_filters::Subscriber<sensor_msgs::JointState>* subWhl;
-
-  // ROS Sync Policy
-  typedef message_filters::sync_policies::ApproximateTime<kmsgs::Imu, sensor_msgs::JointState>
-      OdomSyncPolicy;
-  message_filters::Synchronizer<OdomSyncPolicy>* odomSync;
+  // ROS pub sub.
+  ros::Subscriber imu_sub_, joint_sub_;
+  ros::Publisher odom_pub_;
 
   // ROS Publisher
-  ros::Publisher odomPub;
-  tf::TransformBroadcaster* odomBroadCaster;
+  tf::TransformBroadcaster odom_tf_broadcaster;
 
-  // Class
-  Odometry odometry;
+  // Current state
+  LockedBuffer state_;
+
+  static const int DEFAULT_SUBSCRIBE_QUEUE_SIZE = 100;
 };
-}  // namespace koichi_robotics_lib
 
 using namespace std;
 using namespace koichi_robotics_lib;
 
 OdometryNodelet::OdometryNodelet() {}
 
-OdometryNodelet::~OdometryNodelet() {
-  odometry.Finalize();
-  delete this->odomBroadCaster;
-  delete this->subImu;
-  delete this->subWhl;
-  delete this->odomSync;
-}
+OdometryNodelet::~OdometryNodelet() {}
 
 void OdometryNodelet::onInit() {
   NODELET_DEBUG("Initializing Odometry Nodelet....");
 
-  nh = getMTNodeHandle();
-  nh_ns = getMTPrivateNodeHandle();
-  odomBroadCaster = new tf::TransformBroadcaster();
+  nh_ = getMTNodeHandle();
+  pnh_ = getMTPrivateNodeHandle();
 
-  OdomParams params;
-  readParams(params);
-  odometry.Initialize(params);
+  ReadParams(pnh_, params_);
 
-  /*
-  subImu = new message_filters::Subscriber<kmsgs::Imu>(nh, imuTopicName, 100);
-  subWhl = new message_filters::Subscriber<sensor_msgs::JointState>(
-      nh, jointStatesTopicName, 100);
-  */
+  // X. Publisher
+  odom_pub_ = nh_.advertise<nav_msgs::Odometry>("odom", 100);
 
-  subImu = new message_filters::Subscriber<kmsgs::Imu>(nh, "imu", 100);
-  subWhl = new message_filters::Subscriber<sensor_msgs::JointState>(nh, "joint_states", 100);
+  // X. Subscriber
+  joint_sub_ = nh_.subscribe("joint_states", DEFAULT_SUBSCRIBE_QUEUE_SIZE,
+                             &OdometryNodelet::jointStateCallback, this);
+  imu_sub_ = nh_.subscribe("imu", DEFAULT_SUBSCRIBE_QUEUE_SIZE,
+                           &OdometryNodelet::imuCallback, this);
+}
 
-  if (use_odom_whl) {
-    subWhl->registerCallback(&OdometryNodelet::sensorCallback, this);
-  } else {
-    odomSync = new message_filters::Synchronizer<OdomSyncPolicy>(OdomSyncPolicy(maxSyncDiff),
-                                                                 *subImu, *subWhl);
-    odomSync->registerCallback(boost::bind(&OdometryNodelet::sensorCallback, this, _1, _2));
+void OdometryNodelet::jointStateCallback(
+    const sensor_msgs::JointStateConstPtr &jointPos) {
+  // X. Update joint info.
+  JointInfo new_joint_info;
+  {
+    double r_rad, l_rad, r_vel, l_vel;
+    ParseJointStateMsg(jointPos, r_rad, l_rad, r_vel, l_vel);
+    new_joint_info.timestamp_ = jointPos->header.stamp;
+    new_joint_info.r_rad_ = r_rad;
+    new_joint_info.l_rad_ = l_rad;
+    new_joint_info.r_vel_ = r_vel;
+    new_joint_info.l_vel_ = l_vel;
   }
 
-  odomPub = nh.advertise<nav_msgs::Odometry>("odom", 100);
-}
+  // X. Compute incremental distance.
+  JointInfo last_joint_info = state_.GetJointInfo();
+  double increment_right, increment_left, increment_avg;
+  ComputeIncrementalDistance(params_.right_distance_per_rad,
+                             params_.left_distance_per_rad, last_joint_info,
+                             new_joint_info, increment_avg, increment_right,
+                             increment_left);
+  double increment = increment_avg;
 
-void OdometryNodelet::readParams(OdomParams& odomParams) {
-  // Frame Name
-  readParam("odometry_frame_name",
-            nh_ns.param<std::string>("odometry_frame_name", odomFrameName, ""));
-  readParam("base_link_frame_name",
-            nh_ns.param<std::string>("base_link_frame_name", baselinkFrameName, ""));
+  // X. Rotate incremental vector.
+  ImuInfo cur_imu_info = state_.GetImuInfo();
+  Eigen::Vector3d dT_3d =
+      cur_imu_info.R_3d_ * Eigen::Vector3d(increment, 0.0, 0.0);
+  Eigen::Vector3d dT_2d =
+      cur_imu_info.R_2d_ * Eigen::Vector3d(increment, 0.0, 0.0);
 
-  // Hardware Related
-  readParam("gyro_1bit_in_rad",
-            nh_ns.param<double>("gyro_1bit_in_rad", odomParams.gyro1BitInRad, 0.0));
-  double r_whl_dia, l_whl_dia;
-  readParam("l_whl_diameter", nh_ns.param<double>("l_whl_diameter", l_whl_dia, 0.0));
-  odomParams.leftDistPerRad = l_whl_dia;
-  readParam("r_whl_diameter", nh_ns.param<double>("r_whl_diameter", r_whl_dia, 0.0));
-  odomParams.rightDistPerRad = r_whl_dia;
-  readParam("wheel_base", nh_ns.param<double>("wheel_base", odomParams.wheelBase, 1.0));
+  // X. Update translation part of pose.
+  new_joint_info.T_3d_ = last_joint_info.T_3d_ + dT_3d;
+  new_joint_info.T_2d_ = last_joint_info.T_2d_ + dT_2d;
 
-  // Odometry Parameter
-  readParam("standstill_thresh",
-            nh_ns.param<double>("standstill_thresh", odomParams.standstillThresh, 0.0));
-  readParam("use_left_pls", nh_ns.param<bool>("use_left_pls", odomParams.useLeftPls, false));
-  readParam("use_right_pls", nh_ns.param<bool>("use_right_pls", odomParams.useRightPls, false));
-  readParam("cycle_time", nh_ns.param<double>("cycle_time", odomParams.cycleTime, 0.0));
-  cycle_time = odomParams.cycleTime;
-  readParam("max_sync_diff", nh_ns.param<int>("max_sync_diff", maxSyncDiff, 8));
-  readParam("use_odom_whl", nh_ns.param<bool>("use_odom_whl", use_odom_whl, false));
-  readParam("calc_offset", nh_ns.param<bool>("calc_offset", odomParams.calc_offset, true));
-  readParam("offset_gyro_z", nh_ns.param<int>("offset_gyro_z", odomParams.offset_gyro_z, 0));
-
-  // Buffer Size
-  readParam("imu_yaw_buffer", nh_ns.param<int>("imu_yaw_buffer", odomParams.imuYawBufferSize, 0.0));
-  readParam("whl_yaw_buffer", nh_ns.param<int>("whl_yaw_buffer", odomParams.whlYawBufferSize, 0.0));
-  readParam("dist_buffer", nh_ns.param<int>("dist_buffer", odomParams.distBufferSize, 0));
-}
-
-void OdometryNodelet::readParam(string paramName, bool result) {
-  if (!result) {
-    ROS_FATAL("Param read failure. : %s", paramName.c_str());
-  }
-}
-
-void OdometryNodelet::publishTransform(const nav_msgs::Odometry& odomMsg,
-                                       std::string odomFrameName) {
-  tf::Transform odomTrans;
-  tf::Pose tfPose;
-
-  tf::poseMsgToTF(odomMsg.pose.pose, odomTrans);
-  odomBroadCaster->sendTransform(
-      tf::StampedTransform(odomTrans, ros::Time::now(), odomFrameName, baselinkFrameName));
-}
-
-void OdometryNodelet::sensorCallback(const sensor_msgs::JointStateConstPtr& jointPos) {
-  double rRad, lRad, rVel, lVel;
-  parseJointStatesMsg(jointPos, rRad, lRad, rVel, lVel);
-  odometry.SetCurrentPosition(rRad, lRad, rVel, lVel);
-  odometry.SetCurrentGyroZ(0.0);
-
-  static double last_stamp = jointPos->header.stamp.toSec();
-  if (jointPos->header.stamp.toSec() - last_stamp > cycle_time - cycle_time / 10.0) {
-    double new_stamp = jointPos->header.stamp.toSec();
-    double dT = new_stamp - last_stamp;
-    last_stamp = new_stamp;
-
-    OdomPos odomWhl, odomImu;
-    OdomVel velWhl, velImu;
-    odometry.CalculateOdometry(odomWhl, odomImu, velWhl, velImu, dT);
-
-    // Published Whl Based Odometry.
-    {
-      nav_msgs::Odometry odomWhlMsg;
-      fillOdomMessage(odomWhlMsg, odomFrameName, jointPos->header.stamp, odomWhl, velWhl);
-      publishTransform(odomWhlMsg, odomFrameName);
-      odomPub.publish(odomWhlMsg);
+  // X. Compute velocity
+  {
+    double vx_3d = 0.0;
+    double vx_2d = 0.0;
+    if (!last_joint_info.timestamp_.isZero()) {
+      if (last_joint_info.timestamp_ < new_joint_info.timestamp_) {
+        double dt =
+            (new_joint_info.timestamp_ - last_joint_info.timestamp_).toSec();
+        vx_3d = increment / dt;
+        vx_2d = increment / dt;
+      } else {
+        vx_3d = last_joint_info.v_3d_(0);
+        vx_2d = last_joint_info.v_2d_(0);
+      }
     }
+    new_joint_info.v_3d_(0) = vx_3d;
+    new_joint_info.v_3d_(1) = 0.0;
+    new_joint_info.v_3d_(2) = 0.0;
+
+    new_joint_info.v_2d_(0) = vx_2d;
+    new_joint_info.v_2d_(1) = 0.0;
+    new_joint_info.v_2d_(2) = 0.0;
   }
+
+  // X. Set
+  state_.SetJointInfo(new_joint_info);
 }
 
-void OdometryNodelet::sensorCallback(const kmsgs::ImuConstPtr& imuMsg,
-                                     const sensor_msgs::JointStateConstPtr& jointPos) {
-  double rRad, lRad, rVel, lVel;
-  parseJointStatesMsg(jointPos, rRad, lRad, rVel, lVel);
-  odometry.SetCurrentPosition(rRad, lRad, rVel, lVel);
-  odometry.SetCurrentGyroZ(imuMsg->omegaZ);
-  calcAndPublishOdom(imuMsg->header.stamp);
-}
+void OdometryNodelet::imuCallback(const sensor_msgs::ImuConstPtr &imuMsg) {
+  // X. Update IMU Info
+  ImuInfo new_imu_info;
+  {
+    new_imu_info.timestamp_ = imuMsg->header.stamp;
+    new_imu_info.w_3d_(0) = imuMsg->angular_velocity.x;
+    new_imu_info.w_3d_(1) = imuMsg->angular_velocity.y;
+    new_imu_info.w_3d_(2) = imuMsg->angular_velocity.z;
+    new_imu_info.w_2d_(0) = 0.0;
+    new_imu_info.w_2d_(1) = 0.0;
+    new_imu_info.w_2d_(2) = imuMsg->angular_velocity.z;
 
-void OdometryNodelet::parseJointStatesMsg(const sensor_msgs::JointStateConstPtr& jointPos,
-                                          double& rRad, double& lRad, double& rVel, double& lVel) {
-  for (int i = 0; i < jointPos->name.size(); i++) {
-    string name = jointPos->name[i];
-    double jntPos = jointPos->position[i];
-    double jntVel = jointPos->velocity[i];
+    // X. Update rotation part of pose.
+    sensor_msgs::Imu imu_2d;
+    imu_2d.angular_velocity.x = 0.0;
+    imu_2d.angular_velocity.y = 0.0;
+    imu_2d.angular_velocity.z = imuMsg->angular_velocity.z;
 
-    if (name == "right") {
-      rRad = -jntPos;
-      rVel = -jntVel;
-    } else if (name == "left") {
-      lRad = jntPos;
-      lVel = jntVel;
+    // X.
+    JointInfo tmp_joint_info = state_.GetJointInfo();
+    ImuInfo last_imu_info = state_.GetImuInfo();
+    if (!last_imu_info.timestamp_.isZero()) {
+      double dt = (imuMsg->header.stamp - last_imu_info.timestamp_).toSec();
+      if (0.0001 < tmp_joint_info.v_3d_.norm()) {
+        new_imu_info.R_3d_ =
+            UpdateOrientation(last_imu_info.R_3d_, *imuMsg, dt);
+        new_imu_info.R_2d_ = UpdateOrientation(last_imu_info.R_2d_, imu_2d, dt);
+      } else {
+        new_imu_info.R_3d_ = last_imu_info.R_3d_;
+        new_imu_info.R_2d_ = last_imu_info.R_2d_;
+      }
     } else {
-      ROS_ERROR("Unexpected Joint Name : %s", name.c_str());
+      new_imu_info.R_3d_ = Eigen::Matrix3d::Identity();
+      new_imu_info.R_2d_ = Eigen::Matrix3d::Identity();
     }
+    state_.SetImuInfo(new_imu_info);
   }
-}
 
-void OdometryNodelet::calcAndPublishOdom(const ros::Time& stamp) {
-  static double lastStamp = stamp.toSec();
-  double newStamp = stamp.toSec();
-  double dT = newStamp - lastStamp;
-  lastStamp = newStamp;
+  // X. Publish
+  JointInfo joint_info = state_.GetJointInfo();
 
-  OdomPos odomWhl, odomImu;
-  OdomVel velWhl, velImu;
-  odometry.CalculateOdometry(odomWhl, odomImu, velWhl, velImu, dT);
-
-  if (!use_odom_whl) {
-    // Published IMU based odometry.
-    {
-      nav_msgs::Odometry odomImuMsg;
-      fillOdomMessage(odomImuMsg, odomFrameName, stamp, odomImu, velImu);
-      publishTransform(odomImuMsg, odomFrameName);
-      odomPub.publish(odomImuMsg);
-    }
+  nav_msgs::Odometry odom;
+  if (!params_.use_odom_2d) {
+    odom = CreateOdomMessage(imuMsg->header.stamp, params_.odom_frame_name,
+                             params_.baselink_frame_name, joint_info.T_3d_,
+                             new_imu_info.R_3d_, joint_info.v_3d_,
+                             new_imu_info.w_3d_);
   } else {
-    // Published Whl Based Odometry.
-    {
-      nav_msgs::Odometry odomWhlMsg;
-      fillOdomMessage(odomWhlMsg, odomFrameName, stamp, odomWhl, velWhl);
-      publishTransform(odomWhlMsg, odomFrameName);
-      odomPub.publish(odomWhlMsg);
-    }
+    odom = CreateOdomMessage(imuMsg->header.stamp, params_.odom_frame_name,
+                             params_.baselink_frame_name, joint_info.T_2d_,
+                             new_imu_info.R_2d_, joint_info.v_2d_,
+                             new_imu_info.w_2d_);
   }
+
+  tf::Transform odom_trans;
+  tf::poseMsgToTF(odom.pose.pose, odom_trans);
+  odom_tf_broadcaster.sendTransform(tf::StampedTransform(
+      odom_trans, odom.header.stamp, params_.odom_frame_name,
+      params_.baselink_frame_name));
+  odom_pub_.publish(odom);
 }
 
-void OdometryNodelet::fillOdomMessage(nav_msgs::Odometry& odomMsg, std::string odomFrameName,
-                                      const ros::Time& stamp, const OdomPos& odomPos,
-                                      const OdomVel& odomVel) {
-  // Header
-  odomMsg.header.frame_id = odomFrameName;
-  odomMsg.child_frame_id = baselinkFrameName;
-  odomMsg.header.stamp = stamp;
-
-  // Pose
-  odomMsg.pose.pose.position.x = odomPos.x;
-  odomMsg.pose.pose.position.y = odomPos.y;
-  odomMsg.pose.pose.position.z = 0.0;
-  odomMsg.pose.pose.orientation = tf::createQuaternionMsgFromYaw(odomPos.angz);
-
-  odomMsg.pose.covariance[0] = odomPos.totDist;
-  // Twist
-  odomMsg.twist.twist.linear.x = odomVel.vx;
-  odomMsg.twist.twist.linear.y = odomVel.vy;
-  odomMsg.twist.twist.linear.z = 0;
-  odomMsg.twist.twist.angular.x = 0;
-  odomMsg.twist.twist.angular.y = 0;
-  odomMsg.twist.twist.angular.z = odomVel.wz;
-}
+}  // namespace koichi_robotics_lib
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(koichi_robotics_lib::OdometryNodelet, nodelet::Nodelet)

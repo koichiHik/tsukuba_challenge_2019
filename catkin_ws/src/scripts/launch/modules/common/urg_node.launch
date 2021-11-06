@@ -1,0 +1,32 @@
+
+<launch>
+  <arg name="frame_id" default="laser2d_link" />
+  <arg name="urg_node_yaml_filepath" default="$(find scripts)/params/common/urg_node.yaml" />
+
+  <node name="urg_node" pkg="urg_node" type="urg_node" required="True" output="screen" >
+
+    <!-- Topic Renaming -->
+    <remap from="~diagnostics" to="~diagnostics"/>
+    <remap from="~laser_status" to="~laser_status"/>
+    <remap from="~scan" to="~scan"/>
+    <remap from="~parameter_descriptions" to="~parameter_descriptions"/>
+    <remap from="~parameter_updates" to="~parameter_updates"/>
+
+    <!-- Paramter from argument -->
+    <param name="frame_id" value="$(arg frame_id)"/>
+
+    <!-- Parameter Name -->
+    <remap from="~/ip_address" to="~/ip_address" />
+    <remap from="~/angle_max" to="~/angle_max" />
+    <remap from="~/angle_min" to="~/angle_min" />
+    <remap from="~/cluster" to="~/cluster" />
+    <remap from="~/skip" to="~/skip" />
+    <remap from="~/tf_prefix" to="~/tf_prefix" />
+    <remap from="~/time_offset" to="~/time_offset" />
+
+    <!-- Load parameters -->
+    <rosparam file="$(arg urg_node_yaml_filepath)" command="load" />
+
+  </node>
+
+</launch>

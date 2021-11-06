@@ -1,0 +1,20 @@
+
+<launch>
+  <arg name="imu_adjust_param_filepath" default="$(find scripts)/params/common/imu_adjust.yaml" />
+  <arg name="manager_name" default="imu_adjust_manager" />
+
+  <node pkg="nodelet" type="nodelet" name="$(arg manager_name)" args="manager"
+        if="$(eval manager_name == 'imu_adjust_manager')" />
+  <node pkg="nodelet" type="nodelet" name="imu_adjust_nodelet" required="true" 
+        args="load imu_adjust/NodeletImuAdjust $(arg manager_name)" >
+    <!-- Topic rename (in) -->
+    <remap from="~/imu_raw" to="/imu_raw" />
+
+    <!-- Topic rename (out) -->
+    <remap from="~/imu" to="/imu" />
+
+    <!-- Parameter load -->
+    <rosparam command="load" file="$(arg imu_adjust_param_filepath)" />
+  </node>
+
+</launch>

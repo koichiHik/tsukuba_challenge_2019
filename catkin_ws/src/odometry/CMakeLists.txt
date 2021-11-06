@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   ypspur_ros
   kmsgs
 )
+find_package(glog REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -128,7 +130,6 @@ include_directories(
 ## Declare a C++ library
 add_library(odometry_nodelet
   src/odometry_nodelet.cpp
-  src/odometry.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -154,6 +155,8 @@ add_dependencies(odometry_nodelet kmsgs_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(odometry_nodelet
   ${catkin_LIBRARIES}
+  glog::glog
+  Eigen3::Eigen
 )
 
 #############

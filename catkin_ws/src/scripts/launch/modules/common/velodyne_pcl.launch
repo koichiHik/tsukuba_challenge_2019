@@ -1,0 +1,58 @@
+
+<launch>
+  <arg name="frame_id" default="laser3d_link" />
+  <arg name="calibration_filepath" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+  <arg name="velodyne_param_filepath" default="$(find scripts)/params/common/velodyne.yaml" />
+  <arg name="velodyne_nodelet_manager" default="velodyne_nodelet_manager" />
+
+  <!-- Parameter loading -->
+  <rosparam file="$(arg velodyne_param_filepath)" command="load" />
+
+  <!-- Velodyne nodelet manager -->
+  <node pkg="nodelet" type="nodelet" name="$(arg velodyne_nodelet_manager)" args="manager" />
+
+  <!-- Velodyne driver -->
+  <node pkg="nodelet" type="nodelet" name="$(arg velodyne_nodelet_manager)_driver"
+        args="load velodyne_driver/DriverNodelet $(arg velodyne_nodelet_manager)" >
+
+    <!-- Parameter setting -->
+    <param name="frame_id" value="$(arg frame_id)"/>
+    
+    <!-- Parameter remap -->
+    <remap from="~device_ip" to="/velodyne/device_ip" />
+    <remap from="~model" to="/velodyne/model" />
+    <remap from="~pcap" to="/velodyne/pcap" />
+    <remap from="~port" to="/velodyne/port" />
+    <remap from="~read_fast" to="/velodyne/read_fast" />
+    <remap from="~read_once" to="/velodyne/read_once" />
+    <remap from="~repeat_delay" to="/velodyne/repeat_delay" />
+    <remap from="~rpm" to="/velodyne/rpm" />
+    <remap from="~cut_angle" to="/velodyne/cut_angle" />
+
+  </node>
+
+  <!-- start cloud nodelet -->
+  <node pkg="nodelet" type="nodelet" name="$(arg velodyne_nodelet_manager)_cloud"
+        args="load velodyne_pointcloud/CloudNodelet $(arg velodyne_nodelet_manager)">
+    
+    <!-- Parameter setting -->
+    <param name="calibration" value="$(arg calibration_filepath)" />
+
+    <!-- Parameter remap -->
+    <remap from="max_range" to="/velodyne/max_range" />
+    <remap from="min_range" to="/velodyne/min_range" />
+  </node>
+
+  <!-- start laserscan nodelet -->
+  <node pkg="nodelet" type="nodelet" name="$(arg velodyne_nodelet_manager)_laserscan"
+        args="load velodyne_laserscan/LaserScanNodelet $(arg velodyne_nodelet_manager)">
+
+    <!-- Topic remap -->
+    <remap from="scan" to="/velodyne/scan" />
+
+    <!-- Parameter remap -->
+    <remap from="ring" to="/velodyne/ring"/>
+    <remap from="resolution" to="/velodyne/resolution"/>
+  </node>
+
+</launch>

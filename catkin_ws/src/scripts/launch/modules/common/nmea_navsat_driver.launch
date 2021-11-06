@@ -1,0 +1,12 @@
+<launch>
+  <arg name="nmea_driver_param_filepath" default="$(find scripts)/params/common/nmea_navsat_driver.yaml" />
+
+  <node name="nmea_serial_driver_node" 
+        pkg="nmea_navsat_driver" 
+        type="nmea_serial_driver" 
+        output="screen"
+        required="True" >
+    <rosparam command="load" file="$(arg nmea_driver_param_filepath)" />
+  </node>
+
+</launch>

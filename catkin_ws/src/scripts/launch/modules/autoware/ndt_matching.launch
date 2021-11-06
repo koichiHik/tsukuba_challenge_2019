@@ -1,0 +1,39 @@
+
+<launch>
+  <arg name="common_yaml_filepath" default="$(find scripts)/params/autoware/common.yaml" />
+  <arg name="ndt_matching_yaml_filepath" default="$(find scripts)/params/autoware/ndt_matching.yaml" />
+
+  <!-- Load common parameters -->
+  <rosparam command="load" file="$(arg common_yaml_filepath)" />
+
+  <node pkg="lidar_localizer" type="ndt_matching" name="ndt_matching" 
+        output="log" required="True" >
+
+    <!-- Topic rename (IN) -->
+    <remap from="/config/ndt" to="/config/ndt" />
+    <remap from="/gnss_pose" to="/gnss_pose_local" />
+    <remap from="/initialpose" to="/initialpose" />
+    <remap from="/filtered_points" to="/filtered_points" />
+    <remap from="/vehicle/odom" to="/odom" />
+    <!-- <remap from="/imu_raw" to="/imu" /> -->
+    <remap from="points_map" to="points_map" />
+
+    <!-- Topic rename (OUT) -->
+    <remap from="/predict_pose" to="/predict_pose" />
+    <remap from="/predict_pose_imu" to="/predict_pose_imu" />
+    <remap from="/predict_pose_odom" to="/predict_pose_odom" />
+    <remap from="/predict_pose_imu_odom" to="/predict_pose_imu_odom" />
+    <remap from="/ndt_pose" to="/ndt_pose" />
+    <remap from="/localizer_pose" to="/localizer_pose" />
+    <remap from="/estimate_twist" to="/estimate_twist" />
+    <remap from="/estimated_vel_mps" to="/estimated_vel_mps" />
+    <remap from="/estimated_vel_kmph" to="/estimated_vel_kmph" />
+    <remap from="/estimated_vel" to="/estimated_vel" />
+    <remap from="/time_ndt_matching" to="/time_ndt_matching" />
+    <remap from="/ndt_stat" to="/ndt_stat" />
+    <remap from="/ndt_reliability" to="/ndt_reliability" />
+
+    <!-- Load parameters -->
+    <rosparam command="load" file="$(arg ndt_matching_yaml_filepath)" />
+  </node>
+</launch>

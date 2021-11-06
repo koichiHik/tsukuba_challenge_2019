@@ -1,9 +1,0 @@
-Header header
-uint16 wheel_pulse_rl
-uint16 wheel_pulse_rr
-uint16 count_A
-uint16 count_B
-uint16 count_Z
-uint8 clockwise
-uint8 cycleTime
-uint8 run_backward

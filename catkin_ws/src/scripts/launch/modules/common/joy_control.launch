@@ -1,0 +1,34 @@
+
+<launch>
+  <arg name="joystick_param_filepath" default="$(find scripts)/params/common/ps3_holonomic_config.yaml" />
+
+  <rosparam file="$(arg joystick_param_filepath)" command="load" />
+
+  <node pkg="joy" type="joy_node" name="ps3_joy" output="screen" >
+    <!-- Topic rename -->
+    <remap from="joy" to="/ps3_joy/joy" />
+    <remap from="joy/set_feedback" to="/ps3_joy/joy/set_feedback" />
+
+    <!-- Parameter rename -->
+    <remap from="~/dev" to="/ps3_joy/dev" />
+    <remap from="~/deadzone" to="/ps3_joy/deadzone" />
+    <remap from="~/autorepeat_rate" to="/ps3_joy/autorepeat_rate" />
+  </node>
+
+  <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node">
+    <!-- Topic rename -->
+    <remap from="joy" to="/ps3_joy/joy" />
+    <remap from="cmd_vel" to="cmd_vel" />
+
+    <!-- Parameter rename -->
+    <remap from="~/axis_linear" to="/teleop_twist_joy/axis_linear" />
+    <remap from="~/scale_lienar" to="/teleop_twist_joy/scale_lienar" />
+    <remap from="~/scale_lienar_turbo" to="/teleop_twist_joy/scale_lienar_turbo" />
+    <remap from="~/axis_angular" to="/teleop_twist_joy/axis_angular" />
+    <remap from="~/scale_angular" to="/teleop_twist_joy/scale_angular" />
+    <remap from="~/enable_button" to="/teleop_twist_joy/enable_button" />
+    <remap from="~/enable_turbo_button" to="/teleop_twist_joy/enable_turbo_button" />
+
+  </node>
+
+</launch>
