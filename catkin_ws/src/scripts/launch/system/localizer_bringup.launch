@@ -6,7 +6,6 @@
   <arg name="raw_points_topic" />
   <arg name="downsampler_node_name" />
   <!-- ndt matching -->
-  <arg name="common_yaml_filepath" default="$(find scripts)/params/autoware/common.yaml" />
   <arg name="ndt_matching_yaml_filepath" default="$(find scripts)/params/autoware/ndt_matching.yaml" />
   <arg name="world_to_map_json" />
   <!-- init pos -->
@@ -28,9 +27,10 @@
   </include>
 
   <include file="$(find scripts)/launch/modules/autoware/ndt_matching.launch">
-    <arg name="common_yaml_filepath" value="$(arg common_yaml_filepath)" />
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
   </include>
+
+  <include file="$(find scripts)/launch/modules/common/pose_initializer.launch" />
 
   <include file="$(find scripts)/launch/modules/autoware/map_loader.launch">
     <arg name="pcd_filelist" value="$(arg pcd_filelist)" />

@@ -50,6 +50,9 @@
   <arg name="lane_navi_yamlpath" default="$(find scripts)/params/autoware/lane_navi.yaml" />
   <arg name="lane_select_yamlpath" default="$(find scripts)/params/autoware/lane_select.yaml" />
 
+  <!-- Load common parameters -->
+  <rosparam command="load" file="$(arg common_yaml_filepath)" />
+
   <!-- Hardware nodes bringup -->
   <include file="$(find scripts)/launch/system/hardware_bringup.launch" >
     <arg name="base_frame_id" value="$(arg base_frame_id)" />
@@ -86,7 +89,6 @@
     <arg name="pcd_filelist" value="$(arg pcd_filelist)" />
     <arg name="raw_points_topic" value="$(arg raw_points_topic)" />
     <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
-    <arg name="common_yaml_filepath" value="$(arg common_yaml_filepath)" />
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
     <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
     <arg name="x" value="$(arg x)" />

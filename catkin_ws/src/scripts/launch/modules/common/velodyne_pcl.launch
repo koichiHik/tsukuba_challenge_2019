@@ -39,8 +39,8 @@
     <param name="calibration" value="$(arg calibration_filepath)" />
 
     <!-- Parameter remap -->
-    <remap from="max_range" to="/velodyne/max_range" />
-    <remap from="min_range" to="/velodyne/min_range" />
+    <remap from="~/max_range" to="/velodyne/max_range" />
+    <remap from="~/min_range" to="/velodyne/min_range" />
   </node>
 
   <!-- start laserscan nodelet -->

@@ -12,6 +12,6 @@ velodyne:
   laserscan_ring: -1
   laserscan_resolution: 0.007
   max_range: 130
-  min_range: 0.9
+  min_range: 0.1
   resolution: 0.007
   ring: -1

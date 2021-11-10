@@ -1,10 +1,6 @@
 
 <launch>
-  <arg name="common_yaml_filepath" default="$(find scripts)/params/autoware/common.yaml" />
   <arg name="ndt_matching_yaml_filepath" default="$(find scripts)/params/autoware/ndt_matching.yaml" />
-
-  <!-- Load common parameters -->
-  <rosparam command="load" file="$(arg common_yaml_filepath)" />
 
   <node pkg="lidar_localizer" type="ndt_matching" name="ndt_matching" 
         output="log" required="True" >

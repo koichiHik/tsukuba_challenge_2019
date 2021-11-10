@@ -1,0 +1,16 @@
+<launch>
+	<arg name="nodelet_mgr" default="pose_initializer_nodelet_mgr"/>
+
+	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_mgr)" args="manager" output="screen"/>
+	<node pkg="nodelet" type="nodelet" name="NdtPoseInitializerNodelet" 
+        args="load ndt_pose_initializer/NdtPoseInitializerNodelet $(arg nodelet_mgr)" 
+        output="screen" >
+		
+    <!-- Service Name -->
+    <remap from="initialize_pose" to="initialize_pose" />
+
+    <!-- Topic Name OUT -->
+    <remap from="filtered_points" to="filtered_points" />
+
+	</node>
+</launch>

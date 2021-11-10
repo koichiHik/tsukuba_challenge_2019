@@ -20,6 +20,8 @@ from tf.transformations import quaternion_from_euler, decompose_matrix, quaterni
 import tf2_ros
 import tf2_geometry_msgs
 from geometry_msgs.msg import TransformStamped, TwistStamped, Twist
+from messages.srv import initialize_pose
+
 
 def create_config_ndt(x, y, z, roll, pitch, yaw):
 
@@ -81,14 +83,22 @@ class LocalizeManager():
     self.current_pose_pub = rospy.Publisher('current_pose', PoseStamped, queue_size=10)
     self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
 
-    # X. Current pose
-    self.dpose_list = self.create_dpose_list()
-    cur_pose = list([x, y, z, roll / 180.0 * math.pi, pitch / 180.0 * math.pi, yaw / 180.0 * math.pi])
+    # X. Voxel filter config.
+    cfg_vox_filt = ConfigVoxelGridFilter()
+    cfg_vox_filt.voxel_leaf_size = 2.0
+    cfg_vox_filt.measurement_range = 40
+    self.cfg_pnts_downsample.publish(cfg_vox_filt)
+
+    # X.
+    x, y, z, roll, pitch, yaw = self.call_pose_initialize_service()
+    cur_pose = list([x, y, z, roll, pitch, yaw])
     self.locked_cur_pose = LockedObj()
     self.locked_cur_pose.set_object(cur_pose)
     config_ndt = create_config_ndt( \
       cur_pose[0], cur_pose[1], cur_pose[2], \
       cur_pose[3], cur_pose[4], cur_pose[5])
+    self.cfg_ndt_pub.publish(config_ndt)
+    random.seed(0)
 
     # X. Odom
     self.locked_odom = LockedObj()
@@ -102,15 +112,6 @@ class LocalizeManager():
     # X. Validity
     self.pose_valid = False
 
-    # X. Publish localizer config.
-    self.cfg_ndt_pub.publish(config_ndt)
-    random.seed(0)
-
-    cfg_vox_filt = ConfigVoxelGridFilter()
-    cfg_vox_filt.voxel_leaf_size = 2.0
-    cfg_vox_filt.measurement_range = 40
-    self.cfg_pnts_downsample.publish(cfg_vox_filt)
-
     rospy.Subscriber('odom', Odometry, self.odom_callback)
     rospy.Subscriber('ndt_stat', NDTStat, self.ndt_stat_callback)
     rospy.Subscriber('gnss_pose_local', PoseStamped, self.gnss_pose_local_callback)
@@ -119,10 +120,43 @@ class LocalizeManager():
 
     rospy.spin()
 
+  def call_pose_initialize_service(self):
+
+    x_range = 10
+    y_range = 10
+    yaw_range = 2 * math.pi
+    x_step = 1.0
+    y_step = 1.0
+    yaw_step = 20.0 / 180.0 * math.pi
+    x = 0.0
+    y = 0.0
+    z = 0.0
+    roll = 0.0
+    pitch = 0.0
+    yaw = 0.0
+
+    srv = {'resolution':1.0, 'step_size': 0.1, 'outlier_ratio': 0.55, 
+           'trans_eps': 0.01, 'max_itr':10, 'x_range': x_range, 'y_range': y_range,
+           'yaw_range': yaw_range, 'x_step': x_step, 'y_step': y_step, 'yaw_step': yaw_step, 
+           'x': x, 'y': y, 'z': z, 'roll': roll, 'pitch': pitch, 'yaw': yaw}
+    rospy.wait_for_service('/initialize_pose')
+    try:
+      init_pose_srv = rospy.ServiceProxy('/initialize_pose', initialize_pose)
+      resp = init_pose_srv(**srv)
+    except rospy.ServiceException, e:
+      print("Service call failed: {}", e)
+
+    print(resp)
+
+    return resp.x, resp.y, resp.z, resp.roll, resp.pitch, resp.yaw
+
+
   def twist_raw_callback(self, twist_stamped):
     self.cmd_vel_pub.publish(twist_stamped.twist)
 
   def ndt_stat_callback(self, ndt_stat):
+
+    pass
 
     if (0.5 < ndt_stat.score and not self.pose_valid):
       self.pose_valid = False
@@ -137,6 +171,8 @@ class LocalizeManager():
         x + dpose[0], y + dpose[1], 0, \
         0, 0, yaw + dpose[2])
       self.cfg_ndt_pub.publish(config_ndt)
+    elif(100.0 < ndt_stat.score):
+      self.pose_valid = False
     else:
       self.pose_valid = True
 
@@ -245,3 +281,10 @@ if __name__ == '__main__':
   args = parser.parse_args(rospy.myargv()[1:])
 
   mgr = LocalizeManager(args.x, args.y, args.z, args.roll, args.pitch, args.yaw)
+
+
+  #ndt.setResolution(1.0);
+  #ndt.setStepSize(0.1);
+  #ndt.setOulierRatio(0.55);
+  #ndt.setTransformationEpsilon(0.01);
+  #ndt.setMaximumIterations(30);

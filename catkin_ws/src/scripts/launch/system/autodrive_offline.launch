@@ -40,6 +40,9 @@
   <arg name="rate" />
   <arg name="wait" />
 
+  <!-- Load common parameters -->
+  <rosparam command="load" file="$(arg common_yaml_filepath)" />
+
   <!-- Base nodes bringup -->
   <include file="$(find scripts)/launch/system/basenodes_bringup.launch" >
     <arg name="urdf_file" value="$(arg urdf_file)" />
@@ -57,7 +60,6 @@
     <arg name="pcd_filelist" value="$(arg pcd_filelist)" />
     <arg name="raw_points_topic" value="$(arg raw_points_topic)" />
     <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
-    <arg name="common_yaml_filepath" value="$(arg common_yaml_filepath)" />
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
     <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
     <arg name="x" value="$(arg x)" />

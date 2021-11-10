@@ -1,0 +1,9 @@
+<library path="lib/libndt_pose_initializer_nodelet">
+  <class 	name="ndt_pose_initializer/NdtPoseInitializerNodelet" 
+					type="koichi_robotics_lib::NdtPoseInitializerNodelet" 
+					base_class_type="nodelet::Nodelet">
+    <description>
+      NdtPoseInitializerNodelet.
+    </description>
+  </class>
+</library>
