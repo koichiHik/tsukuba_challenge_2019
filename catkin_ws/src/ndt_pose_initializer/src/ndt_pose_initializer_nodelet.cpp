@@ -80,13 +80,6 @@ void CreatePoseCollections(const Range &range, const double x, const double y,
   pose_collections.clear();
   pose_collections.reserve(pose_num);
 
-  ROS_WARN("Num pose num : %d", pose_num);
-  ROS_WARN("Num x step   : %d", num_x_step);
-  ROS_WARN("Num y step   : %d", num_y_step);
-  ROS_WARN("Num yaw step : %d", num_yaw_step);
-  ROS_WARN("Yaw Step     : %lf", range.yaw_step_);
-  ROS_WARN("Range yaw    : %lf", range.yaw_range_);
-
   for (int idx_x = -(num_x_step / 2 + 1); idx_x < (num_x_step / 2 + 1);
        idx_x++) {
     for (int idx_y = -(num_y_step / 2 + 1); idx_y < (num_y_step / 2 + 1);
@@ -98,9 +91,11 @@ void CreatePoseCollections(const Range &range, const double x, const double y,
         trans.y() = y + step_dy * idx_y;
         trans.z() = z;
 
+        double test_yaw = yaw + step_dyaw * idx_yaw;
+
         Eigen::AngleAxisf rot_x(roll, Eigen::Vector3f::UnitX());
         Eigen::AngleAxisf rot_y(pitch, Eigen::Vector3f::UnitY());
-        Eigen::AngleAxisf rot_z(yaw, Eigen::Vector3f::UnitZ());
+        Eigen::AngleAxisf rot_z(test_yaw, Eigen::Vector3f::UnitZ());
         Eigen::Matrix4f test_pose =
             ((trans * rot_z * rot_y * rot_x) * baselink_to_lidar).matrix();
         pose_collections.push_back(test_pose);
@@ -132,10 +127,9 @@ class NdtPoseInitializerNodelet : public nodelet::Nodelet {
 
   void MapCheckingFunc();
 
-  void LocalizingFunc(const int thread_idx,
+  void LocalizingFunc(const int thread_idx, const int st_idx, const int end_idx,
                       const messages::initialize_poseRequest &req,
                       const std::vector<Eigen::Matrix4f> &pose_collections,
-                      const int st_idx, const int end_idx,
                       std::vector<Eigen::Matrix4f> &final_pose_collections,
                       std::vector<double> &fitness_scores);
 
@@ -235,6 +229,7 @@ void NdtPoseInitializerNodelet::ReadParams() {
       (trans_baselink_to_lidar * rot_baselink_to_lidar).matrix();
 }
 
+/*
 bool NdtPoseInitializerNodelet::ServeInitializePose(
     messages::initialize_poseRequest &req,
     messages::initialize_poseResponse &res) {
@@ -344,11 +339,112 @@ bool NdtPoseInitializerNodelet::ServeInitializePose(
 
   return true;
 }
+*/
+bool NdtPoseInitializerNodelet::ServeInitializePose(
+    messages::initialize_poseRequest &req,
+    messages::initialize_poseResponse &res) {
+  ROS_WARN("[Pose Initializer] Service called");
+
+  // X. Create pose collections.
+  std::vector<Eigen::Matrix4f> pose_collections;
+  CreatePoseCollections(Range(req.x_range, req.y_range, req.yaw_range,
+                              req.x_step, req.y_step, req.yaw_step),
+                        req.x, req.y, req.z, req.roll, req.pitch, req.yaw,
+                        tf_baselink_to_lidar_, pose_collections);
+
+  const int THREAD_NUM = 8;
+
+  const int pose_size = pose_collections.size();
+  const int per_thread = pose_size / THREAD_NUM;
+
+  std::vector<Eigen::Matrix4f> final_poses;
+  std::vector<double> fitness_scores;
+  final_poses.reserve(pose_size);
+  fitness_scores.reserve(pose_size);
+  {
+    std::lock_guard<std::mutex> lock(map_mtx_);
+    std::vector<std::thread> threads;
+    std::vector<std::unique_ptr<std::vector<Eigen::Matrix4f>>>
+        poses_from_threads;
+    std::vector<std::unique_ptr<std::vector<double>>> scores_from_threads;
+    for (int thread_idx = 0; thread_idx < THREAD_NUM; thread_idx++) {
+      int st_idx = std::max(0, per_thread * thread_idx);
+      int end_idx = std::min(per_thread * (thread_idx + 1) - 1, pose_size - 1);
+      if (thread_idx == THREAD_NUM - 1) {
+        end_idx = std::max(end_idx, pose_size - 1);
+      }
+
+      poses_from_threads.push_back(
+          std::unique_ptr<std::vector<Eigen::Matrix4f>>(
+              new std::vector<Eigen::Matrix4f>));
+
+      scores_from_threads.push_back(
+          std::unique_ptr<std::vector<double>>(new std::vector<double>));
+
+      threads.push_back(std::thread(
+          &NdtPoseInitializerNodelet::LocalizingFunc, this, thread_idx, st_idx,
+          end_idx, req, std::cref(pose_collections),
+          std::ref(*poses_from_threads[thread_idx]),
+          std::ref(*scores_from_threads[thread_idx])));
+    }
+
+    for (int thread_idx = 0; thread_idx < THREAD_NUM; thread_idx++) {
+      threads[thread_idx].join();
+      std::copy(poses_from_threads[thread_idx]->begin(),
+                poses_from_threads[thread_idx]->end(),
+                std::back_inserter(final_poses));
+      std::copy(scores_from_threads[thread_idx]->begin(),
+                scores_from_threads[thread_idx]->end(),
+                std::back_inserter(fitness_scores));
+    }
+  }
+
+  // X. Extract final result
+  {
+    std::vector<size_t> indices(fitness_scores.size());
+    std::iota(indices.begin(), indices.end(), 0);
+    std::stable_sort(indices.begin(), indices.end(),
+                     [&fitness_scores](size_t idx1, size_t idx2) {
+                       return fitness_scores[idx1] < fitness_scores[idx2];
+                     });
+
+    Eigen::Matrix4f pose =
+        final_poses[indices[0]] * tf_baselink_to_lidar_.inverse();
+
+    res.x = pose(0, 3);
+    res.y = pose(1, 3);
+    res.z = pose(2, 3);
+
+    tf::Matrix3x3 rot;
+    rot.setValue(
+        static_cast<double>(pose(0, 0)), static_cast<double>(pose(0, 1)),
+        static_cast<double>(pose(0, 2)), static_cast<double>(pose(1, 0)),
+        static_cast<double>(pose(1, 1)), static_cast<double>(pose(1, 2)),
+        static_cast<double>(pose(2, 0)), static_cast<double>(pose(2, 1)),
+        static_cast<double>(pose(2, 2)));
+    double roll, pitch, yaw;
+    rot.getRPY(roll, pitch, yaw);
+    res.roll = roll;
+    res.pitch = pitch;
+    res.yaw = yaw;
+    res.fitness_score = fitness_scores[indices[0]];
+
+    ROS_WARN("x     : %lf", res.x);
+    ROS_WARN("y     : %lf", res.y);
+    ROS_WARN("z     : %lf", res.z);
+    ROS_WARN("roll  : %lf", res.roll);
+    ROS_WARN("pitch : %lf", res.pitch);
+    ROS_WARN("yaw   : %lf", res.yaw);
+  }
+
+  return true;
+}
 
 void NdtPoseInitializerNodelet::LocalizingFunc(
-    const int thread_idx, const messages::initialize_poseRequest &req,
-    const std::vector<Eigen::Matrix4f> &pose_collections, const int st_idx,
-    const int end_idx, std::vector<Eigen::Matrix4f> &final_pose_collections,
+    const int thread_idx, const int st_idx, const int end_idx,
+    const messages::initialize_poseRequest &req,
+    const std::vector<Eigen::Matrix4f> &pose_collections,
+    std::vector<Eigen::Matrix4f> &final_pose_collections,
     std::vector<double> &fitness_scores) {
   // X. Prep
   int num_indices = end_idx - st_idx + 1;
@@ -373,8 +469,6 @@ void NdtPoseInitializerNodelet::LocalizingFunc(
   }
 
   {
-    std::lock_guard<std::mutex> lock(map_mtx_);
-
     // X. Set target source.
     pcl::PointCloud<pcl::PointXYZ>::Ptr target_ptr(
         new pcl::PointCloud<pcl::PointXYZ>(map_data_));

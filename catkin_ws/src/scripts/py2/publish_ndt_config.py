@@ -114,29 +114,29 @@ class LocalizeManager():
 
     rospy.Subscriber('odom', Odometry, self.odom_callback)
     rospy.Subscriber('ndt_stat', NDTStat, self.ndt_stat_callback)
-    rospy.Subscriber('gnss_pose_local', PoseStamped, self.gnss_pose_local_callback)
+    rospy.Subscriber('gnss_pose_local', PoseStamped, self.gnss_pose_local_callback) 
     rospy.Subscriber('ndt_pose', PoseStamped, self.ndt_pose_callback)
     rospy.Subscriber('twist_raw', TwistStamped, self.twist_raw_callback)
 
     rospy.spin()
-
+ 
   def call_pose_initialize_service(self):
 
-    x_range = 10
-    y_range = 10
+    x_range = 5
+    y_range = 5
     yaw_range = 2 * math.pi
     x_step = 1.0
     y_step = 1.0
     yaw_step = 20.0 / 180.0 * math.pi
-    x = 0.0
-    y = 0.0
+    x = 3.0
+    y = 1.0
     z = 0.0
     roll = 0.0
     pitch = 0.0
-    yaw = 0.0
+    yaw = 75.0 / 180.0 * math.pi
 
     srv = {'resolution':1.0, 'step_size': 0.1, 'outlier_ratio': 0.55, 
-           'trans_eps': 0.01, 'max_itr':10, 'x_range': x_range, 'y_range': y_range,
+           'trans_eps': 0.01, 'max_itr':30, 'x_range': x_range, 'y_range': y_range,
            'yaw_range': yaw_range, 'x_step': x_step, 'y_step': y_step, 'yaw_step': yaw_step, 
            'x': x, 'y': y, 'z': z, 'roll': roll, 'pitch': pitch, 'yaw': yaw}
     rospy.wait_for_service('/initialize_pose')
@@ -145,8 +145,6 @@ class LocalizeManager():
       resp = init_pose_srv(**srv)
     except rospy.ServiceException, e:
       print("Service call failed: {}", e)
-
-    print(resp)
 
     return resp.x, resp.y, resp.z, resp.roll, resp.pitch, resp.yaw
 
