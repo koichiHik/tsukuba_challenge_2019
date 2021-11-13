@@ -11,7 +11,7 @@ source ${ROS_SCRIPTS_PKG}/shell/ros_general_functions.sh
 source ${ROS_SCRIPTS_PKG}/shell/filename_solve.sh
 
 DATA_DIR=${1}
-PLANE_NUMBER="4"
+DATAINFO_FILE=${DATA_DIR}/${DATAINFO_FILENAME}
 BAG_FILEPATH=$(GET_BAGFILE_PATH ${DATA_DIR})
 MAP_PCDFILE=$(GET_PCDFILE_PATH ${DATA_DIR})
 
@@ -21,6 +21,7 @@ ODOM_YAML_FILEPATH=${ROS_SCRIPTS_PKG}/params/common/odometry.yaml
 IMU_ADJUST_FILEPATH=${ROS_SCRIPTS_PKG}/params/common/imu_adjust.yaml
 AT_COMMON_YAML_FILEPATH=${ROS_SCRIPTS_PKG}/params/autoware/common.yaml
 AT_NDT_MATCHING_FILEPATH=${ROS_SCRIPTS_PKG}/params/autoware/ndt_matching.yaml
+AMCL3d_YAML_FILEPATH=${ROS_SCRIPTS_PKG}/params/common/mcl_3dl.yaml
 
 roslaunch ${ROS_SCRIPTS_PKG}/launch/system/ndt_localization_bag_replay.launch \
   urdf_file:=${URDF_FILEPATH} \
@@ -35,14 +36,17 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/ndt_localization_bag_replay.launch \
   downsampler_node_name:="voxel_grid_filter" \
   common_yaml_filepath:=${AT_COMMON_YAML_FILEPATH} \
   ndt_matching_yaml_filepath:=${AT_NDT_MATCHING_FILEPATH} \
-  x:=4.0 \
-  y:=2.0 \
-  z:=0.0 \
-  roll:=0.0 \
-  yaw:=90.0 \
-  pitch:=0.0 \
+  mcl_3dl_yamlpath:=${AMCL3d_YAML_FILEPATH} \
+  pose_initializer:=$(READ_DATAINFO ${DATAINFO_FILE} ${POSE_INITIALIZER}) \
+  init_via_gnss:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_VIA_GNSS}) \
+  x:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_X_NAME}) \
+  y:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_Y_NAME}) \
+  z:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_Z_NAME}) \
+  roll:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_ROLL_NAME}) \
+  pitch:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_PITCH_NAME}) \
+  yaw:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_YAW_NAME}) \
   bagfile_path:=${BAG_FILEPATH} \
-  start:=50.0 \
+  start:=0.0 \
   duration:=0.0 \
   rate:=1.0 \
   wait:=7.0 \

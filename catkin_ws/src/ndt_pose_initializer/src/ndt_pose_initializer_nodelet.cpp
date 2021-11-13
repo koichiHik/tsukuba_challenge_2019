@@ -125,6 +125,8 @@ class NdtPoseInitializerNodelet : public nodelet::Nodelet {
 
   void PointsMapCallback(const sensor_msgs::PointCloud2::ConstPtr &msg);
 
+  void FilteredPointsCallback(const sensor_msgs::PointCloud2::ConstPtr &msg);
+
   void MapCheckingFunc();
 
   void LocalizingFunc(const int thread_idx, const int st_idx, const int end_idx,
@@ -133,7 +135,7 @@ class NdtPoseInitializerNodelet : public nodelet::Nodelet {
                       std::vector<Eigen::Matrix4f> &final_pose_collections,
                       std::vector<double> &fitness_scores);
 
-  void FilteredPointsCallback(const sensor_msgs::PointCloud2::ConstPtr &msg);
+  void CollectScanToAlign();
 
  private:
   ros::NodeHandle nh_, pnh_;
@@ -145,19 +147,22 @@ class NdtPoseInitializerNodelet : public nodelet::Nodelet {
   int points_in_map_;
 
   // Scan data.
-  pcl::PointCloud<pcl::PointXYZ> scan_data_;
+  pcl::PointCloud<pcl::PointXYZ> rep_scan_data_;
+  std::map<int, pcl::PointCloud<pcl::PointXYZ>> scan_datas_;
 
   // Transform
   Eigen::Matrix4f tf_baselink_to_lidar_;
 
   // Status
-  bool map_received_, scan_received_;
+  bool map_received_;
 
   // Thread
   std::thread st_thread_, map_check_thread_;
   std::mutex map_mtx_, scan_mtx_;
 
+  static const int DEFAULT_SCAN_WAIT_COUNT = 10;
   static const int DEFAULT_SUBSCRIBE_QUEUE = 10;
+  static const int DEFAULT_MAX_SCAN_MAP_SIZE = 15;
 };
 
 NdtPoseInitializerNodelet::NdtPoseInitializerNodelet()
@@ -167,10 +172,10 @@ NdtPoseInitializerNodelet::NdtPoseInitializerNodelet()
       points_sub_(),
       map_data_(),
       points_in_map_(0),
-      scan_data_(),
+      rep_scan_data_(),
+      scan_datas_(),
       tf_baselink_to_lidar_(),
       map_received_(false),
-      scan_received_(false),
       st_thread_(),
       map_check_thread_(),
       map_mtx_(),
@@ -196,12 +201,17 @@ void NdtPoseInitializerNodelet::Initialize() {
                     &NdtPoseInitializerNodelet::FilteredPointsCallback, this);
 
   ros::Rate loop_rate(5);
-  while (!(map_received_ && scan_received_)) {
+  while (!(map_received_ && DEFAULT_SCAN_WAIT_COUNT < scan_datas_.size())) {
     ROS_WARN(
-        "Waiting /points_map and /filtered_scan to start /initialize_pose "
-        "service");
+        "[Pose Initializer] Waiting /points_map and /filtered_scan to start "
+        "/initialize_pose service");
     loop_rate.sleep();
   }
+
+  // X. Stop subscriber and restart when service is requested.
+  points_sub_.shutdown();
+  scan_datas_.clear();
+
   server_ = nh_.advertiseService(
       "initialize_pose", &NdtPoseInitializerNodelet::ServeInitializePose, this);
 }
@@ -229,121 +239,48 @@ void NdtPoseInitializerNodelet::ReadParams() {
       (trans_baselink_to_lidar * rot_baselink_to_lidar).matrix();
 }
 
-/*
-bool NdtPoseInitializerNodelet::ServeInitializePose(
-    messages::initialize_poseRequest &req,
-    messages::initialize_poseResponse &res) {
-  ROS_WARN("[Pose Initializer] Service called");
+void NdtPoseInitializerNodelet::CollectScanToAlign() {
+  // X. Restart subscriber.
+  scan_datas_.clear();
+  points_sub_ =
+      nh_.subscribe("filtered_points", DEFAULT_SUBSCRIBE_QUEUE,
+                    &NdtPoseInitializerNodelet::FilteredPointsCallback, this);
 
-  // X. Create pose collections.
-  std::vector<Eigen::Matrix4f> pose_collections;
-  CreatePoseCollections(Range(req.x_range, req.y_range, req.yaw_range,
-                              req.x_step, req.y_step, req.yaw_step),
-                        req.x, req.y, req.z, req.roll, req.pitch, req.yaw,
-                        tf_baselink_to_lidar_, pose_collections);
-  std::vector<Eigen::Matrix4f> final_pose_collections(
-      pose_collections.size(), Eigen::Matrix4f::Identity());
-  std::vector<double> fitness_scores(pose_collections.size(),
-                                     std::numeric_limits<double>::max());
+  // X. Start collecting pointcloud.
+  ros::Rate loop_rate(5);
+  while (!(DEFAULT_SCAN_WAIT_COUNT < scan_datas_.size())) {
+    ROS_WARN("[Pose Initializer] Waiting to collect point cloud to align....");
+    loop_rate.sleep();
+  }
 
-  // X. Parameter setup.
-  pcl::NormalDistributionsTransform<pcl::PointXYZ, pcl::PointXYZ> ndt;
-  ndt.setResolution(req.resolution);
-  ndt.setStepSize(req.step_size);
-  ndt.setOulierRatio(req.outlier_ratio);
-  ndt.setTransformationEpsilon(req.trans_eps);
-  ndt.setMaximumIterations(req.max_itr);
+  // X. Shutdown.
+  points_sub_.shutdown();
 
-  // X. Get current scan data.
-  pcl::PointCloud<pcl::PointXYZ> scan_cloud;
+  // X. Get representative point cloud.
   {
     std::lock_guard<std::mutex> lock(scan_mtx_);
-    scan_cloud = scan_data_;
-  }
-
-  {
-    std::lock_guard<std::mutex> lock(map_mtx_);
-
-    // X. Set target source.
-    pcl::PointCloud<pcl::PointXYZ>::Ptr target_ptr(
-        new pcl::PointCloud<pcl::PointXYZ>(map_data_));
-    pcl::PointCloud<pcl::PointXYZ>::Ptr source_ptr(
-        new pcl::PointCloud<pcl::PointXYZ>(scan_cloud));
-    ndt.setInputTarget(target_ptr);
-    ndt.setInputSource(source_ptr);
-
-    // X. Align.
-    {
-      pcl::PointCloud<pcl::PointXYZ>::Ptr output_ptr(
-          new pcl::PointCloud<pcl::PointXYZ>);
-
-      int cnt = 0;
-      int size = pose_collections.size();
-      for (int idx = 0; idx < size; idx++) {
-        ndt.align(*output_ptr, pose_collections[idx]);
-        // X. Collect result and stats.
-        bool converged = ndt.hasConverged();
-
-        if (converged) {
-          final_pose_collections[idx] = ndt.getFinalTransformation();
-          fitness_scores[idx] = ndt.getFitnessScore();
-          int num_itr = ndt.getFinalNumIteration();
-          double trans_probability = ndt.getTransformationProbability();
-        }
-
-        cnt++;
-        if (cnt % 100 == 0) {
-          ROS_WARN("[Pose Initializer] Current Status : %d : %d", cnt, size);
-        }
-      }
+    int size = scan_datas_.size();
+    auto itr = scan_datas_.begin();
+    for (int idx = 0; idx < size / 2; idx++) {
+      ++itr;
     }
+    rep_scan_data_ = itr->second;
   }
 
-  // X. Extract final result
-  {
-    std::vector<size_t> indices(fitness_scores.size());
-    std::iota(indices.begin(), indices.end(), 0);
-    std::stable_sort(indices.begin(), indices.end(),
-                     [&fitness_scores](size_t idx1, size_t idx2) {
-                       return fitness_scores[idx1] < fitness_scores[idx2];
-                     });
+  ROS_WARN("[Pose Initializer] Point number to be aligned is %d",
+           rep_scan_data_.width * rep_scan_data_.height);
 
-    Eigen::Matrix4f pose =
-        final_pose_collections[indices[0]] * tf_baselink_to_lidar_.inverse();
-
-    res.x = pose(0, 3);
-    res.y = pose(1, 3);
-    res.z = pose(2, 3);
-
-    tf::Matrix3x3 rot;
-    rot.setValue(
-        static_cast<double>(pose(0, 0)), static_cast<double>(pose(0, 1)),
-        static_cast<double>(pose(0, 2)), static_cast<double>(pose(1, 0)),
-        static_cast<double>(pose(1, 1)), static_cast<double>(pose(1, 2)),
-        static_cast<double>(pose(2, 0)), static_cast<double>(pose(2, 1)),
-        static_cast<double>(pose(2, 2)));
-    double roll, pitch, yaw;
-    rot.getRPY(roll, pitch, yaw);
-    res.roll = roll;
-    res.pitch = pitch;
-    res.yaw = yaw;
-    res.fitness_score = fitness_scores[indices[0]];
-
-    ROS_WARN("x     : %lf", res.x);
-    ROS_WARN("y     : %lf", res.y);
-    ROS_WARN("z     : %lf", res.z);
-    ROS_WARN("roll  : %lf", res.roll);
-    ROS_WARN("pitch : %lf", res.pitch);
-    ROS_WARN("yaw   : %lf", res.yaw);
-  }
-
-  return true;
+  // X. Clear buffer.
+  scan_datas_.clear();
 }
-*/
+
 bool NdtPoseInitializerNodelet::ServeInitializePose(
     messages::initialize_poseRequest &req,
     messages::initialize_poseResponse &res) {
   ROS_WARN("[Pose Initializer] Service called");
+
+  // X. Collect scan to align.
+  CollectScanToAlign();
 
   // X. Create pose collections.
   std::vector<Eigen::Matrix4f> pose_collections;
@@ -429,12 +366,11 @@ bool NdtPoseInitializerNodelet::ServeInitializePose(
     res.yaw = yaw;
     res.fitness_score = fitness_scores[indices[0]];
 
-    ROS_WARN("x     : %lf", res.x);
-    ROS_WARN("y     : %lf", res.y);
-    ROS_WARN("z     : %lf", res.z);
-    ROS_WARN("roll  : %lf", res.roll);
-    ROS_WARN("pitch : %lf", res.pitch);
-    ROS_WARN("yaw   : %lf", res.yaw);
+    ROS_WARN("[Pose Initializer] Init pose is deteremined.");
+    ROS_WARN(
+        "[Pose Initializer] score : %lf, x : %lf, y : %lf, z : %lf, roll : "
+        "%lf, pitch : %lf, yaw : %lf",
+        res.fitness_score, res.x, res.y, res.z, res.roll, res.pitch, res.yaw);
   }
 
   return true;
@@ -465,7 +401,7 @@ void NdtPoseInitializerNodelet::LocalizingFunc(
   pcl::PointCloud<pcl::PointXYZ> scan_cloud;
   {
     std::lock_guard<std::mutex> lock(scan_mtx_);
-    scan_cloud = scan_data_;
+    scan_cloud = rep_scan_data_;
   }
 
   {
@@ -537,9 +473,14 @@ void NdtPoseInitializerNodelet::FilteredPointsCallback(
     const sensor_msgs::PointCloud2::ConstPtr &msg) {
   {
     std::lock_guard<std::mutex> lock(scan_mtx_);
-    pcl::fromROSMsg(*msg, scan_data_);
+    int pnt_num = msg->width * msg->height;
+    pcl::fromROSMsg(*msg, scan_datas_[pnt_num]);
+
+    // X. If exceed buffer size, delete minimum.
+    if (DEFAULT_MAX_SCAN_MAP_SIZE < scan_datas_.size()) {
+      scan_datas_.erase(scan_datas_.begin()->first);
+    }
   }
-  scan_received_ = true;
 }
 
 }  // namespace koichi_robotics_lib

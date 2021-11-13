@@ -12,6 +12,7 @@
     <remap from="config/velocity_set" to="config/velocity_set" />
     <remap from="localizer_pose" to="localizer_pose" />
     <remap from="current_pose" to="current_pose" />
+    <remap from="second_points" to="/urg_points" />
     <remap from="/state/stopline_wpidx" to="/state/stopline_wpidx" />
     <remap from="vector_map_info/cross_walk" to="vector_map_info/cross_walk" />
     <remap from="vector_map_info/area" to="vector_map_info/area" />
@@ -24,6 +25,8 @@
     <remap from="obstacle_waypoint" to="obstacle_waypoint" />
     <remap from="stopline_waypoint" to="stopline_waypoint" />
     <remap from="final_waypoints" to="final_waypoints" />
+    <remap from="pcl_for_obstacle" to="pcl_for_obstacle" />
+    <remap from="pcl2_for_obstacle" to="pcl2_for_obstacle" />
 
   </node>
 

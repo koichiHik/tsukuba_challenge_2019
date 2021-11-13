@@ -12,9 +12,9 @@ deceleration_range: 2.0
 points_threshold: 5
 detection_height_top: 0.5       # m from sensor
 detection_height_bottom: -0.4   # m from sensor
-deceleration_obstacle: 1.0     # m/s2 
-deceleration_stopline: 0.25     # m/s2
-velocity_change_limit: 2.0      # m/s
+deceleration_obstacle: 3.0     # m/s2 
+deceleration_stopline: 1.0     # m/s2
+velocity_change_limit: 4.0      # m/s
 temporal_waypoints_size: 100
 
 # Parameter for point removing clost to robot.
@@ -30,3 +30,7 @@ wp_stop_x_thresh: 0.5
 wp_stop_y_thresh: 0.4
 wp_decel_x_thresh: 1.0
 wp_decel_y_thresh: 0.6
+
+# For planer lidar.
+second_lidar_pnts_max_range: 3.0
+second_lidar_pnts_remove_up_to: 0.1

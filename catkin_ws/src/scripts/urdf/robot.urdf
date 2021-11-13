@@ -48,7 +48,7 @@
   <joint name="laser2d_link_joint" type="fixed">
     <parent link="base_link" />
     <child link="laser2d_link" />
-    <origin xyz="0.22 0.00 0.17" rpy="0.0 0.0 0.0" />
+    <origin xyz="0.22 0.00 0.21" rpy="0.0 0.0 0.0" />
   </joint>
 
   <joint name="laser3d_link_joint" type="fixed">

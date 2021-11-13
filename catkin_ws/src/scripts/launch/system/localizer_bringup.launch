@@ -7,14 +7,22 @@
   <arg name="downsampler_node_name" />
   <!-- ndt matching -->
   <arg name="ndt_matching_yaml_filepath" default="$(find scripts)/params/autoware/ndt_matching.yaml" />
+  <arg name="mcl_3dl_yamlpath" default="$(find scripts)/params/common/mcl_3dl.yaml" />
   <arg name="world_to_map_json" />
   <!-- init pos -->
+  <arg name="pose_initializer" />
+  <arg name="init_via_gnss" />
   <arg name="x" />
   <arg name="y" />
   <arg name="z" />
   <arg name="roll" />
-  <arg name="yaw" />
   <arg name="pitch" />
+  <arg name="yaw" />
+
+  <arg name="pose_init_arg" default="1" if="$(arg pose_initializer)" />
+  <arg name="pose_init_arg" default="0" unless="$(arg pose_initializer)" />
+  <arg name="init_via_gnss_args" default="1" if="$(arg init_via_gnss)" />
+  <arg name="init_via_gnss_args" default="0" unless="$(arg init_via_gnss)" />
 
   <!-- Gnss Localizer -->
   <include file="$(find scripts)/launch/modules/autoware/fix2tfpose.launch">
@@ -30,6 +38,10 @@
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
   </include>
 
+  <include file="$(find scripts)/launch/modules/common/mcl_3dl.launch">
+    <arg name="mcl_3dl_yamlpath" value="$(arg mcl_3dl_yamlpath)" />
+  </include>
+
   <include file="$(find scripts)/launch/modules/common/pose_initializer.launch" />
 
   <include file="$(find scripts)/launch/modules/autoware/map_loader.launch">
@@ -40,6 +52,6 @@
         args="-world_to_map_json $(arg world_to_map_json)" />
 
   <node pkg="scripts" type="publish_ndt_config.py" name="publish_ndt_config" output="screen" required="True" 
-        args="-x $(arg x) -y $(arg y) -z $(arg z) -roll $(arg roll) -yaw $(arg yaw) -pitch $(arg pitch)" />
+        args="-pose_initializer $(arg pose_init_arg) -init_via_gnss $(arg init_via_gnss_args) -x $(arg x) -y $(arg y) -z $(arg z) -roll $(arg roll) -pitch $(arg pitch) -yaw $(arg yaw)" />
 
 </launch>

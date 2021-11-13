@@ -6,7 +6,7 @@ output_frame: laser3d_link
 use_gpu: false
 
 # Points closer than this distance to the lidar will be removed
-remove_points_upto: 0.4
+remove_points_upto: 1.0
 
 # Enable pointcloud downsampling via VoxelGrid filter
 downsample_cloud: true
@@ -32,7 +32,7 @@ remove_ground: true
 use_diffnormals: false
 
 # Minimum amount of points to be considered a cluster
-cluster_size_min: 20
+cluster_size_min: 10
 # Maximum amount of points to be considered a cluster
 cluster_size_max: 100
 # Clustering tolerance (m)

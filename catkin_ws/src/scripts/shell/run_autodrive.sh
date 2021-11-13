@@ -11,7 +11,7 @@ source ${ROS_SCRIPTS_PKG}/shell/ros_general_functions.sh
 source ${ROS_SCRIPTS_PKG}/shell/filename_solve.sh
 
 DATA_DIR=${1} 
-PLANE_NUMBER="4" # Ibaraki : 9, Tokushima : 4
+DATAINFO_FILE=${DATA_DIR}/${DATAINFO_FILENAME}
 BAG_FILEPATH=$(GET_BAGFILE_PATH ${DATA_DIR})
 MAP_PCDFILE=$(GET_PCDFILE_PATH ${DATA_DIR})
 
@@ -41,19 +41,21 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/autodrive.launch \
   odom_yaml_filepath:=${ODOM_YAMLPATH} \
   imu_adjust_param_filepath:=${IMU_ADJUST_YAMLPATH} \
   rviz_config_file:=${RVIZ_CONF} \
-  plane_number:=${PLANE_NUMBER} \
+  plane_number:=$(READ_DATAINFO ${DATAINFO_FILE} ${PLANE_NUMBER}) \
   pcd_filelist:=${MAP_PCDFILE} \
   raw_points_topic:="/velodyne_points" \
   downsampler_node_name:="voxel_grid_filter" \
   common_yaml_filepath:=${AT_COMMON_YAML_FILEPATH} \
   ndt_matching_yaml_filepath:=${AT_NDT_MATCHING_FILEPATH} \
   world_to_map_json:=${DATA_DIR}/${WORLD_TO_MAP_JSON} \
-  x:=0.0 \
-  y:=0.0 \
-  z:=0.0 \
-  roll:=0.0 \
-  yaw:=0.0 \
-  pitch:=0.0 \
+  pose_initializer:=$(READ_DATAINFO ${DATAINFO_FILE} ${POSE_INITIALIZER}) \
+  init_via_gnss:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_VIA_GNSS}) \
+  x:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_X_NAME}) \
+  y:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_Y_NAME}) \
+  z:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_Z_NAME}) \
+  roll:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_ROLL_NAME}) \
+  pitch:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_PITCH_NAME}) \
+  yaw:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_YAW_NAME}) \
   lidar_cluster_filepath:=${LIDAR_CLUSTER_YAMLPATH} \
   costmap_generator_filepath:=${COSTMAP_GENERATOR_YAMLPATH} \
   astar_avoid_yamlpath:=${ASTAR_AVOID_YAMLPATH} \

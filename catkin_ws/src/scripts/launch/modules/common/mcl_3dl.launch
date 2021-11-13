@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="mcl_3dl_yamlpath" default="$(find scripts)/params/common/mcl_3dl.yaml" />
+
+  <rosparam command="load" file="$(arg mcl_3dl_yamlpath)"/>
+  <node pkg="mcl_3dl" type="mcl_3dl" name="mcl_3dl" output="screen" required="True" >
+
+    <!-- Topic IN -->
+    <remap from="/cloud" to="/velodyne_points" />
+    <remap from="/imu/data" to="/imu" />
+    <remap from="/initialpose" to="/mcl_3dl/initialpose" />
+    <remap from="/mapcloud" to="points_map" />
+    <remap from="/odom" to="/odom" />
+
+    <!-- Topic OUT -->
+    <remap from="/amcl_pose" to="/amcl_pose" />
+    <remap from="/mcl_3dl/debug_marker" to="/mcl_3dl/debug_marker" />
+    <remap from="/mcl_3dl/matched" to="/mcl_3dl/matched" />
+    <remap from="/mcl_3dl/particles" to="/mcl_3dl/particles" />
+    <remap from="/mcl_3dl/status" to="/mcl_3dl/status" />
+    <remap from="/mcl_3dl/unmatched" to="/mcl_3dl/unmatched" />
+    <remap from="/mcl_3dl/updated_map" to="/mcl_3dl/updated_map" />
+    <remap from="/mcl_measurement" to="/mcl_measurement" />
+
+  </node>
+  
+</launch>

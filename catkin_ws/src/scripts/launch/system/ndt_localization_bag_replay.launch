@@ -16,13 +16,16 @@
   <!-- ndt matching -->
   <arg name="common_yaml_filepath" default="$(find scripts)/params/autoware/common.yaml" />
   <arg name="ndt_matching_yaml_filepath" default="$(find scripts)/params/autoware/ndt_matching.yaml" />
+  <arg name="mcl_3dl_yamlpath" default="$(find scripts)/params/common/mcl_3dl.yaml" />
   <!-- init pos -->
+  <arg name="pose_initializer" />
+  <arg name="init_via_gnss" />
   <arg name="x" />
   <arg name="y" />
   <arg name="z" />
   <arg name="roll" />
-  <arg name="yaw" />
   <arg name="pitch" />
+  <arg name="yaw" />
   <!-- bag replay -->
   <arg name="bagfile_path" />
   <arg name="start" />
@@ -58,6 +61,8 @@
     <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
     <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
+    <arg name="pose_initializer" value="$(arg pose_initializer)" />
+    <arg name="init_via_gnss" value="$(arg init_via_gnss)" />
     <arg name="x" value="$(arg x)" />
     <arg name="y" value="$(arg y)" />
     <arg name="z" value="$(arg z)" />

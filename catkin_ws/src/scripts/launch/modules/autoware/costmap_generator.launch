@@ -11,6 +11,7 @@
 
     <!-- TOPIC (IN) -->
     <!-- <remap from="/prediction/motion_predictor/objects" to="$(arg objects_input)" /> -->
+    <remap from="/prediction/motion_predictor/objects" to="/detection/lidar_detector/objects" />
     <remap from="/points_no_ground" to="/velodyne_points" />
   </node>
 </launch>

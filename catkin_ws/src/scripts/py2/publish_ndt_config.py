@@ -3,14 +3,13 @@
 import argparse
 import time
 import math
-import random
 import threading
 import copy
 import numpy as np
 
 # ROS
 import rospy
-from geometry_msgs.msg import Pose, PoseStamped
+from geometry_msgs.msg import Pose, PoseStamped, PoseWithCovarianceStamped
 from std_msgs.msg import Header
 from nav_msgs.msg import Odometry
 from autoware_config_msgs.msg import ConfigNDT, ConfigVoxelGridFilter
@@ -23,18 +22,18 @@ from geometry_msgs.msg import TransformStamped, TwistStamped, Twist
 from messages.srv import initialize_pose
 
 
-def create_config_ndt(x, y, z, roll, pitch, yaw):
+def create_config_ndt(pose_xyzrpy):
 
   cfg = ConfigNDT()
   cfg.header = Header()
   
   # X. Pose
-  cfg.x = x
-  cfg.y = y
-  cfg.z = z
-  cfg.roll = roll
-  cfg.pitch = pitch
-  cfg.yaw = yaw
+  cfg.x = pose_xyzrpy[0]
+  cfg.y = pose_xyzrpy[1]
+  cfg.z = pose_xyzrpy[2]
+  cfg.roll = pose_xyzrpy[3]
+  cfg.pitch = pose_xyzrpy[4]
+  cfg.yaw = pose_xyzrpy[5]
 
   #
   cfg.init_pos_gnss = 0
@@ -47,11 +46,29 @@ def create_config_ndt(x, y, z, roll, pitch, yaw):
 
   return cfg
 
+def create_pose_stamped_with_cov(pose_xyzrpy):
+
+  pose_cov = PoseWithCovarianceStamped()
+  pose_cov.header.stamp = rospy.Time.now()
+  pose_cov.header.frame_id = "map"
+
+  pose_cov.pose.pose.position.x = pose_xyzrpy[0]
+  pose_cov.pose.pose.position.y = pose_xyzrpy[1]
+  pose_cov.pose.pose.position.z = pose_xyzrpy[2]
+
+  q = quaternion_from_euler(pose_xyzrpy[3], pose_xyzrpy[4], pose_xyzrpy[5])
+  pose_cov.pose.pose.orientation.x = q[0]
+  pose_cov.pose.pose.orientation.y = q[1]
+  pose_cov.pose.pose.orientation.z = q[2]
+  pose_cov.pose.pose.orientation.w = q[3]
+
+  return pose_cov
+
 class LockedObj():
 
-  def __init__(self):
+  def __init__(self, obj = None):
     self.lock = threading.Lock()
-    self.__obj = None
+    self.__obj = obj
 
   def get_object(self):
 
@@ -71,9 +88,16 @@ class LockedObj():
     finally:
       self.lock.release()
 
+def FULL_INIT_REQUEST(x, y, z, roll, pitch, yaw):
+  return \
+  {'resolution':1.0, 'step_size': 0.1, 'outlier_ratio': 0.55, 'trans_eps': 0.01, \
+   'max_itr': 100, 'x_range': 10, 'y_range': 10, 'yaw_range': 2.0 * math.pi, \
+   'x_step': 1.0, 'y_step': 1.0, 'yaw_step': 20.0 / 180.0 * math.pi, \
+   'x': x, 'y': y, 'z': z, 'roll': roll, 'pitch': pitch, 'yaw': yaw}
+
 class LocalizeManager():
 
-  def __init__(self, x, y, z, roll, pitch, yaw):
+  def __init__(self, pose_init, init_via_gnss, x, y, z, roll, pitch, yaw):
 
     rospy.init_node('localize_manager', anonymous=True)
     self.cfg_ndt_pub = rospy.Publisher('/config/ndt', ConfigNDT, queue_size=10, latch=True)
@@ -82,100 +106,99 @@ class LocalizeManager():
     self.current_vel_pub = rospy.Publisher('current_velocity', TwistStamped, queue_size=10)
     self.current_pose_pub = rospy.Publisher('current_pose', PoseStamped, queue_size=10)
     self.cmd_vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+    self.mcl3dl_init_pose_pub = rospy.Publisher('/mcl_3dl/initialpose', PoseWithCovarianceStamped, queue_size=10, latch=True)
 
-    # X. Voxel filter config.
-    cfg_vox_filt = ConfigVoxelGridFilter()
-    cfg_vox_filt.voxel_leaf_size = 2.0
-    cfg_vox_filt.measurement_range = 40
-    self.cfg_pnts_downsample.publish(cfg_vox_filt)
+    # X. Update voxel filter config.
+    self.update_voxel_grid_filter_config(2.0, 80.0)
 
-    # X.
-    x, y, z, roll, pitch, yaw = self.call_pose_initialize_service()
-    cur_pose = list([x, y, z, roll, pitch, yaw])
-    self.locked_cur_pose = LockedObj()
-    self.locked_cur_pose.set_object(cur_pose)
-    config_ndt = create_config_ndt( \
-      cur_pose[0], cur_pose[1], cur_pose[2], \
-      cur_pose[3], cur_pose[4], cur_pose[5])
-    self.cfg_ndt_pub.publish(config_ndt)
-    random.seed(0)
-
-    # X. Odom
+    # X. Prepare locked object.
     self.locked_odom = LockedObj()
+    self.locked_ndt_pose = LockedObj()
+    self.locked_gnss_pose_xyzrpy = LockedObj([0.0] * 6)
 
-    # X. Cur pose
-    self.locked_pose = LockedObj()
+    # X. Init Pose Candidate
+    init_pose_xyzrpy = self.create_init_pose_xyzrpy(pose_init, init_via_gnss, list([x, y, z, roll, pitch, yaw]))
 
-    # X. Tf broadcaster
-    self.br = tf.TransformBroadcaster()
+    # X. Update voxel filter config.
+    self.update_voxel_grid_filter_config(0.5, 80.0)
+
+    # X. Start NDT Localization.
+    self.publish_config_ndt(init_pose_xyzrpy)
+
+    # X. Start MCL3D Localization.
+    self.publish_initial_pose_for_mcl3d(init_pose_xyzrpy)
 
     # X. Validity
-    self.pose_valid = False
+    self.pose_valid = True
 
     rospy.Subscriber('odom', Odometry, self.odom_callback)
     rospy.Subscriber('ndt_stat', NDTStat, self.ndt_stat_callback)
-    rospy.Subscriber('gnss_pose_local', PoseStamped, self.gnss_pose_local_callback) 
     rospy.Subscriber('ndt_pose', PoseStamped, self.ndt_pose_callback)
     rospy.Subscriber('twist_raw', TwistStamped, self.twist_raw_callback)
 
     rospy.spin()
- 
-  def call_pose_initialize_service(self):
 
-    x_range = 5
-    y_range = 5
-    yaw_range = 2 * math.pi
-    x_step = 1.0
-    y_step = 1.0
-    yaw_step = 20.0 / 180.0 * math.pi
-    x = 3.0
-    y = 1.0
-    z = 0.0
-    roll = 0.0
-    pitch = 0.0
-    yaw = 75.0 / 180.0 * math.pi
+  def create_init_pose_xyzrpy(self, pose_init, init_via_gnss, pose_xyzrpy):
 
-    srv = {'resolution':1.0, 'step_size': 0.1, 'outlier_ratio': 0.55, 
-           'trans_eps': 0.01, 'max_itr':30, 'x_range': x_range, 'y_range': y_range,
-           'yaw_range': yaw_range, 'x_step': x_step, 'y_step': y_step, 'yaw_step': yaw_step, 
-           'x': x, 'y': y, 'z': z, 'roll': roll, 'pitch': pitch, 'yaw': yaw}
+    # X. Init Pose Candidate
+    init_pose_xyzrpy = pose_xyzrpy
+
+    self.gnss_received  = False
+    rospy.Subscriber('gnss_pose_local', PoseStamped, self.gnss_pose_local_callback) 
+    
+    # X. Use gnss for initialize.
+    if (init_via_gnss):
+      # X. Wait update from gnss
+      while (not self.gnss_received and not rospy.is_shutdown()):
+        rospy.logwarn('[Manager] Wait gnss data to be received.')
+        time.sleep(0.5)
+      init_pose_xyzrpy = self.locked_gnss_pose_xyzrpy.get_object()
+
+    # X. Call pose initializer.
+    if (pose_init):
+      rospy.logwarn('[Manager] Init pose request {}'.format(init_pose_xyzrpy))
+      req = FULL_INIT_REQUEST(init_pose_xyzrpy[0], init_pose_xyzrpy[1], init_pose_xyzrpy[2], \
+                              init_pose_xyzrpy[3], init_pose_xyzrpy[4], init_pose_xyzrpy[5])
+      init_pose_xyzrpy = self.call_pose_initialize_service(req)
+
+    return init_pose_xyzrpy
+
+  def update_voxel_grid_filter_config(self, leaf_size, measurement_range):
+    cfg_vox_filt = ConfigVoxelGridFilter()
+    cfg_vox_filt.voxel_leaf_size = leaf_size
+    cfg_vox_filt.measurement_range = measurement_range
+    self.cfg_pnts_downsample.publish(cfg_vox_filt)
+
+  def publish_config_ndt(self, pose_xyzrpy):
+    
+    # X. Start NDT Localization.
+    config_ndt = create_config_ndt(pose_xyzrpy)
+    self.cfg_ndt_pub.publish(config_ndt)
+
+  def publish_initial_pose_for_mcl3d(self, pose_xyzrpy):
+    pose_stamped = create_pose_stamped_with_cov(pose_xyzrpy)
+    self.mcl3dl_init_pose_pub.publish(pose_stamped)
+
+  def call_pose_initialize_service(self, req):
+
     rospy.wait_for_service('/initialize_pose')
     try:
       init_pose_srv = rospy.ServiceProxy('/initialize_pose', initialize_pose)
-      resp = init_pose_srv(**srv)
+      resp = init_pose_srv(**req)
     except rospy.ServiceException, e:
-      print("Service call failed: {}", e)
+      rospy.logwarn("Service call failed: {}".format(e))
 
-    return resp.x, resp.y, resp.z, resp.roll, resp.pitch, resp.yaw
-
+    return list([resp.x, resp.y, resp.z, resp.roll, resp.pitch, resp.yaw])
 
   def twist_raw_callback(self, twist_stamped):
     self.cmd_vel_pub.publish(twist_stamped.twist)
 
   def ndt_stat_callback(self, ndt_stat):
-
-    pass
-
-    if (0.5 < ndt_stat.score and not self.pose_valid):
-      self.pose_valid = False
-      cur_pose = self.locked_cur_pose.get_object()
-      x, y, z, yaw = cur_pose[0], cur_pose[1], cur_pose[2], cur_pose[5]
-
-      print('High ndt score : {}'.format(ndt_stat.score))
-      print('x: {}, y: {}, z: {}'.format(x, y, z))
-
-      dpose = self.dpose_list[random.randint(0, len(self.dpose_list))]
-      config_ndt = create_config_ndt( \
-        x + dpose[0], y + dpose[1], 0, \
-        0, 0, yaw + dpose[2])
-      self.cfg_ndt_pub.publish(config_ndt)
-    elif(100.0 < ndt_stat.score):
-      self.pose_valid = False
-    else:
-      self.pose_valid = True
-
+    if (0.5 < ndt_stat.score):
+      rospy.logwarn('High ndt score : {}'.format(ndt_stat.score))
 
   def odom_callback(self, odom):
+
     self.locked_odom.set_object(odom)
     twist_stamped = TwistStamped()
     twist_stamped.header = odom.header
@@ -183,93 +206,34 @@ class LocalizeManager():
     self.current_vel_pub.publish(twist_stamped)
 
     if (self.pose_valid):
-      ndt_pose = self.locked_pose.get_object()
+      ndt_pose = self.locked_ndt_pose.get_object()
       if (ndt_pose is not None):
         self.current_pose_pub.publish(ndt_pose)
 
-
   def ndt_pose_callback(self, ndt_pose):
-    print("Ndt Pose Received.\n")
-
-    # X. Convert to matrix.
-    odom = self.locked_odom.get_object()
-
-    #odom = Odometry()
-    #odom.pose.pose.position.x = 0.0
-    #odom.pose.pose.position.y = 0.0
-    #odom.pose.pose.position.z = 0.0
-    #odom.pose.pose.orientation.x = 0.0
-    #odom.pose.pose.orientation.y = 0.0
-    #odom.pose.pose.orientation.z = 0.0
-    #odom.pose.pose.orientation.w = 1.0
-
-    T_odom = quaternion_matrix( \
-      np.array([odom.pose.pose.orientation.x, odom.pose.pose.orientation.y, \
-                odom.pose.pose.orientation.z, odom.pose.pose.orientation.w], dtype=np.float64))
-    T_odom[0,3] = odom.pose.pose.position.x
-    T_odom[1,3] = odom.pose.pose.position.y
-    T_odom[2,3] = odom.pose.pose.position.z
-
-    T_map = quaternion_matrix( \
-      np.array([ndt_pose.pose.orientation.x, ndt_pose.pose.orientation.y, \
-            ndt_pose.pose.orientation.z, ndt_pose.pose.orientation.w], dtype=np.float64))
-    T_map[0,3] = ndt_pose.pose.position.x
-    T_map[1,3] = ndt_pose.pose.position.y
-    T_map[2,3] = ndt_pose.pose.position.z
-
-    T_map_to_odom = np.matmul(T_map, np.linalg.inv(T_odom))
-
-    _, _, angles, translate, _ = decompose_matrix(T_map_to_odom)
-    q_map_to_odom = quaternion_from_euler(angles[0], angles[1], angles[2])
-
-    t = TransformStamped()
-    t.transform.translation.x = translate[0]
-    t.transform.translation.y = translate[1]
-    t.transform.translation.z = translate[2]
-    t.transform.rotation.x = q_map_to_odom[0]
-    t.transform.rotation.y = q_map_to_odom[1]
-    t.transform.rotation.z = q_map_to_odom[2]
-    t.transform.rotation.w = q_map_to_odom[3]
-
-    pose_transformed = tf2_geometry_msgs.do_transform_pose(odom.pose, t)
-
-    if (self.pose_valid):
-      self.locked_pose.set_object(ndt_pose)
-
-    #print("Odom {}".format(odom.pose.pose.position))
-    #print("Map {}".format(ndt_pose.pose.position))
-    #print("Transformed {}".format(pose_transformed.pose.position))
-
-    #self.br.sendTransform( \
-    #  (translate[0], translate[1], translate[2]), q_map_to_odom, \
-    #  rospy.Time.now(), "odom", "map")
+    self.locked_ndt_pose.set_object(ndt_pose)
 
   def gnss_pose_local_callback(self, pose):
-    cur_pose = self.locked_cur_pose.get_object()
+
+    gnss_pose = self.locked_gnss_pose_xyzrpy.get_object()
     if (not np.isnan(pose.pose.position.x) and 
         not np.isnan(pose.pose.position.y) and 
         not np.isnan(pose.pose.position.z)):
-      cur_pose[0] = pose.pose.position.x
-      cur_pose[1] = pose.pose.position.y
-      cur_pose[2] = pose.pose.position.z
+      gnss_pose[0] = pose.pose.position.x
+      gnss_pose[1] = pose.pose.position.y
+      gnss_pose[2] = pose.pose.position.z
+      gnss_pose[3] = 0
+      gnss_pose[4] = 0    
+      gnss_pose[5] = 0
 
-    # X. Assign 0 to orientation.
-    cur_pose[3] = 0
-    cur_pose[4] = 0    
-    cur_pose[5] = 0
-    self.locked_cur_pose.set_object(cur_pose)
-
-  def create_dpose_list(self):
-    dpose_list = list()
-    for dx in range(-10, 11):
-      for dy in range(-10, 11):
-        for dyaw in range(36):
-          dpose_list.append([dx, dy, 10.0 * dyaw / 180.0 * math.pi])
-    return dpose_list
+    self.locked_gnss_pose_xyzrpy.set_object(gnss_pose)
+    self.gnss_received = True
 
 if __name__ == '__main__':
 
   parser = argparse.ArgumentParser()
+  parser.add_argument('-pose_initializer', type=int)
+  parser.add_argument('-init_via_gnss', type=int)
   parser.add_argument('-x', type=float)
   parser.add_argument('-y', type=float)
   parser.add_argument('-z', type=float)
@@ -278,11 +242,4 @@ if __name__ == '__main__':
   parser.add_argument('-yaw', type=float)
   args = parser.parse_args(rospy.myargv()[1:])
 
-  mgr = LocalizeManager(args.x, args.y, args.z, args.roll, args.pitch, args.yaw)
-
-
-  #ndt.setResolution(1.0);
-  #ndt.setStepSize(0.1);
-  #ndt.setOulierRatio(0.55);
-  #ndt.setTransformationEpsilon(0.01);
-  #ndt.setMaximumIterations(30);
+  mgr = LocalizeManager(args.pose_initializer, args.init_via_gnss, args.x, args.y, args.z, args.roll, args.pitch, args.yaw)

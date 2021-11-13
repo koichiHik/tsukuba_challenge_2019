@@ -26,6 +26,9 @@
     <arg name="odom_yaml_filepath" value="$(arg odom_yaml_filepath)" />
   </include>
 
+  <!-- Lidar Scan to Pcl -->
+  <include file="$(find scripts)/launch/modules/common/scan_to_pcl2.launch" />
+
   <node pkg="rviz" type="rviz" name="rviz" output="screen" required="True"
         args="-d $(arg rviz_config_file)" />
 

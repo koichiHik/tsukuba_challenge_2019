@@ -1,0 +1,9 @@
+<library path="lib/liblaserscan_to_pointcloud_nodelet">
+  <class 	name="laserscan_to_pointcloud2/LasaerScanToPointCloudNodelet" 
+					type="koichi_robotics_lib::LasaerScanToPointCloudNodelet" 
+					base_class_type="nodelet::Nodelet">
+    <description>
+      LasaerScanToPointCloudNodelet.
+    </description>
+  </class>
+</library>

@@ -42,11 +42,11 @@ function ROSBAG_EXTRACT_RAW_TOPICS() {
   TOPIC_NAMES+=" or topic == '/ypspur/diagnostics'"
   TOPIC_NAMES+=" or topic == '/ypspur/joint_states'"
   TOPIC_NAMES+=" or topic == '/ypspur/wrench'"
-	TOPIC_NAMES+=" or topic == '/fix'"
-	TOPIC_NAMES+=" or topic == '/time_reference'"
-	TOPIC_NAMES+=" or topic == '/vel'"
+  TOPIC_NAMES+=" or topic == '/fix'"
+  TOPIC_NAMES+=" or topic == '/time_reference'"
+  TOPIC_NAMES+=" or topic == '/vel'"
 
-	rosbag filter ${SRCBAG} ${NEWBAG} "${TOPIC_NAMES}"
+  rosbag filter ${SRCBAG} ${NEWBAG} "${TOPIC_NAMES}"
 }
 
 function ROSBAG_RECORD_RAW_TOPICS() {
@@ -63,10 +63,10 @@ function ROSBAG_RECORD_RAW_TOPICS() {
   TOPIC_NAMES+="/ypspur/control_mode "
   TOPIC_NAMES+="/ypspur/diagnostics "
   TOPIC_NAMES+="/ypspur/joint_states "
-  TOPIC_NAMES+="/ypspur/wrench"
-	TOPIC_NAMES+="/fix "
-	TOPIC_NAMES+="/time_reference "
-	TOPIC_NAMES+="/vel "
+  TOPIC_NAMES+="/ypspur/wrench "
+  TOPIC_NAMES+="/fix "
+  TOPIC_NAMES+="/time_reference "
+  TOPIC_NAMES+="/vel "
 
   rosbag record -o ${BAG_RECORD_DIR} ${TOPIC_NAMES}
 
@@ -87,12 +87,34 @@ function ROSBAG_RECORD_BASE_TOPICS_AND_ODOM() {
   TOPIC_NAMES+="/ypspur/diagnostics "
   TOPIC_NAMES+="/ypspur/joint_states "
   TOPIC_NAMES+="/ypspur/wrench "
-	TOPIC_NAMES+="/fix "
-	TOPIC_NAMES+="/time_reference "
-	TOPIC_NAMES+="/vel "
+  TOPIC_NAMES+="/fix "
+  TOPIC_NAMES+="/time_reference "
+  TOPIC_NAMES+="/vel "
   TOPIC_NAMES+="/odom "
   TOPIC_NAMES+="/imu "
 
   rosbag record -o ${BAG_RECORD_DIR} ${TOPIC_NAMES}
+
+}
+
+function READ_DATAINFO() {
+
+  local FILEPATH=${1}
+  local SEARCH_WORD=${2}
+  SEARCH_WORD=${SEARCH_WORD}":"
+
+  local FOUND=0
+  while read LINE; do
+    LINE=$(echo ${LINE// /})
+    if [ `echo ${LINE} | grep ${SEARCH_WORD}` ]; then
+      echo ${LINE#${SEARCH_WORD}}
+      FOUND=1
+      break
+    fi
+  done < ${FILEPATH}
+
+  if [ ! ${FOUND} ]; then
+    echo 0
+  fi
 
 }

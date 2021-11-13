@@ -1,0 +1,16 @@
+<launch>
+	<arg name="nodelet_mgr" default="scan2pcl_nodelet_mgr"/>
+
+	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_mgr)" args="manager" output="screen"/>
+	<node pkg="nodelet" type="nodelet" name="LasaerScanToPointCloudNodelet" 
+        args="load laserscan_to_pointcloud2/LasaerScanToPointCloudNodelet $(arg nodelet_mgr)" 
+        output="screen" required="True" >
+
+    <!-- Topic (IN) -->
+    <remap from="/scan" to="/scan" />
+
+    <!-- Topic (OUT) -->
+    <remap from="/pointcloud" to="/urg_points" />
+
+	</node>
+</launch>
