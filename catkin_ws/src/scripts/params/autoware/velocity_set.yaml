@@ -2,12 +2,12 @@
 use_crosswalk_detection: False
 points_topic: /velodyne_points
 velocity_offset: 0.2            # m/s
-decelerate_vel_min: 0.36         # m/s
+decelerate_vel_min: 0.2         # m/s
 remove_points_upto: 0.1         # m
 enable_multiple_crosswalk_detection: False
-stop_distance_obstacle: 1.0     # m
+stop_distance_obstacle: 1.5     # m
 stop_distance_stopline: 0.3     # m
-detection_range: 1.5            # m
+detection_range: 1.0            # m
 deceleration_range: 2.0
 points_threshold: 5
 detection_height_top: 0.5       # m from sensor

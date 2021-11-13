@@ -67,5 +67,5 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/autodrive_offline.launch \
   bagfile_path:=${BAG_FILEPATH} \
   start:=0.0 \
   duration:=0.0 \
-  rate:=0.5 \
-  wait:=3
+  rate:=1.0 \
+  wait:=7.0

@@ -27,7 +27,7 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/ndt_localization_bag_replay.launch \
   urdf_file:=${URDF_FILEPATH} \
   base_frame_id:="base_link" \
   odom_frame_id:="odom" \
-  plane_number:=${PLANE_NUMBER} \
+  plane_number:=$(READ_DATAINFO ${DATAINFO_FILE} ${PLANE_NUMBER}) \
   robot_yaml_filepath:=${ROBOT_YAML_FILEPATH} \
   odom_yaml_filepath:=${ODOM_YAML_FILEPATH} \
   imu_adjust_param_filepath:=${IMU_ADJUST_FILEPATH} \

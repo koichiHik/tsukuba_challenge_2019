@@ -4,9 +4,10 @@ safety_waypoints_size: 50
 update_rate: 10
 
 # Avoidance behavior configurations 
-enable_avoidance: True
-avoid_waypoints_velocity: 2.0
-avoid_start_velocity: 2.0
+enable_avoidance: False
+enable_ontime_avoidance: True
+avoid_waypoints_velocity: 1.0
+avoid_start_velocity: 1.0
 replan_interval: 2.0
 search_waypoints_size: 20
 search_waypoints_delta: 2
@@ -17,8 +18,8 @@ use_back: False
 use_potential_heuristic: True
 use_wavefront_heuristic: False
 time_limit: 1000.0
-robot_length: 0.75
-robot_width: 0.54
+robot_length: 0.7
+robot_width: 0.5
 robot_base2back: 0.4
 minimum_turning_radius: 0.25
 theta_size: 12

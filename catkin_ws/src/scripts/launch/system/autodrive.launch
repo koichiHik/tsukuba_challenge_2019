@@ -95,14 +95,6 @@
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
     <arg name="mcl_3dl_yamlpath" default="$(find scripts)/params/common/mcl_3dl.yaml" />
     <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
-    <arg name="pose_initializer" value="$(arg pose_initializer)" />
-    <arg name="init_via_gnss" value="$(arg init_via_gnss)" />
-    <arg name="x" value="$(arg x)" />
-    <arg name="y" value="$(arg y)" />
-    <arg name="z" value="$(arg z)" />
-    <arg name="roll" value="$(arg roll)" />
-    <arg name="pitch" value="$(arg pitch)" />
-    <arg name="yaw" value="$(arg yaw)" />
   </include>
 
   <!-- Perception nodes bringup -->
@@ -121,5 +113,17 @@
     <arg name="lane_navi_yamlpath" value="$(arg lane_navi_yamlpath)" />
     <arg name="lane_select_yamlpath" value="$(arg lane_select_yamlpath)" />
   </include>
+
+  <!-- Status maanger bringup -->
+  <node pkg="scripts" type="status_manager.py" name="status_manager" output="screen" required="True" >
+    <param name="pose_initializer" value="$(arg pose_initializer)" />
+    <param name="init_via_gnss" value="$(arg init_via_gnss)" />  
+    <param name="x" value="$(arg x)" />
+    <param name="y" value="$(arg y)" />
+    <param name="z" value="$(arg z)" />
+    <param name="roll" value="$(arg roll)" />
+    <param name="pitch" value="$(arg pitch)" />
+    <param name="yaw" value="$(arg yaw)" />
+  </node>
 
 </launch>
