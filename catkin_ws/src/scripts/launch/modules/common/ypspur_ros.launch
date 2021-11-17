@@ -7,7 +7,7 @@
   <arg name="ypspur_bin_filepath" default="$(find scripts)/../../../../3rdparty/install/yp_spur/bin/ypspur-coordinator" />
   <arg name="ypspur_param_filepath" default="$(find scripts)/params/common/yp_spur.param" />
 
-  <node pkg="ypspur_ros" type="ypspur_ros" name="ypspur" output="screen">
+  <node pkg="ypspur_ros" type="ypspur_ros" name="ypspur" output="screen" required="True">
 
     <!-- Input Topic Name -->
     <remap from="cmd_vel" to="$(arg cmd_vel_topic_name)" />

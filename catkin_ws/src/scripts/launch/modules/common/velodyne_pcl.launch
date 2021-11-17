@@ -9,11 +9,12 @@
   <rosparam file="$(arg velodyne_param_filepath)" command="load" />
 
   <!-- Velodyne nodelet manager -->
-  <node pkg="nodelet" type="nodelet" name="$(arg velodyne_nodelet_manager)" args="manager" />
+  <node pkg="nodelet" type="nodelet" 
+				name="$(arg velodyne_nodelet_manager)" args="manager" required="true"/>
 
   <!-- Velodyne driver -->
   <node pkg="nodelet" type="nodelet" name="$(arg velodyne_nodelet_manager)_driver"
-        args="load velodyne_driver/DriverNodelet $(arg velodyne_nodelet_manager)" >
+        args="load velodyne_driver/DriverNodelet $(arg velodyne_nodelet_manager)" required="true" >
 
     <!-- Parameter setting -->
     <param name="frame_id" value="$(arg frame_id)"/>

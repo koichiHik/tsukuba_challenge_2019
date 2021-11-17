@@ -1,33 +1,33 @@
 
 use_crosswalk_detection: False
 points_topic: /velodyne_points
-velocity_offset: 0.2            # m/s
+velocity_offset: 0.05            # m/s
 decelerate_vel_min: 0.2         # m/s
 remove_points_upto: 0.1         # m
 enable_multiple_crosswalk_detection: False
-stop_distance_obstacle: 1.5     # m
+stop_distance_obstacle: 2.0     # m
 stop_distance_stopline: 0.3     # m
 detection_range: 1.0            # m
-deceleration_range: 2.0
+deceleration_range: 3.0
 points_threshold: 5
 detection_height_top: 0.5       # m from sensor
 detection_height_bottom: -0.4   # m from sensor
-deceleration_obstacle: 3.0     # m/s2 
-deceleration_stopline: 1.0     # m/s2
+deceleration_obstacle: 0.5     # m/s2 
+deceleration_stopline: 0.3     # m/s2
 velocity_change_limit: 4.0      # m/s
 temporal_waypoints_size: 100
 
 # Parameter for point removing clost to robot.
 base_to_front: 0.3                  # m
 base_to_rear: 0.4                   # m
-base_to_left: 0.4                   # m
-base_to_right: 0.4                  # m
+base_to_left: 0.3                   # m
+base_to_right: 0.3                  # m
 visible_angle_from_x_axis: 0.785398 # rad
 publish_obstacle_pcl: true
 
 # Parameter for point removing around waypoint.
-wp_stop_x_thresh: 0.5
-wp_stop_y_thresh: 0.4
+wp_stop_x_thresh: 0.25
+wp_stop_y_thresh: 0.35
 wp_decel_x_thresh: 1.0
 wp_decel_y_thresh: 0.6
 

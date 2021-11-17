@@ -12,7 +12,7 @@
         output="$(arg output)" 
         clear_params="$(arg clear_params)"
         respawn="$(arg respawn)" 
-        respawn_delay="$(arg respawn_delay)">
+        respawn_delay="$(arg respawn_delay)" required="true">
     <rosparam command="load" file="$(arg param_file_path)" />
   </node>
 </launch>

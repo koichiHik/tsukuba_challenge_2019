@@ -7,13 +7,14 @@ import numpy as np
 import math
 
 # ROS
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from geometry_msgs.msg import Twist, Pose, PoseStamped, PoseWithCovarianceStamped
+from tf.transformations import euler_from_quaternion, quaternion_from_euler, quaternion_matrix, decompose_matrix
+from geometry_msgs.msg import Twist, Pose, PoseStamped, PoseWithCovarianceStamped, TransformStamped
 import rospy
 from autoware_config_msgs.msg import ConfigNDT, ConfigVoxelGridFilter
 from autoware_msgs.msg import Lane
 from messages.srv import initialize_pose
 from std_msgs.msg import Header
+import tf2_geometry_msgs
 
 class XYZRPY:
 
@@ -188,6 +189,21 @@ def create_xyzrpy_from_pose(pose):
   eulers = euler_from_quaternion(q)
   return XYZRPY(pose.position.x, pose.position.y, pose.position.z, eulers[0], eulers[1], eulers[2])
 
+def create_pose_from_xyzrpy(xyzrpy):
+
+  pose = Pose()
+  pose.position.x = xyzrpy.x
+  pose.position.y = xyzrpy.y
+  pose.position.z = xyzrpy.z
+
+  q = quaternion_from_euler(xyzrpy.roll, xyzrpy.pitch, xyzrpy.yaw)
+  pose.orientation.x = q[0]
+  pose.orientation.y = q[1]
+  pose.orientation.z = q[2]
+  pose.orientation.w = q[3]
+
+  return pose
+
 def pose_is_not_nan(pose):
 
   if (not np.isnan(pose.position.x) and \
@@ -219,5 +235,67 @@ def compute_distance_to_obstacle_on_waypoint(obs_idx, lane, pose):
   return np.linalg.norm(np_pose - np_wp)
 
 def is_avoidance_ok_waypoint(obs_idx, lane):
-  wp = lane.waypoints[obs_idx]
-  return wp.change_flag == 1
+  return lane.waypoints[obs_idx].wpstate.event_state == 1
+
+def transform_pose(pose, trans, rot):
+
+  t = TransformStamped()
+  t.transform.translation.x = trans[0]
+  t.transform.translation.y = trans[1]
+  t.transform.translation.z = trans[2]
+  t.transform.rotation.x = rot[0]
+  t.transform.rotation.y = rot[1]
+  t.transform.rotation.z = rot[2]
+  t.transform.rotation.w = rot[3]
+
+  pose_stamped = PoseStamped()
+  pose_stamped.pose = pose
+
+  pose_transformed = tf2_geometry_msgs.do_transform_pose(pose_stamped, t)
+  return pose_transformed.pose
+
+def create_transform_from_pose(to_xyzrpy, from_xyzrpy):
+
+  q_from = quaternion_from_euler(from_xyzrpy.roll, from_xyzrpy.pitch, from_xyzrpy.yaw)
+  q_to = quaternion_from_euler(to_xyzrpy.roll, to_xyzrpy.pitch, to_xyzrpy.yaw)
+
+  T_from = quaternion_matrix( \
+    np.array([q_from[0], q_from[1], q_from[2], q_from[3]], dtype=np.float64))
+  T_from[0, 3] = from_xyzrpy.x
+  T_from[1, 3] = from_xyzrpy.y
+  T_from[2, 3] = from_xyzrpy.z
+
+  T_to = quaternion_matrix( \
+    np.array([q_to[0], q_to[1], q_to[2], q_to[3]], dtype=np.float64))
+  T_to[0, 3] = to_xyzrpy.x
+  T_to[1, 3] = to_xyzrpy.y
+  T_to[2, 3] = to_xyzrpy.z
+
+  T_from_to_to = np.matmul(T_to, np.linalg.inv(T_from))
+  _, _, angles, translate, _ = decompose_matrix(T_from_to_to)
+  q_from_to_to = quaternion_from_euler(angles[0], angles[1], angles[2])
+
+  return (translate, q_from_to_to)
+
+def create_tf_transform_from_pose(to_pose, from_pose):
+
+  q_from = from_pose.orientation
+  q_to = to_pose.orientation
+
+  T_from = quaternion_matrix( \
+    np.array([q_from.x, q_from.y, q_from.z, q_from.w], dtype=np.float64))
+  T_from[0, 3] = from_pose.position.x
+  T_from[1, 3] = from_pose.position.y
+  T_from[2, 3] = from_pose.position.z
+
+  T_to = quaternion_matrix( \
+    np.array([q_to.x, q_to.y, q_to.z, q_to.w], dtype=np.float64))
+  T_to[0, 3] = to_pose.position.x
+  T_to[1, 3] = to_pose.position.y
+  T_to[2, 3] = to_pose.position.z
+
+  T_from_to_to = np.matmul(T_to, np.linalg.inv(T_from))
+  _, _, angles, translate, _ = decompose_matrix(T_from_to_to)
+  q_from_to_to = quaternion_from_euler(angles[0], angles[1], angles[2])
+
+  return (translate, q_from_to_to)

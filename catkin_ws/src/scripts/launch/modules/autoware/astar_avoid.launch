@@ -14,7 +14,8 @@
 
     <!-- Topic (OUT) -->
     <remap from="safety_waypoints" to="safety_waypoints" />
-
+    <remap from="avoidance_request_done" to="avoidance_request_done" />
+    
   </node>
 
 </launch>

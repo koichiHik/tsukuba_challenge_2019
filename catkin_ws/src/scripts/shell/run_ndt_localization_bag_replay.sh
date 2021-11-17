@@ -46,10 +46,10 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/ndt_localization_bag_replay.launch \
   pitch:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_PITCH_NAME}) \
   yaw:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_YAW_NAME}) \
   bagfile_path:=${BAG_FILEPATH} \
-  start:=0.0 \
-  duration:=0.0 \
-  rate:=1.0 \
-  wait:=7.0 \
+  start:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_START}) \
+  duration:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_DURATION}) \
+  rate:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_RATE}) \
+  wait:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_WAIT}) \
   dump_pose_file:="False" \
   localized_pose_filepath:=${DATA_DIR}/${LOCALIZED_POSE_JSON} \
   pose_pair_filepath:=${DATA_DIR}/${POSE_PAIR_JSON} \

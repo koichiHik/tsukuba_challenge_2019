@@ -5,8 +5,8 @@
   <arg name="odom_yaml_filepath" default="$(find scripts)/params/common/odometry.yaml" />
 	<arg name="nodelet_mgr" default="odom_nodelet_mgr"/>
 
-	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_mgr)" args="manager" output="screen"/>
-	<node pkg="nodelet" type="nodelet" name="OdometryNodelet" args="load odometry/OdometryNodelet $(arg nodelet_mgr)" output="screen" >
+	<node pkg="nodelet" type="nodelet" name="$(arg nodelet_mgr)" args="manager" output="screen" required="true"/>
+	<node pkg="nodelet" type="nodelet" name="OdometryNodelet" args="load odometry/OdometryNodelet $(arg nodelet_mgr)" output="screen" required="true">
 		
     <!-- Topic Name IN -->
     <remap from="imu" to="imu" />

@@ -48,5 +48,6 @@ if __name__ == '__main__':
   out_df["velocity"] = df["velocity"]
   out_df["change_flag"] = df["change_flag"]
   out_df["stop_flag"] = 0
+  out_df["event_flag"] = 0
 
   out_df.to_csv(args.out_waypoint, index=False)

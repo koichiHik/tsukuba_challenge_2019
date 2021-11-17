@@ -65,7 +65,7 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/autodrive_offline.launch \
   lane_rule_yamlpath:=${LANE_RULE_YAMLPATH} \
   lane_select_yamlpath:=${LANE_SELECT_YAMLPATH} \
   bagfile_path:=${BAG_FILEPATH} \
-  start:=0.0 \
-  duration:=0.0 \
-  rate:=1.0 \
-  wait:=7.0
+  start:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_START}) \
+  duration:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_DURATION}) \
+  rate:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_RATE}) \
+  wait:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_WAIT}) \

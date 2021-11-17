@@ -4,7 +4,7 @@
 
   <rosparam file="$(arg joystick_param_filepath)" command="load" />
 
-  <node pkg="joy" type="joy_node" name="ps3_joy" output="screen" >
+  <node pkg="joy" type="joy_node" name="ps3_joy" output="screen" required="true" >
     <!-- Topic rename -->
     <remap from="joy" to="/ps3_joy/joy" />
     <remap from="joy/set_feedback" to="/ps3_joy/joy/set_feedback" />
@@ -15,7 +15,7 @@
     <remap from="~/autorepeat_rate" to="/ps3_joy/autorepeat_rate" />
   </node>
 
-  <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node">
+  <node pkg="teleop_twist_joy" name="teleop_twist_joy" type="teleop_node" required="true">
     <!-- Topic rename -->
     <remap from="joy" to="/ps3_joy/joy" />
     <remap from="cmd_vel" to="cmd_vel" />
