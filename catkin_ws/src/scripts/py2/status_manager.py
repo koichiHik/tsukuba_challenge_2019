@@ -243,6 +243,7 @@ class StatusManager:
     self.pubs.cfg_ntd.publish(DEFAULT_CONFIG_NDT(init_xyzrpy))
 
     # X. Send for amcl localizer.
+    rospy.logwarn("amcl : {}".format(create_pose_stamped_with_cov(init_xyzrpy)))
     self.pubs.amcl_init.publish(create_pose_stamped_with_cov(init_xyzrpy))
 
     # X. Notify

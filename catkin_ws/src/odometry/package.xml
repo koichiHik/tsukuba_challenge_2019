@@ -56,7 +56,6 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>ypspur_ros</build_depend>
-  <build_depend>kmsgs</build_depend>
   <build_export_depend>nav_msgs</build_export_depend>
   <build_export_depend>nodelet</build_export_depend>
   <build_export_depend>rosconsole</build_export_depend>
@@ -64,7 +63,6 @@
   <build_export_depend>std_msgs</build_export_depend>
   <build_export_depend>tf</build_export_depend>
   <build_export_depend>ypspur_ros</build_export_depend>
-  <build_export_depend>kmsgs</build_export_depend>
   <exec_depend>nav_msgs</exec_depend>
   <exec_depend>nodelet</exec_depend>
   <exec_depend>rosconsole</exec_depend>
@@ -72,7 +70,6 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>tf</exec_depend>
   <exec_depend>ypspur_ros</exec_depend>
-  <exec_depend>kmsgs</exec_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

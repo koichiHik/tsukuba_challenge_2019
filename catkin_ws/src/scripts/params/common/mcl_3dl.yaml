@@ -42,7 +42,7 @@ mcl_3dl:
   dist_weight_z: 2.0
   global_localization_grid_lin: 0.3
   global_localization_grid_ang: 0.524
-  num_particles: 64
+  num_particles: 128
   resample_var_x: 0.05
   resample_var_y: 0.05
   resample_var_z: 0.05

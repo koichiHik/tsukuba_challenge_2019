@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>status_management</name>
+  <version>0.0.0</version>
+  <description>The status_management package</description>
+
+  <maintainer email="koichi@todo.todo">koichi</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>nodelet</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>autoware_msgs</build_depend>
+  <build_depend>messages</build_depend>
+  <build_depend>autoware_config_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <exec_depend>nodelet</exec_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>autoware_msgs</exec_depend>
+  <exec_depend>messages</exec_depend>
+  <exec_depend>autoware_config_msgs</exec_depend>
+  <exec_depend>tf</exec_depend>
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+  </export>
+</package>

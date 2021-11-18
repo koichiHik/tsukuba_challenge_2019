@@ -64,16 +64,16 @@
   </include>
 
   <!-- Status maanger bringup -->
-  <node pkg="scripts" type="status_manager.py" name="status_manager" output="screen" required="True" >
-    <param name="pose_initializer" value="$(arg pose_initializer)" />
-    <param name="init_via_gnss" value="$(arg init_via_gnss)" />  
-    <param name="x" value="$(arg x)" />
-    <param name="y" value="$(arg y)" />
-    <param name="z" value="$(arg z)" />
-    <param name="roll" value="$(arg roll)" />
-    <param name="pitch" value="$(arg pitch)" />
-    <param name="yaw" value="$(arg yaw)" />
-  </node>
+  <include file="$(find scripts)/launch/modules/common/status_management.launch">
+    <arg name="init_from_gnss" value="$(arg init_via_gnss)" />
+    <arg name="use_pose_search" value="$(arg pose_initializer)" />
+    <arg name="x" value="$(arg x)" />
+    <arg name="y" value="$(arg y)" />
+    <arg name="z" value="$(arg z)" />
+    <arg name="roll" value="$(arg roll)" />
+    <arg name="pitch" value="$(arg pitch)" />
+    <arg name="yaw" value="$(arg yaw)" />
+  </include>
 
   <group if="$(eval dump_pose_file)" >
     <node pkg="scripts" type="pose_writer.py" name="pose_writer" output="log" required="True" 

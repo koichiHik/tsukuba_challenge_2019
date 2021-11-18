@@ -1,0 +1,9 @@
+<library path="lib/libstatus_management_nodelet">
+  <class 	name="status_management/StatusManagementNodelet" 
+					type="koichi_robotics_lib::StatusManagementNodelet" 
+					base_class_type="nodelet::Nodelet">
+    <description>
+      StatusManagementNodelet.
+    </description>
+  </class>
+</library>

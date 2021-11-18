@@ -1,23 +1,18 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(odometry)
+cmake_minimum_required(VERSION 3.0.2)
+project(status_management)
 
-## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-  nav_msgs
-  nodelet
-  rosconsole
-  roscpp
-  std_msgs
-  tf
-  ypspur_ros
-)
 find_package(glog REQUIRED)
 find_package(Eigen3 REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+  nodelet
+  tf
+  messages
+  sensor_msgs
+  autoware_msgs
+  autoware_config_msgs
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -76,7 +71,7 @@ find_package(Eigen3 REQUIRED)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   nav_msgs#   std_msgs
+#   std_msgs  # Or other packages containing msgs
 # )
 
 ################################################
@@ -110,8 +105,14 @@ find_package(Eigen3 REQUIRED)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES odometry
-  CATKIN_DEPENDS nav_msgs nodelet rosconsole roscpp std_msgs tf ypspur_ros
+#  LIBRARIES status_management
+  CATKIN_DEPENDS
+    nodelet
+    tf
+    messages
+    sensor_msgs
+    autoware_msgs
+    autoware_config_msgs
 #  DEPENDS system_lib
 )
 
@@ -123,12 +124,13 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
 # include
-  ${catkin_INCLUDE_DIRS}
+ ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-add_library(odometry_nodelet
-  src/odometry_nodelet.cpp
+add_library(status_management_nodelet
+  src/status_management_util.cpp
+  src/status_management_nodelet.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -139,7 +141,7 @@ add_library(odometry_nodelet
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/odometry_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/status_management_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -149,9 +151,21 @@ add_library(odometry_nodelet
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
+add_dependencies(status_management_nodelet messages_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(odometry_nodelet
+target_link_libraries(status_management_nodelet
+  ${catkin_LIBRARIES}
+  glog::glog
+  Eigen3::Eigen
+)
+
+add_executable(test_prog
+  src/test.cpp
+)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(test_prog
   ${catkin_LIBRARIES}
   glog::glog
   Eigen3::Eigen
@@ -166,7 +180,7 @@ target_link_libraries(odometry_nodelet
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
+# catkin_install_python(PROGRAMS
 #   scripts/my_python_script
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
@@ -204,7 +218,7 @@ target_link_libraries(odometry_nodelet
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_odometry.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_status_management.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
