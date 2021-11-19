@@ -12,10 +12,11 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 
-MIN_3D_RANGE = 1
-MAX_3D_RANGE = 130
+MIN_3D_RANGE = 4
+MAX_3D_RANGE = 80
 --HIGHRES_RANGE = 15            --org
-HIGHRES_RANGE = 90
+--HIGHRES_RANGE = 130
+HIGHRES_RANGE = 30
 
 TRAJECTORY_BUILDER_3D = {
   min_range = MIN_3D_RANGE,
@@ -26,7 +27,7 @@ TRAJECTORY_BUILDER_3D = {
 
   high_resolution_adaptive_voxel_filter = {
     max_length = 5.,
-    min_num_points = 150,
+    min_num_points = 250,
     max_range = HIGHRES_RANGE,
   },
 
@@ -53,13 +54,14 @@ TRAJECTORY_BUILDER_3D = {
 --    translation_weight = 5.,      --org
 --    rotation_weight = 4e2,        --org
     occupied_space_weight_0 = 1e1,
-    occupied_space_weight_1 = 5e1,
+    occupied_space_weight_1 = 5e5,
     translation_weight = 2e2,
-    rotation_weight = 4e2,
-    only_optimize_yaw = false,
+--    rotation_weight = 4e2,
+    rotation_weight = 1e1,
+    only_optimize_yaw = true,
     ceres_solver_options = {
       use_nonmonotonic_steps = false,
-      max_num_iterations = 12,
+      max_num_iterations = 40,
       num_threads = 1,
     },
   },
@@ -77,7 +79,7 @@ TRAJECTORY_BUILDER_3D = {
     high_resolution = 0.25,
 --    high_resolution = 0.05,
     high_resolution_max_range = HIGHRES_RANGE,
-    low_resolution = 1.00,
+    low_resolution = 1.0,
 --    num_range_data = 160, --org
 --    num_range_data = 100,
     num_range_data = 250,

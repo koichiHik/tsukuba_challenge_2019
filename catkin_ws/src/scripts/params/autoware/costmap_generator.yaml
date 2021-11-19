@@ -12,5 +12,5 @@ expand_polygon_size: 0.25
 size_of_expansion_kernel: 5
 use_objects_box: false
 use_objects_convex_hull: true
-use_points: false
+use_points: true
 use_wayarea: false

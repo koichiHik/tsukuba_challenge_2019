@@ -20,7 +20,7 @@ POSE_GRAPH = {
 --    max_constraint_distance = 100.,
     max_constraint_distance = 100.,
 --    min_score = 0.62, --org
-    min_score = 0.3,
+    min_score = 0.5,
     global_localization_min_score = 0.5, --org
     loop_closure_translation_weight = 1.1e4, --org
     loop_closure_rotation_weight = 1e5, --org
@@ -56,7 +56,7 @@ POSE_GRAPH = {
     },
     ceres_scan_matcher_3d = {
       occupied_space_weight_0 = 5., --org
-      occupied_space_weight_1 = 30., --org
+      occupied_space_weight_1 = 300., --org
       translation_weight = 10.,
       rotation_weight = 1.,
 --      occupied_space_weight_0 = 1e3,

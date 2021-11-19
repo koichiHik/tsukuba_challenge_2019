@@ -15,6 +15,7 @@
 MIN_3D_RANGE = 1
 MAX_3D_RANGE = 130
 --HIGHRES_RANGE = 15            --org
+--HIGHRES_RANGE = 130
 HIGHRES_RANGE = 90
 
 TRAJECTORY_BUILDER_3D = {
@@ -55,11 +56,12 @@ TRAJECTORY_BUILDER_3D = {
     occupied_space_weight_0 = 1e1,
     occupied_space_weight_1 = 5e1,
     translation_weight = 2e2,
-    rotation_weight = 4e2,
+--    rotation_weight = 4e2,
+    rotation_weight = 1e1,
     only_optimize_yaw = false,
     ceres_solver_options = {
       use_nonmonotonic_steps = false,
-      max_num_iterations = 12,
+      max_num_iterations = 40,
       num_threads = 1,
     },
   },
@@ -77,7 +79,7 @@ TRAJECTORY_BUILDER_3D = {
     high_resolution = 0.25,
 --    high_resolution = 0.05,
     high_resolution_max_range = HIGHRES_RANGE,
-    low_resolution = 1.00,
+    low_resolution = 0.40,
 --    num_range_data = 160, --org
 --    num_range_data = 100,
     num_range_data = 250,
