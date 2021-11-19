@@ -313,6 +313,9 @@ void OdometryNodelet::jointStateCallback(
 
   // X. Compute incremental distance.
   JointInfo last_joint_info = state_.GetJointInfo();
+  if (last_joint_info.timestamp_.isZero()) {
+    last_joint_info = new_joint_info;
+  }
   double increment_right, increment_left, increment_avg;
   ComputeIncrementalDistance(params_.right_distance_per_rad,
                              params_.left_distance_per_rad, last_joint_info,
@@ -335,16 +338,14 @@ void OdometryNodelet::jointStateCallback(
   {
     double vx_3d = 0.0;
     double vx_2d = 0.0;
-    if (!last_joint_info.timestamp_.isZero()) {
-      if (last_joint_info.timestamp_ < new_joint_info.timestamp_) {
-        double dt =
-            (new_joint_info.timestamp_ - last_joint_info.timestamp_).toSec();
-        vx_3d = increment / dt;
-        vx_2d = increment / dt;
-      } else {
-        vx_3d = last_joint_info.v_3d_(0);
-        vx_2d = last_joint_info.v_2d_(0);
-      }
+    if (last_joint_info.timestamp_ < new_joint_info.timestamp_) {
+      double dt =
+          (new_joint_info.timestamp_ - last_joint_info.timestamp_).toSec();
+      vx_3d = increment / dt;
+      vx_2d = increment / dt;
+    } else {
+      vx_3d = last_joint_info.v_3d_(0);
+      vx_2d = last_joint_info.v_2d_(0);
     }
     new_joint_info.v_3d_(0) = vx_3d;
     new_joint_info.v_3d_(1) = 0.0;
