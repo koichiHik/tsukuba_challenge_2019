@@ -36,6 +36,7 @@ namespace {
 
 static const int32_t DEFAULT_PUB_QUEUE_SIZE = 100;
 static const int32_t DEFAULT_SUB_QUEUE_SIZE = 100;
+static const bool REINIT_VIA_GNSS = true;
 
 // Timeout
 static constexpr double DEFAULT_SERVICE_TIMEOUT_SEC = 20.0;
@@ -232,6 +233,7 @@ class StatusManagementNodelet : public nodelet::Nodelet {
   LockedObj<int32_t> localization_unreliable_cnt_;
   LockedObj<int32_t> stopped_due_to_obstacle_cnt_;
   LockedObj<bool> pose_initializing_;
+  LockedObj<bool> stop_request_;
   LockedObj<ros::Time> last_pose_init_time_;
   uint64_t control_cycle_cnt_, checking_cycle_cnt_;
 
@@ -282,6 +284,7 @@ StatusManagementNodelet::StatusManagementNodelet()
       localization_unreliable_cnt_(),
       stopped_due_to_obstacle_cnt_(),
       pose_initializing_(),
+      stop_request_(),
       last_pose_init_time_(),
       control_cycle_cnt_(),
       checking_cycle_cnt_(),
@@ -322,6 +325,7 @@ void StatusManagementNodelet::Initialize() {
     localization_unreliable_cnt_.SetObj(0);
     stopped_due_to_obstacle_cnt_.SetObj(0);
     pose_initializing_.SetObj(false);
+    stop_request_.SetObj(false);
     control_cycle_cnt_ = 0;
     checking_cycle_cnt_ = 0;
     last_valid_ndt_pose_queue_.set_capacity(DEFAULT_LOCALIZATION_RELIABLE_CNT);
@@ -541,7 +545,7 @@ void StatusManagementNodelet::RunControlCycle() {
     {
       geometry_msgs::TwistStamped twist_stamped = twist_raw_.GetObj();
       if (!twist_stamped.header.stamp.is_zero() &&
-          !pose_initializing_.GetObj()) {
+          !stop_request_.GetObj()) {
         cmd_vel_pub_.publish(twist_stamped.twist);
       } else {
         cmd_vel_pub_.publish(CREATE_ZERO_TWIST());
@@ -667,12 +671,35 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
         cur_pose_pub_.publish(cur_pose);
         last_cur_pose_.SetObj(cur_pose);
 
-        ndt_unreliable_cnt = ndt_unreliable_cnt + 1;
         if (ndt_unreliable_cnt %
                 (5 * static_cast<int>(DEFAULT_CONTROL_CYCLE_FREQ)) ==
             0) {
           PublishStatusMessage("Ndt pose is unreliable");
         }
+
+        double trans_diff, angle_diff;
+        geometry_msgs::PoseStamped ndt_pose = ndt_pose_.GetObj();
+        geometry_msgs::PoseWithCovarianceStamped amcl_pose = amcl_pose_.GetObj();
+        ComputePoseDiff(ndt_pose.pose, amcl_pose.pose.pose, trans_diff, angle_diff);
+        ROS_WARN("Trans Diff : %lf, Angle Diff : %lf", trans_diff, angle_diff);
+
+        if (!pose_initializing_.GetObj() &&
+            ndt_unreliable_cnt % static_cast<int>(DEFAULT_CONTROL_CYCLE_FREQ) ==
+                0) {
+          ROS_WARN("Pose init called.");
+
+          // Init ndt matching.
+          XYZRPY init_pose = CreateXYZRPYFromPose(cur_pose.pose);
+          ndt_config_pub_.publish(CONFIG_DEFAULT_NDT(init_pose));
+
+          // Init amcl localizer.
+          geometry_msgs::PoseWithCovarianceStamped init_pose_amcl;
+          init_pose_amcl.header.stamp = cur_pose.header.stamp;
+          init_pose_amcl.header.frame_id = "map";
+          init_pose_amcl.pose.pose = cur_pose.pose;
+          mcl_3dl_init_pub_.publish(init_pose_amcl);
+        }
+        ndt_unreliable_cnt = ndt_unreliable_cnt + 1;
       }
     }
   }
@@ -807,7 +834,8 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
           ros::Duration(DEFAULT_LOCALIZATION_REINIT_MINIMUM_PERIOD)) {
     if (DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT <=
         localization_unreliable_cnt_.GetObj()) {
-      pose_initializing_.SetObj(true);
+
+      stop_request_.SetObj(true);
 
       // X. Make sure that robot stops.
       ros::Rate r(DEFAULT_ROBOT_STOP_CHECK_FREQ);
@@ -817,13 +845,19 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
         if (wait_cnt % 5) {
           PublishStatusMessage("Robot will stop for pose initialization.");
         }
+        if (localization_unreliable_cnt_.GetObj() < DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT / 2) {
+          ROS_WARN("Localization stabilized.");
+          stop_request_.SetObj(false);          
+          return;
+        }
         r.sleep();
       }
 
       // X. Choose initial position for search.
+      pose_initializing_.SetObj(true);
       if (!last_valid_ndt_pose_.GetObj().header.stamp.is_zero() &&
           ros::Time::now() - last_valid_ndt_pose_.GetObj().header.stamp <
-              ros::Duration(DEFAULT_LOCALIZATION_ODOM_TRUST_PERIOD)) {
+              ros::Duration(DEFAULT_LOCALIZATION_ODOM_TRUST_PERIOD) && !REINIT_VIA_GNSS) {
         PublishStatusMessage("Reinitialize localization based on odometry.");
         InitializePose(false, true,
                        CreateXYZRPYFromPose(last_cur_pose_.GetObj().pose));
@@ -834,6 +868,7 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
 
       // X. Memorize last update.
       last_pose_init_time_.SetObj(ros::Time::now());
+      stop_request_.SetObj(false);
       pose_initializing_.SetObj(false);
       localization_unreliable_cnt_.SetObj(
           std::max(0, localization_unreliable_cnt_.GetObj() -

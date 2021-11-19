@@ -11,6 +11,7 @@
 #include <Eigen/Core>
 
 // ROS
+#include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/Twist.h>
@@ -44,15 +45,15 @@ tf::Transform CreateTransformFromPose(const geometry_msgs::Pose &to_pose,
 inline autoware_config_msgs::ConfigVoxelGridFilter
 CONFIG_VOXELFILT_POSE_SEARCH() {
   autoware_config_msgs::ConfigVoxelGridFilter config;
-  config.measurement_range = 80.0;
-  config.voxel_leaf_size = 0.5;
+  config.measurement_range = 30.0;
+  config.voxel_leaf_size = 2.0;
   return config;
 }
 
 inline autoware_config_msgs::ConfigVoxelGridFilter CONFIG_VOXELFILT_POSE_RUN() {
   autoware_config_msgs::ConfigVoxelGridFilter config;
-  config.measurement_range = 80.0;
-  config.voxel_leaf_size = 2.0;
+  config.measurement_range = 50.0;
+  config.voxel_leaf_size = 0.5;
   return config;
 }
 
@@ -147,10 +148,24 @@ inline double NormalizeAnglePi2Pi(const double angle) {
   return tmp_angle;
 }
 
-inline bool PoseDiffIsBelowThreshold(const geometry_msgs::Pose &pose1,
-                                     const geometry_msgs::Pose &pose2,
-                                     const double trans_thr,
-                                     const double orientation_thr) {
+inline double ComputeAngleBetweenQuaternion(
+  const geometry_msgs::Quaternion &q1,
+  const geometry_msgs::Quaternion &q2) {
+
+  tf::Quaternion tf_q1, tf_q2, tf_q1_to_q2;
+  tf::quaternionMsgToTF(q1, tf_q1);
+  tf::quaternionMsgToTF(q2, tf_q2);
+
+  tf_q1_to_q2 = tf_q2 * tf_q1.inverse();
+
+  return std::abs(tf_q1_to_q2.getAngleShortestPath());
+}
+
+inline void ComputePoseDiff(const geometry_msgs::Pose &pose1, 
+                            const geometry_msgs::Pose &pose2, 
+                            double &trans_diff_norm, 
+                            double &angle_diff_norm) {
+
   Eigen::Vector3d translation_diff;
   translation_diff << pose1.position.x - pose2.position.x,
       pose1.position.y - pose2.position.y, pose1.position.z - pose2.position.z;
@@ -159,21 +174,18 @@ inline bool PoseDiffIsBelowThreshold(const geometry_msgs::Pose &pose1,
   tf::quaternionMsgToTF(pose1.orientation, q1);
   tf::quaternionMsgToTF(pose2.orientation, q2);
 
-  double roll_1, pitch_1, yaw_1;
-  double roll_2, pitch_2, yaw_2;
-  tf::Matrix3x3(q1).getRPY(roll_1, pitch_1, yaw_1);
-  tf::Matrix3x3(q2).getRPY(roll_2, pitch_2, yaw_2);
+  trans_diff_norm = translation_diff.norm();
+  angle_diff_norm = std::abs(ComputeAngleBetweenQuaternion(pose1.orientation, pose2.orientation));
+}
 
-  Eigen::Vector3d orientation_diff;
-  orientation_diff << NormalizeAnglePi2Pi(roll_1 - roll_2),
-      NormalizeAnglePi2Pi(pitch_1 - pitch_2),
-      NormalizeAnglePi2Pi(yaw_1 - yaw_2);
+inline bool PoseDiffIsBelowThreshold(const geometry_msgs::Pose &pose1,
+                                     const geometry_msgs::Pose &pose2,
+                                     const double trans_thr,
+                                     const double orientation_thr) {
 
-  // ROS_WARN("Trans Diff : %lf", translation_diff.norm());
-  // ROS_WARN("Orient Diff : %lf", orientation_diff.norm());
-
-  return translation_diff.norm() <= trans_thr &&
-         orientation_diff.norm() <= orientation_thr;
+  double trans_diff_norm, angle_diff_norm;
+  ComputePoseDiff(pose1, pose2, trans_diff_norm, angle_diff_norm);
+  return trans_diff_norm <= trans_thr && angle_diff_norm <= orientation_thr;
 }
 
 double ComputeDistanceToObstacleOnWaypoint(const int32_t obx_wp_idx,
