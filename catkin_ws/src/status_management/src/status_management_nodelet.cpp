@@ -71,7 +71,8 @@ static constexpr double DEFAULT_LOCALIZATION_ORIEN_RELIABLE_THRESH =
 
 // Obstacle distance.
 static constexpr double DEFAULT_OBSTACLE_DISTANCE_THRESH = 2.0;
-static constexpr double DEFAULT_OBSTACLE_WAIT_BEFORE_AVOID = 5.0;
+static constexpr double DEFAULT_OBSTACLE_SHORT_WAIT_BEFORE_AVOID = 30.0;
+static constexpr double DEFAULT_OBSTACLE_LONG_WAIT_BEFORE_AVOID = 60.0;
 
 }  // namespace
 
@@ -629,6 +630,7 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
     cur_pose.header.stamp = time;
     cur_pose.header.frame_id = "map";
 
+    static ros::Time last_pose_init;
     static int ndt_unreliable_cnt = 0;
     geometry_msgs::PoseStamped ndt_pose = ndt_pose_.GetObj();
 
@@ -681,12 +683,15 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
         geometry_msgs::PoseStamped ndt_pose = ndt_pose_.GetObj();
         geometry_msgs::PoseWithCovarianceStamped amcl_pose = amcl_pose_.GetObj();
         ComputePoseDiff(ndt_pose.pose, amcl_pose.pose.pose, trans_diff, angle_diff);
-        ROS_WARN("Trans Diff : %lf, Angle Diff : %lf", trans_diff, angle_diff);
+        //ROS_WARN("Trans Diff : %lf, Angle Diff : %lf", trans_diff, angle_diff);
 
-        if (!pose_initializing_.GetObj() &&
+        if (!pose_initializing_.GetObj() && (ros::Time::now() - last_pose_init).toSec() > 4.0  &&
             ndt_unreliable_cnt % static_cast<int>(DEFAULT_CONTROL_CYCLE_FREQ) ==
-                0) {
+                0 && !PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
+                                DEFAULT_LOCALIZATION_TRANS_THRESH,
+                                DEFAULT_LOCALIZATION_ORIEN_THRESH)) {
           ROS_WARN("Pose init called.");
+          last_pose_init = ros::Time::now();
 
           // Init ndt matching.
           XYZRPY init_pose = CreateXYZRPYFromPose(cur_pose.pose);
@@ -758,18 +763,25 @@ void StatusManagementNodelet::CheckRobotStopReason() {
     }
 
     // X. Wait for avoidance.
-    if (DEFAULT_OBSTACLE_WAIT_BEFORE_AVOID <
-        stopped_cnt / DEFAULT_CHECKING_CYCLE_FREQ) {
-      if (IsAvoidanceOkWaypoint(obs_idx, fin_wps)) {
+    if (IsShortWaitAvoidanceWaypoint(obs_idx, fin_wps)) {
+      if (DEFAULT_OBSTACLE_SHORT_WAIT_BEFORE_AVOID < stopped_cnt / DEFAULT_CHECKING_CYCLE_FREQ) {
         PublishStatusMessage("Rerouting for obstacle avoidance.");
         std_msgs::Header header;
         header.stamp = ros::Time::now();
         onetime_avoidance_req_pub_.publish(header);
         stopped_due_to_obstacle_cnt_.SetObj(0);
-      } else {
-        PublishStatusMessage("Rerouting is not allowed here. Keep waiting.");
+      }
+    } else if (IsLongWaitAvoidanceWaypoint(obs_idx, fin_wps)) {
+      if (DEFAULT_OBSTACLE_LONG_WAIT_BEFORE_AVOID < stopped_cnt / DEFAULT_CHECKING_CYCLE_FREQ) {
+        PublishStatusMessage("Rerouting for obstacle avoidance.");
+        std_msgs::Header header;
+        header.stamp = ros::Time::now();
+        onetime_avoidance_req_pub_.publish(header);
         stopped_due_to_obstacle_cnt_.SetObj(0);
       }
+    } else {
+      PublishStatusMessage("Rerouting is not allowed here. Keep waiting.");
+      stopped_due_to_obstacle_cnt_.SetObj(0);
     }
   }
 }

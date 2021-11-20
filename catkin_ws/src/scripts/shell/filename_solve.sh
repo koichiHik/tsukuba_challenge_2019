@@ -4,6 +4,7 @@ POSE_PAIR_JSON="pose_pair.json"
 KML_FILENAME="map.kml"
 WORLD_TO_MAP_JSON="world_to_map.json"
 
+RAW_WAYPOINT_FILENAME="waypoint.csv"
 WAYPOINT_FILENAME="smooth_waypoint.csv"
 DATAINFO_FILENAME="DATAINFO.txt"
 

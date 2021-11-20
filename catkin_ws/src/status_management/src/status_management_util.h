@@ -195,6 +195,12 @@ double ComputeDistanceToObstacleOnWaypoint(const int32_t obx_wp_idx,
 bool IsAvoidanceOkWaypoint(const int32_t wp_idx,
                            const autoware_msgs::Lane &lane);
 
+bool IsShortWaitAvoidanceWaypoint(const int32_t wp_idx,
+                           const autoware_msgs::Lane &lane);
+
+bool IsLongWaitAvoidanceWaypoint(const int32_t wp_idx,
+                           const autoware_msgs::Lane &lane);
+
 geometry_msgs::Pose TransformPose(const tf::Transform &trans,
                                   const geometry_msgs::Pose &pose);
 

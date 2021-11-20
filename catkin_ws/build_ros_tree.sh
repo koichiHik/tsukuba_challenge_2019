@@ -8,4 +8,5 @@ source ${SCRIPT_DIR}/build_env.sh
 echo ${glog_DIR}
 
 catkin_make \
-  -Dglog_DIR=${glog_DIR}
+  -Dglog_DIR=${glog_DIR} \
+	--force-cmake

@@ -14,5 +14,5 @@ accel_limit: 1.0
 decel_limit: 2.0
 velocity_offset: 3
 braking_distance: 1.0
-end_point_offset: 0.3
+end_point_offset: 0.15
 use_decision_maker: False

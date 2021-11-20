@@ -13,7 +13,7 @@ source ${ROS_SCRIPTS_PKG}/shell/filename_solve.sh
 DATA_DIR=${1}
 
 roslaunch ${ROS_SCRIPTS_PKG}/launch/modules/autoware/waypoint_saver.launch \
-  save_filename:=${DATA_DIR}/${WAYPOINT_FILENAME} \
+  save_filename:=${DATA_DIR}/${RAW_WAYPOINT_FILENAME} \
   interval:=0.1 \
   pose_topic:="/ndt_pose" \
   velocity_topic:="/estimated_vel_mps" \

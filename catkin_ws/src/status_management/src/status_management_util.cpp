@@ -90,7 +90,17 @@ double ComputeDistanceToObstacleOnWaypoint(const int32_t obx_wp_idx,
 
 bool IsAvoidanceOkWaypoint(const int32_t wp_idx,
                            const autoware_msgs::Lane &lane) {
+  return lane.waypoints[wp_idx].wpstate.event_state != 0;
+}
+
+bool IsShortWaitAvoidanceWaypoint(const int32_t wp_idx,
+                           const autoware_msgs::Lane &lane) {
   return lane.waypoints[wp_idx].wpstate.event_state == 1;
+}
+
+bool IsLongWaitAvoidanceWaypoint(const int32_t wp_idx,
+                           const autoware_msgs::Lane &lane) {
+  return lane.waypoints[wp_idx].wpstate.event_state == 2;
 }
 
 geometry_msgs::Pose TransformPose(const tf::Transform &trans,
