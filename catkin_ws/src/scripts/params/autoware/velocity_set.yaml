@@ -10,8 +10,8 @@ stop_distance_stopline: 0.3     # m
 detection_range: 1.0            # m
 deceleration_range: 3.0
 points_threshold: 5
-detection_height_top: 0.5       # m from sensor
-detection_height_bottom: -0.4   # m from sensor
+detection_height_top: 0.3       # m from sensor
+detection_height_bottom: -0.3   # m from sensor
 deceleration_obstacle: 0.5     # m/s2 
 deceleration_stopline: 0.3     # m/s2
 velocity_change_limit: 4.0      # m/s
