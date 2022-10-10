@@ -545,7 +545,7 @@ void StatusManagementNodelet::RunControlCycle() {
     // X. Control command routing.
     {
       geometry_msgs::TwistStamped twist_stamped = twist_raw_.GetObj();
-      if (!twist_stamped.header.stamp.is_zero() &&
+      if (!twist_stamped.header.stamp.is_zero() && 
           !stop_request_.GetObj()) {
         cmd_vel_pub_.publish(twist_stamped.twist);
       } else {
@@ -681,15 +681,20 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
 
         double trans_diff, angle_diff;
         geometry_msgs::PoseStamped ndt_pose = ndt_pose_.GetObj();
-        geometry_msgs::PoseWithCovarianceStamped amcl_pose = amcl_pose_.GetObj();
-        ComputePoseDiff(ndt_pose.pose, amcl_pose.pose.pose, trans_diff, angle_diff);
-        //ROS_WARN("Trans Diff : %lf, Angle Diff : %lf", trans_diff, angle_diff);
+        geometry_msgs::PoseWithCovarianceStamped amcl_pose =
+            amcl_pose_.GetObj();
+        ComputePoseDiff(ndt_pose.pose, amcl_pose.pose.pose, trans_diff,
+                        angle_diff);
+        // ROS_WARN("Trans Diff : %lf, Angle Diff : %lf", trans_diff,
+        // angle_diff);
 
-        if (!pose_initializing_.GetObj() && (ros::Time::now() - last_pose_init).toSec() > 4.0  &&
+        if (!pose_initializing_.GetObj() &&
+            (ros::Time::now() - last_pose_init).toSec() > 4.0 &&
             ndt_unreliable_cnt % static_cast<int>(DEFAULT_CONTROL_CYCLE_FREQ) ==
-                0 && !PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
-                                DEFAULT_LOCALIZATION_TRANS_THRESH,
-                                DEFAULT_LOCALIZATION_ORIEN_THRESH)) {
+                0 /*&&
+            !PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
+                                      DEFAULT_LOCALIZATION_TRANS_THRESH,
+                                      DEFAULT_LOCALIZATION_ORIEN_THRESH)*/) {
           ROS_WARN("Pose init called.");
           last_pose_init = ros::Time::now();
 
@@ -797,18 +802,18 @@ void StatusManagementNodelet::CheckPoseValidity() {
   }
 
   // X. Map pose is not stable.
-  if (!PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
+  if (false /*!PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
                                 DEFAULT_LOCALIZATION_TRANS_THRESH,
-                                DEFAULT_LOCALIZATION_ORIEN_THRESH)) {
+                                DEFAULT_LOCALIZATION_ORIEN_THRESH)*/) {
     localization_unreliable_cnt_.SetObj(
         std::min(localization_unreliable_cnt_.GetObj() + 1,
                  DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT));
 
   } else {
     // X. When map pose is stable.
-    if (PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
+    if (true/*PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
                                  DEFAULT_LOCALIZATION_TRANS_RELIABLE_THRESH,
-                                 DEFAULT_LOCALIZATION_ORIEN_RELIABLE_THRESH)) {
+                                 DEFAULT_LOCALIZATION_ORIEN_RELIABLE_THRESH)*/) {
       try {
         tf::StampedTransform tf_odom_to_map;
         tf_listener_.lookupTransform("map", "odom", ndt_pose.header.stamp,
@@ -846,7 +851,6 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
           ros::Duration(DEFAULT_LOCALIZATION_REINIT_MINIMUM_PERIOD)) {
     if (DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT <=
         localization_unreliable_cnt_.GetObj()) {
-
       stop_request_.SetObj(true);
 
       // X. Make sure that robot stops.
@@ -857,9 +861,10 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
         if (wait_cnt % 5) {
           PublishStatusMessage("Robot will stop for pose initialization.");
         }
-        if (localization_unreliable_cnt_.GetObj() < DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT / 2) {
+        if (localization_unreliable_cnt_.GetObj() <
+            DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT / 2) {
           ROS_WARN("Localization stabilized.");
-          stop_request_.SetObj(false);          
+          stop_request_.SetObj(false);
           return;
         }
         r.sleep();
@@ -869,7 +874,8 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
       pose_initializing_.SetObj(true);
       if (!last_valid_ndt_pose_.GetObj().header.stamp.is_zero() &&
           ros::Time::now() - last_valid_ndt_pose_.GetObj().header.stamp <
-              ros::Duration(DEFAULT_LOCALIZATION_ODOM_TRUST_PERIOD) && !REINIT_VIA_GNSS) {
+              ros::Duration(DEFAULT_LOCALIZATION_ODOM_TRUST_PERIOD) &&
+          !REINIT_VIA_GNSS) {
         PublishStatusMessage("Reinitialize localization based on odometry.");
         InitializePose(false, true,
                        CreateXYZRPYFromPose(last_cur_pose_.GetObj().pose));

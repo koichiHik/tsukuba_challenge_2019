@@ -18,7 +18,7 @@ URDF_FILEPATH=${ROS_SCRIPTS_PKG}/urdf/robot.urdf
 ROBOT_FILEPATH=${ROS_SCRIPTS_PKG}/params/common/robot.yaml
 ODOM_YAMLPATH=${ROS_SCRIPTS_PKG}/params/common/odometry.yaml
 IMU_ADJUST_YAMLPATH=${ROS_SCRIPTS_PKG}/params/common/imu_adjust.yaml
-RVIZ_CONF=${ROS_SCRIPTS_PKG}/rviz/config.rviz
+RVIZ_CONF=${ROS_SCRIPTS_PKG}/rviz/base_node_replay.rviz
 
 roslaunch ${ROS_SCRIPTS_PKG}/launch/system/basenodes_bag_replay.launch \
   urdf_file:=${URDF_FILEPATH} \
