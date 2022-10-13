@@ -1,11 +1,20 @@
 #!/bin/bash
 
+if [ $# -eq 1 ]; then
+  if [ ${1} -eq 0 ]; then
+    USE_GPS=False
+  else
+    USE_GPS=True
+    ${ROS_SCRIPTS_PKG}/shell/run_rtklib_str2str.sh &
+    sleep 5
+  fi
+else
+  echo "Please specify argument." 1>&2
+  exit 1
+fi
+
 ROS_SCRIPTS_PKG=$(rospack find scripts)
 source ${ROS_SCRIPTS_PKG}/shell/run_env.sh
-
-#${ROS_SCRIPTS_PKG}/shell/run_rtklib_str2str.sh &
-#sleep 5
-
 
 YPSPUR_YAMLPATH=${ROS_SCRIPTS_PKG}/params/common/yp_spur.yaml
 CTRL_LIMIT_YAMLPATH=${ROS_SCRIPTS_PKG}/params/common/control_limit.yaml
@@ -42,4 +51,5 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/manual_logging.launch \
   robot_yaml_filepath:=${ROBOT_FILEPATH} \
   odom_yaml_filepath:=${ODOM_YAMLPATH} \
   imu_adjust_param_filepath:=${IMU_ADJUST_YAMLPATH} \
-	nmea_driver_param_filepath:=${NMEA_NAVSAT_DRIVER_YAMLPATH}
+  use_gps:=${USE_GPS} \
+	nmea_driver_param_filepath:=${NMEA_NAVSAT_DRIVER_YAMLPATH} \

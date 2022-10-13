@@ -24,6 +24,7 @@
   <arg name="robot_yaml_filepath" default="$(find scripts)/params/common/robot.yaml" />
   <arg name="odom_yaml_filepath" default="$(find scripts)/params/common/odometry.yaml" />
   <arg name="imu_adjust_param_filepath" default="$(find scripts)/params/common/imu_adjust.yaml" />
+  <arg name="use_gps" />
 	<arg name="nmea_driver_param_filepath" default="$(find scripts)/params/common/nmea_navsat_driver.yaml" />
 
   <include file="$(find scripts)/launch/system/hardware_bringup.launch" >
@@ -45,6 +46,7 @@
     <!-- velodyne node-->
     <arg name="velodyne_calibration" value="$(arg velodyne_calibration)"/>
     <arg name="velodyne_param_filepath" value="$(arg velodyne_param_filepath)" />
+    <arg name="use_gps" value="$(arg use_gps)" />
 		<arg name="nmea_driver_param_filepath" value="$(arg nmea_driver_param_filepath)" />
   </include>
 

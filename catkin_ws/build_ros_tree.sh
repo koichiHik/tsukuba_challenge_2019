@@ -9,4 +9,5 @@ echo ${glog_DIR}
 
 catkin_make \
   -Dglog_DIR=${glog_DIR} \
-	--force-cmake
+  -Dypspur_DIR=${ypspur_DIR} \
+  --force-cmake

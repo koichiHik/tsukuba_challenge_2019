@@ -151,7 +151,10 @@ add_library(status_management_nodelet
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(status_management_nodelet messages_generate_messages_cpp)
+add_dependencies(status_management_nodelet 
+  messages_generate_messages
+  messages_generate_messages_cpp
+)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(status_management_nodelet

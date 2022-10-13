@@ -18,6 +18,7 @@
   <arg name="velodyne_calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
   <arg name="velodyne_param_filepath" default="$(find scripts)/params/common/velodyne.yaml" />
   <!-- GPS -->
+  <arg name="use_gps" />
   <arg name="nmea_driver_param_filepath" default="$(find scripts)/params/common/nmea_navsat_driver.yaml" />
 
   <!-- Imu -->
@@ -51,7 +52,7 @@
   </include>
 
   <!-- GPS -->
-  <include file="$(find scripts)/launch/modules/common/nmea_navsat_driver.launch">
+  <include file="$(find scripts)/launch/modules/common/nmea_navsat_driver.launch" if="$(eval use_gps)" >
     <arg name="nmea_driver_param_filepath" value="$(arg nmea_driver_param_filepath)" />
   </include>
 
