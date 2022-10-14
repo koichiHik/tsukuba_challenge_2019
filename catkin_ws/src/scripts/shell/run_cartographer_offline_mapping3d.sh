@@ -13,8 +13,7 @@ PG_FILEPATH=${BAG_PATH/".bag"/".bag.pbstream"}
 PCD_FILEPATH=${BAG_PATH/".bag"/".bag_points.pcd"}
 FILTERED_PCD_FILEPATH=${BAG_PATH/".bag"/".bag_points_flt.pcd"}
 ROS_SCRIPTS_PKG=$(rospack find scripts)
-#CONFIG_DIR_PATH="${ROS_SCRIPTS_PKG}/params/cartographer/configuration_files"
-CONFIG_DIR_PATH="/home/koichi/Desktop/autorun_nuv/params/configuration_files"
+CONFIG_DIR_PATH="${ROS_SCRIPTS_PKG}/params/cartographer/configuration_files"
 CONFIG_BASENAME="mapping_3d.lua"
 URDF_FILEPATH="${ROS_SCRIPTS_PKG}/urdf/robot.urdf"
 
