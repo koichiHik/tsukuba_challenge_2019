@@ -19,7 +19,8 @@
     <remap from="/predict_pose_imu" to="/predict_pose_imu" />
     <remap from="/predict_pose_odom" to="/predict_pose_odom" />
     <remap from="/predict_pose_imu_odom" to="/predict_pose_imu_odom" />
-    <remap from="/ndt_pose" to="/ndt_pose" />
+    <remap from="/ndt_pose" to="/ndt_raw_pose" />
+    <remap from="/ndt_fixed_pose" to="/ndt_pose" />
     <remap from="/localizer_pose" to="/localizer_pose" />
     <remap from="/estimate_twist" to="/estimate_twist" />
     <remap from="/estimated_vel_mps" to="/estimated_vel_mps" />
