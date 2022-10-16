@@ -1,0 +1,10 @@
+
+device: /dev/UBLOX_F9P_USB
+#device: /dev/ttyACM0
+#device: /dev/ttyUSB0
+#device: /dev/pts/1
+frame_id: gps
+uart1:
+  baudrate: 230400
+#baudrate: 38400
+config_on_startup: false

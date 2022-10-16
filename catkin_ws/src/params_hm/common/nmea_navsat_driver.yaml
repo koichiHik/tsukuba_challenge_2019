@@ -1,0 +1,7 @@
+
+port: /home/koichi/FAKE_UBLOX_OUT
+baud: 230400
+frame_id: gps
+use_GNSS_time: false
+time_ref_source: gps
+useRMC: false

@@ -1,0 +1,22 @@
+
+ps3_joy:
+  dev: /dev/PS3_CONTROLLER
+  deadzone: 0.12
+  autorepeat_rate: 50
+
+teleop_twist_joy:
+  axis_linear:
+    x: 5
+    y: 0
+  scale_linear:
+    x: 1.0
+    y: 0.0
+  scale_linear_turbo:
+    x: 1.5
+    y: 0.0
+  axis_angular:
+    yaw: 4
+  scale_angular:
+    yaw: 0.5
+  enable_button: 4
+  enable_turbo_button: 8

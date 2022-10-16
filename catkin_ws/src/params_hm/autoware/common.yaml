@@ -1,0 +1,16 @@
+
+localizer: velodyne
+
+tf_x: 0.09
+tf_y: 0.0
+tf_z: 0.83
+tf_roll:  0.0
+tf_pitch: 0.0
+tf_yaw: -1.571
+
+tf_x2: 0.22
+tf_y2: 0.0
+tf_z2: 0.21
+tf_roll2: 0.0
+tf_pitch2: 0.0
+tf_yaw2: 0.0
