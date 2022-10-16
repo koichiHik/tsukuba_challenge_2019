@@ -14,20 +14,18 @@ DATA_DIR=${1}
 DATAINFO_FILE=${DATA_DIR}/${DATAINFO_FILENAME}
 BAG_FILEPATH=$(GET_BAGFILE_PATH ${DATA_DIR})
 
-URDF_FILEPATH=${ROS_SCRIPTS_PKG}/urdf/robot.urdf
-ROBOT_FILEPATH=${ROS_SCRIPTS_PKG}/params/common/robot.yaml
-ODOM_YAMLPATH=${ROS_SCRIPTS_PKG}/params/common/odometry.yaml
-IMU_ADJUST_YAMLPATH=${ROS_SCRIPTS_PKG}/params/common/imu_adjust.yaml
-RVIZ_CONF=${ROS_SCRIPTS_PKG}/rviz/base_node_replay.rviz
+PARAM_DIRNAME=$(READ_DATAINFO ${DATAINFO_FILE} ${PARAM_DIRNAME})
+PARAM_DIRPATH=$(rospack find ${PARAM_DIRNAME})
+echo ${PARAM_DIRPATH}
 
 roslaunch ${ROS_SCRIPTS_PKG}/launch/system/basenodes_bag_replay.launch \
-  urdf_file:=${URDF_FILEPATH} \
+  urdf_file:=${ROS_SCRIPTS_PKG}/urdf/robot.urdf \
   base_frame_id:="base_link" \
   odom_frame_id:="odom" \
-  robot_yaml_filepath:=${ROBOT_FILEPATH} \
-  odom_yaml_filepath:=${ODOM_YAMLPATH} \
-  imu_adjust_param_filepath:=${IMU_ADJUST_YAMLPATH} \
-  rviz_config_file:=${RVIZ_CONF} \
+  robot_yaml_filepath:=${PARAM_DIRPATH}/common/robot.yaml \
+  odom_yaml_filepath:=${PARAM_DIRPATH}/common/odometry.yaml \
+  imu_adjust_param_filepath:=${PARAM_DIRPATH}/common/imu_adjust.yaml \
+  rviz_config_file:=${PARAM_DIRPATH}/rviz/config.rviz \
   bagfile_path:=${BAG_FILEPATH} \
   start:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_START}) \
   duration:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_DURATION}) \

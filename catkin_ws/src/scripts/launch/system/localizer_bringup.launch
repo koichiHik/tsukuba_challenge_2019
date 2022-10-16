@@ -1,13 +1,13 @@
 <launch>
-  <arg name="plane_number" default="9" />
+  <arg name="plane_number" />
   <!-- map loader -->
   <arg name="pcd_filelist" />
   <!-- points down sampler -->
   <arg name="raw_points_topic" />
   <arg name="downsampler_node_name" />
   <!-- ndt matching -->
-  <arg name="ndt_matching_yaml_filepath" default="$(find scripts)/params/autoware/ndt_matching.yaml" />
-  <arg name="mcl_3dl_yamlpath" default="$(find scripts)/params/common/mcl_3dl.yaml" />
+  <arg name="ndt_matching_yaml_filepath" />
+  <arg name="mcl_3dl_yamlpath" />
   <arg name="world_to_map_json" />
 
   <!-- Gnss Localizer -->

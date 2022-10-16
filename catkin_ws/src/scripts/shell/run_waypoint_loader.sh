@@ -11,9 +11,11 @@ source ${ROS_SCRIPTS_PKG}/shell/ros_general_functions.sh
 source ${ROS_SCRIPTS_PKG}/shell/filename_solve.sh
 
 DATA_DIR=${1}
+DATAINFO_FILE=${DATA_DIR}/${DATAINFO_FILENAME}
 
-WAYPOINT_REPLANNER_YAMLPATH=${ROS_SCRIPTS_PKG}/params/autoware/waypoint_replanner.yaml
+PARAM_DIRNAME=$(READ_DATAINFO ${DATAINFO_FILE} ${PARAM_DIRNAME})
+PARAM_DIRPATH=$(rospack find ${PARAM_DIRNAME})
 
 roslaunch ${ROS_SCRIPTS_PKG}/launch/modules/autoware/waypoint_loader.launch \
   multi_lane_csv:=${DATA_DIR}/${WAYPOINT_FILENAME} \
-  waypoint_replanner_yamlpath:=${WAYPOINT_REPLANNER_YAMLPATH} \
+  waypoint_replanner_yamlpath:=${PARAM_DIRPATH}/autoware/waypoint_replanner.yaml \

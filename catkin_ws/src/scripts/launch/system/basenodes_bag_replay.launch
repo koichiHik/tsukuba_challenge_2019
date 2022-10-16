@@ -4,14 +4,14 @@
   <arg name="duration" />
   <arg name="rate" />
   <arg name="wait" />
-  <arg name="urdf_file" default="$(find scripts)/urdf/robot.urdf" />
+  <arg name="urdf_file" />
   <arg name="base_frame_id" default="base_link" />
   <arg name="odom_frame_id" default="odom" />
   <!-- odom node-->
-  <arg name="robot_yaml_filepath" default="$(find scripts)/params/common/robot.yaml" />
-  <arg name="odom_yaml_filepath" default="$(find scripts)/params/common/odometry.yaml" />
-  <arg name="imu_adjust_param_filepath" default="$(find scripts)/params/common/imu_adjust.yaml" />
-  <arg name="rviz_config_file" default="$(find scripts)/rviz/config.rviz" />
+  <arg name="robot_yaml_filepath" />
+  <arg name="odom_yaml_filepath" />
+  <arg name="imu_adjust_param_filepath" />
+  <arg name="rviz_config_file" />
 
   <include file="$(find scripts)/launch/system/basenodes_bringup.launch">
     <arg name="urdf_file" value="$(arg urdf_file)" />
@@ -20,6 +20,7 @@
     <arg name="robot_yaml_filepath" value="$(arg robot_yaml_filepath)" />
     <arg name="odom_yaml_filepath" value="$(arg odom_yaml_filepath)" />
     <arg name="imu_adjust_param_filepath" value="$(arg imu_adjust_param_filepath)" />
+    <arg name="rviz_config_file" value="$(arg rviz_config_file)" />
   </include>
 
   <include file="$(find scripts)/launch/modules/common/rosbag_replay.launch">

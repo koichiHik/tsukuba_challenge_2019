@@ -1,10 +1,10 @@
 <launch>
-  <arg name="astar_avoid_yamlpath" default="$(find scripts)/params/autoware/astar_avoid.yaml" />
-  <arg name="velocity_set_yamlpath" default="$(find scripts)/params/autoware/velocity_set.yaml" />
-  <arg name="pure_pursuit_controller_yamlpath" default="$(find scripts)/params/autoware/pure_pursuit_controller.yaml" />
-  <arg name="lane_navi_yamlpath" default="$(find scripts)/params/autoware/lane_navi.yaml" />
-  <arg name="lane_rule_yamlpath" default="$(find scripts)/params/autoware/lane_rule.yaml" />
-  <arg name="lane_select_yamlpath" default="$(find scripts)/params/autoware/lane_select.yaml" />
+  <arg name="astar_avoid_yamlpath" />
+  <arg name="velocity_set_yamlpath" />
+  <arg name="pure_pursuit_controller_yamlpath" />
+  <arg name="lane_navi_yamlpath" />
+  <arg name="lane_rule_yamlpath" />
+  <arg name="lane_select_yamlpath" />
 
   <!-- A Star Avoid Planner-->
   <include file="$(find scripts)/launch/modules/autoware/astar_avoid.launch" >

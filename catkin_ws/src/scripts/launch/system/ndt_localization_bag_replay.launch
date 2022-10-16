@@ -1,22 +1,22 @@
 <launch>
   <!-- robot state publisher -->
-  <arg name="urdf_file" default="$(find scripts)/urdf/robot.urdf" />
+  <arg name="urdf_file" />
   <!-- for base nodes -->
   <arg name="base_frame_id" default="base_link" />
   <arg name="odom_frame_id" default="odom" />
   <arg name="plane_number" default="9" />
-  <arg name="robot_yaml_filepath" default="$(find scripts)/params/common/robot.yaml" />
-  <arg name="odom_yaml_filepath" default="$(find scripts)/params/common/odometry.yaml" />
-  <arg name="imu_adjust_param_filepath" default="$(find scripts)/params/common/imu_adjust.yaml" />
+  <arg name="robot_yaml_filepath" />
+  <arg name="odom_yaml_filepath" />
+  <arg name="imu_adjust_param_filepath" />
   <!-- map loader -->
   <arg name="pcd_filelist" />
   <!-- points down sampler -->
   <arg name="raw_points_topic" />
   <arg name="downsampler_node_name" />
   <!-- ndt matching -->
-  <arg name="common_yaml_filepath" default="$(find scripts)/params/autoware/common.yaml" />
-  <arg name="ndt_matching_yaml_filepath" default="$(find scripts)/params/autoware/ndt_matching.yaml" />
-  <arg name="mcl_3dl_yamlpath" default="$(find scripts)/params/common/mcl_3dl.yaml" />
+  <arg name="common_yaml_filepath" />
+  <arg name="ndt_matching_yaml_filepath" />
+  <arg name="mcl_3dl_yamlpath" />
   <!-- init pos -->
   <arg name="pose_initializer" />
   <arg name="init_via_gnss" />
@@ -39,7 +39,7 @@
   <arg name="kml_filepath" default="" />
   <arg name="world_to_map_json" />
   <!-- rviz -->
-  <arg name="rviz_config_file" default="$(find scripts)/rviz/localization.rviz" />
+  <arg name="rviz_config_file" />
 
   <!-- Load common parameters -->
   <rosparam command="load" file="$(arg common_yaml_filepath)" />
@@ -52,6 +52,7 @@
     <arg name="robot_yaml_filepath" value="$(arg robot_yaml_filepath)" />
     <arg name="odom_yaml_filepath" value="$(arg odom_yaml_filepath)" />
     <arg name="imu_adjust_param_filepath" value="$(arg imu_adjust_param_filepath)" />
+    <arg name="rviz_config_file" value="$(arg rviz_config_file)" />
   </include>
 
   <include file="$(find scripts)/launch/system/localizer_bringup.launch">
@@ -61,6 +62,7 @@
     <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
     <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
+    <arg name="mcl_3dl_yamlpath" value="$(arg mcl_3dl_yamlpath)" />
   </include>
 
   <!-- Status maanger bringup -->

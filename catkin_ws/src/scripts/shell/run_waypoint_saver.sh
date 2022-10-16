@@ -11,6 +11,7 @@ source ${ROS_SCRIPTS_PKG}/shell/ros_general_functions.sh
 source ${ROS_SCRIPTS_PKG}/shell/filename_solve.sh
 
 DATA_DIR=${1}
+DATAINFO_FILE=${DATA_DIR}/${DATAINFO_FILENAME}
 
 roslaunch ${ROS_SCRIPTS_PKG}/launch/modules/autoware/waypoint_saver.launch \
   save_filename:=${DATA_DIR}/${RAW_WAYPOINT_FILENAME} \

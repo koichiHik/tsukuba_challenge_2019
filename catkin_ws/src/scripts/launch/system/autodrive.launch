@@ -9,23 +9,23 @@
   <arg name="ypspur_odom_frame_id" default="odom_ypspur" />
   <!-- ypspur_ros node -->
   <arg name="ypspur_cmd_vel" default="cmd_vel" />
-  <arg name="yp_spur_yaml_filepath" default="$(find scripts)/params/common/yp_spur.yaml" />
-  <arg name="control_limit_filepath" default="$(find scripts)/params/common/control_limit.yaml" />
+  <arg name="yp_spur_yaml_filepath" />
+  <arg name="control_limit_filepath" />
   <arg name="ypspur_bin_filepath" default="$(find scripts)/../../../../3rdparty/install/yp_spur/bin/ypspur-coordinator" />
-  <arg name="ypspur_param_filepath" default="$(find scripts)/params/common/yp_spur.param" />
+  <arg name="ypspur_param_filepath" />
   <arg name="imu_port" default="/dev/RT_USB_IMU" />
   <!-- urg node-->
-  <arg name="urg_node_yaml_filepath" default="$(find scripts)/params/common/urg_node.yaml" />
+  <arg name="urg_node_yaml_filepath" />
   <!-- velodyne node-->
   <arg name="velodyne_calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
-  <arg name="velodyne_param_filepath" default="$(find scripts)/params/common/velodyne.yaml" />
-  <arg name="rviz_config_file" default="$(find scripts)/rviz/config.rviz" />
+  <arg name="velodyne_param_filepath" />
+  <arg name="rviz_config_file" />
   <!-- odom node-->
-  <arg name="robot_yaml_filepath" default="$(find scripts)/params/common/robot.yaml" />
-  <arg name="odom_yaml_filepath" default="$(find scripts)/params/common/odometry.yaml" />
-  <arg name="imu_adjust_param_filepath" default="$(find scripts)/params/common/imu_adjust.yaml" />
+  <arg name="robot_yaml_filepath" />
+  <arg name="odom_yaml_filepath" />
+  <arg name="imu_adjust_param_filepath" />
   <arg name="use_gps" />
-	<arg name="nmea_driver_param_filepath" default="$(find scripts)/params/common/nmea_navsat_driver.yaml" />
+	<arg name="nmea_driver_param_filepath" />
   <arg name="plane_number" default="9" />
   <!-- map loader -->
   <arg name="pcd_filelist" />
@@ -33,9 +33,9 @@
   <arg name="raw_points_topic" />
   <arg name="downsampler_node_name" />
   <!-- ndt matching -->
-  <arg name="common_yaml_filepath" default="$(find scripts)/params/autoware/common.yaml" />
-  <arg name="ndt_matching_yaml_filepath" default="$(find scripts)/params/autoware/ndt_matching.yaml" />
-  <arg name="mcl_3dl_yamlpath" default="$(find scripts)/params/common/mcl_3dl.yaml" />
+  <arg name="common_yaml_filepath" />
+  <arg name="ndt_matching_yaml_filepath" />
+  <arg name="mcl_3dl_yamlpath" />
   <arg name="world_to_map_json" />
   <!-- init pos -->
   <arg name="pose_initializer" />
@@ -46,13 +46,14 @@
   <arg name="roll" />
   <arg name="pitch" />
   <arg name="yaw" />
-  <arg name="lidar_cluster_filepath" default="$(find scripts)/params/autoware/lidar_euclidean_cluster_detect.yaml" />
-  <arg name="costmap_generator_filepath" default="$(find scripts)/params/autoware/costmap_generator.yaml" />
-  <arg name="astar_avoid_yamlpath" default="$(find scripts)/params/autoware/astar_avoid.yaml" />
-  <arg name="velocity_set_yamlpath" default="$(find scripts)/params/autoware/velocity_set.yaml" />
-  <arg name="pure_pursuit_controller_yamlpath" default="$(find scripts)/params/autoware/pure_pursuit_controller.yaml" />
-  <arg name="lane_navi_yamlpath" default="$(find scripts)/params/autoware/lane_navi.yaml" />
-  <arg name="lane_select_yamlpath" default="$(find scripts)/params/autoware/lane_select.yaml" />
+  <arg name="lidar_cluster_filepath" />
+  <arg name="costmap_generator_filepath" />
+  <arg name="astar_avoid_yamlpath" />
+  <arg name="velocity_set_yamlpath" />
+  <arg name="pure_pursuit_controller_yamlpath" />
+  <arg name="lane_navi_yamlpath" />
+  <arg name="lane_select_yamlpath" />
+  <arg name="lane_rule_yamlpath" />
 
   <!-- Load common parameters -->
   <rosparam command="load" file="$(arg common_yaml_filepath)" />
@@ -95,7 +96,7 @@
     <arg name="raw_points_topic" value="$(arg raw_points_topic)" />
     <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
-    <arg name="mcl_3dl_yamlpath" default="$(find scripts)/params/common/mcl_3dl.yaml" />
+    <arg name="mcl_3dl_yamlpath" value="$(arg mcl_3dl_yamlpath)" />
     <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
   </include>
 
@@ -114,6 +115,7 @@
     <arg name="pure_pursuit_controller_yamlpath" value="$(arg pure_pursuit_controller_yamlpath)" />
     <arg name="lane_navi_yamlpath" value="$(arg lane_navi_yamlpath)" />
     <arg name="lane_select_yamlpath" value="$(arg lane_select_yamlpath)" />
+    <arg name="lane_rule_yamlpath" value="$(arg lane_rule_yamlpath)" />
   </include>
 
   <!-- Status maanger bringup -->

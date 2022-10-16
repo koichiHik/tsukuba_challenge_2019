@@ -2,8 +2,8 @@
 <launch>
   <arg name="map_frame_id" default="map" />
   <arg name="lidar_frame_id" default="laser3d_link" />
-  <arg name="lidar_cluster_filepath" default="$(find scripts)/params/autoware/lidar_euclidean_cluster_detect.yaml" />
-  <arg name="costmap_generator_filepath" default="$(find scripts)/params/autoware/costmap_generator.yaml" />
+  <arg name="lidar_cluster_filepath" />
+  <arg name="costmap_generator_filepath" />
 
   <!-- Lidar Clustering -->
   <include file="$(find scripts)/launch/modules/autoware/lidar_euclidean_cluster_detect.launch">
