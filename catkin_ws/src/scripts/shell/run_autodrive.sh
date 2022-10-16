@@ -63,4 +63,5 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/autodrive.launch \
   pure_pursuit_controller_yamlpath:=${PURE_PURSUIT_YAMLPATH} \
   lane_navi_yamlpath:=${LANE_NAVI_YAMLPATH} \
   lane_rule_yamlpath:=${LANE_RULE_YAMLPATH} \
-  lane_select_yamlpath:=${LANE_SELECT_YAMLPATH}
+  lane_select_yamlpath:=${LANE_SELECT_YAMLPATH} \
+  use_gps:=False
