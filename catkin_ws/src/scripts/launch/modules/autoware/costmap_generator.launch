@@ -1,11 +1,11 @@
 <launch>
-  <arg name="lidar_frame_id" default="laser3d_link" />
-  <arg name="map_frame_id" default="map" />
-  <arg name="costmap_generator_filepath" default="$(find scripts)/params/autoware/costmap_generator.yaml" />
+  <arg name="base_frame_id" />
+  <arg name="map_frame_id" />
+  <arg name="costmap_generator_filepath" />
 
   <!-- Launch node -->
   <node pkg="costmap_generator" type="costmap_generator" name="costmap_generator" output="screen">
-    <param name="lidar_frame" value="$(arg lidar_frame_id)" />
+    <param name="lidar_frame" value="$(arg base_frame_id)" />
     <param name="map_frame" value="$(arg map_frame_id)" />
     <rosparam command="load" file="$(arg costmap_generator_filepath)" />
 
@@ -13,5 +13,6 @@
     <!-- <remap from="/prediction/motion_predictor/objects" to="$(arg objects_input)" /> -->
     <remap from="/prediction/motion_predictor/objects" to="/detection/lidar_detector/objects" />
     <remap from="/points_no_ground" to="/velodyne_points" />
+    <remap from="/points_no_ground_2" to="/urg_points" />
   </node>
 </launch>

@@ -1,7 +1,7 @@
 
 <launch>
-  <arg name="map_frame_id" default="map" />
-  <arg name="lidar_frame_id" default="laser3d_link" />
+  <arg name="map_frame_id" />
+  <arg name="base_frame_id" />
   <arg name="lidar_cluster_filepath" />
   <arg name="costmap_generator_filepath" />
 
@@ -13,7 +13,7 @@
   <!-- Cost Generator -->
   <include file="$(find scripts)/launch/modules/autoware/costmap_generator.launch" >
     <arg name="map_frame_id" value="$(arg map_frame_id)" />
-    <arg name="lidar_frame_id" value="$(arg lidar_frame_id)" />
+    <arg name="base_frame_id" value="$(arg base_frame_id)" />
     <arg name="costmap_generator_filepath" value="$(arg costmap_generator_filepath)" />
   </include>
 

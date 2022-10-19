@@ -103,7 +103,7 @@
   <!-- Perception nodes bringup -->
   <include file="$(find scripts)/launch/system/perception_bringup.launch">
     <arg name="map_frame_id" value="$(arg map_frame_id)" />
-    <arg name="lidar_frame_id" value="$(arg lidar_frame_id)" />
+    <arg name="base_frame_id" value="$(arg base_frame_id)" />
     <arg name="lidar_cluster_filepath" value="$(arg lidar_cluster_filepath)" />
     <arg name="costmap_generator_filepath" value="$(arg costmap_generator_filepath)" />
   </include>

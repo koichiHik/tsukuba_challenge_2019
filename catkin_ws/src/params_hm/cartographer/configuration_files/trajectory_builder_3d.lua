@@ -13,49 +13,41 @@
 -- limitations under the License.
 
 MIN_3D_RANGE = 1
-MAX_3D_RANGE = 130
+MAX_3D_RANGE = 15
 --HIGHRES_RANGE = 15            --org
-HIGHRES_RANGE = 90
+HIGHRES_RANGE = 15
 
 TRAJECTORY_BUILDER_3D = {
   min_range = MIN_3D_RANGE,
   max_range = MAX_3D_RANGE,
   num_accumulated_range_data = 1,
---  voxel_filter_size = 0.15,   --org
-  voxel_filter_size = 0.20,
+  voxel_filter_size = 0.05,
 
   high_resolution_adaptive_voxel_filter = {
-    max_length = 5.,
+    max_length = 2.,
     min_num_points = 150,
     max_range = HIGHRES_RANGE,
   },
 
   low_resolution_adaptive_voxel_filter = {
-    max_length = 8.,
-    min_num_points = 400,
+    max_length = 2.,
+    min_num_points = 150,
     max_range = MAX_3D_RANGE,
   },
 
   use_online_correlative_scan_matching = false,
---  use_online_correlative_scan_matching = true,
   real_time_correlative_scan_matcher = {
---    linear_search_window = 0.15,
---    angular_search_window = math.rad(1.),
-    linear_search_window = 0.05,
+    linear_search_window = 0.15,
     angular_search_window = math.rad(1.),
     translation_delta_cost_weight = 1e-1,
     rotation_delta_cost_weight = 1e-1,
   },
 
   ceres_scan_matcher = {
---    occupied_space_weight_0 = 1., --org
---    occupied_space_weight_1 = 6., --org
---    translation_weight = 5.,      --org
---    rotation_weight = 4e2,        --org
-    occupied_space_weight_0 = 1e1,
-    occupied_space_weight_1 = 5e1,
-    translation_weight = 2e2,
-    rotation_weight = 4e2,
+    occupied_space_weight_0 = 1., 
+    occupied_space_weight_1 = 6., 
+    translation_weight = 5.,      
+    rotation_weight = 4e2,        
     only_optimize_yaw = false,
     ceres_solver_options = {
       use_nonmonotonic_steps = false,
@@ -74,13 +66,10 @@ TRAJECTORY_BUILDER_3D = {
   rotational_histogram_size = 120,
 
   submaps = {
-    high_resolution = 0.25,
---    high_resolution = 0.05,
+    high_resolution = 0.10,
     high_resolution_max_range = HIGHRES_RANGE,
-    low_resolution = 1.00,
---    num_range_data = 160, --org
---    num_range_data = 100,
-    num_range_data = 250,
+    low_resolution = 0.45,
+    num_range_data = 160,
     range_data_inserter = {
       hit_probability = 0.55,
       miss_probability = 0.49,
