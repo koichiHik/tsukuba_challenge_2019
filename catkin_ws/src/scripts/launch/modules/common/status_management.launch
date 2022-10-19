@@ -7,6 +7,7 @@
   <arg name="roll" />
   <arg name="pitch" />
   <arg name="yaw" />
+  <arg name="status_management_yamlpath" />
   <arg name="nodelet_mgr" default="status_mgmt_nodelet_mgr" />
 
   <node pkg="scripts" name="announcer" type="text_to_speech_node.py" required="true" />
@@ -28,6 +29,7 @@
     <param name="roll" value="$(arg roll)" />
     <param name="pitch" value="$(arg pitch)" />
     <param name="yaw" value="$(arg yaw)" />
+    <rosparam file="$(arg status_management_yamlpath)" command="load" />
 
   </node>
 

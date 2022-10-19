@@ -57,3 +57,4 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/autodrive_offline.launch \
   duration:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_DURATION}) \
   rate:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_RATE}) \
   wait:=$(READ_DATAINFO ${DATAINFO_FILE} ${BAG_WAIT}) \
+  status_management_yamlpath:=${PARAM_DIRPATH}/common/status_management.yaml

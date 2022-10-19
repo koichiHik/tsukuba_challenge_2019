@@ -19,7 +19,7 @@ use_potential_heuristic: True
 use_wavefront_heuristic: False
 time_limit: 1000.0
 robot_length: 0.65
-robot_width: 0.5
+robot_width: 0.7
 robot_base2back: 0.4
 minimum_turning_radius: 0.25
 theta_size: 24

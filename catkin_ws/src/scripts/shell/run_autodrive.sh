@@ -59,3 +59,4 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/autodrive.launch \
   lane_navi_yamlpath:=${PARAM_DIRPATH}/autoware/lane_navi.yaml \
   lane_rule_yamlpath:=${PARAM_DIRPATH}/autoware/lane_rule.yaml \
   lane_select_yamlpath:=${PARAM_DIRPATH}/autoware/lane_select.yaml \
+  status_management_yamlpath:=${PARAM_DIRPATH}/common/status_management.yaml

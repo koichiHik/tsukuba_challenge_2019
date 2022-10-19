@@ -1,0 +1,33 @@
+
+
+
+reinit_via_gnss: true
+
+# Timeout
+init_pose_srv_timeout: 20.0
+
+# Frquency
+status_check_freq: 1.0
+robot_stop_check_freq: 1.0
+
+# Standstill 
+standstill_vx_thr: 0.01
+standstill_wx_thr: 0.01
+
+# Localization
+localization_reinit_minimum_period: 20.0
+localization_odom_trust_period: 60.0
+localization_unreliable_cnt_for_reinit: 100.0
+localization_reliable_count: 60
+
+init_pose_standstill_count: 10
+
+localization_translation_thresh: 2.0
+localization_orientation_thresh_deg: 45.0
+localization_translation_reliable_thresh: 0.75
+localization_orientation_reliable_thresh_deg: 15.0
+
+# Obstacle
+obstacle_distance_thresh: 2.0
+obstacle_short_wait_before_avoid: 5.0
+obstacle_long_wait_before_avoid: 5.0

@@ -36,43 +36,10 @@ namespace {
 
 static const int32_t DEFAULT_PUB_QUEUE_SIZE = 100;
 static const int32_t DEFAULT_SUB_QUEUE_SIZE = 100;
-static const bool REINIT_VIA_GNSS = true;
-
-// Timeout
-static constexpr double DEFAULT_SERVICE_TIMEOUT_SEC = 20.0;
-
 // Frequency.
 static constexpr double DEFAULT_INIT_ODOM_WAIT_FREQ = 2.0;
 static constexpr double DEFAULT_INIT_GNSS_CHECK_FREQ = 2.0;
 static constexpr double DEFAULT_CONTROL_CYCLE_FREQ = 50.0;
-static constexpr double DEFAULT_CHECKING_CYCLE_FREQ = 1.0;
-static constexpr double DEFAULT_ROBOT_STOP_CHECK_FREQ = 1.0;
-
-// Standstill Thresh
-static constexpr double DEFAULT_STANDSTILL_VX_THR = 0.01;
-static constexpr double DEFAULT_STANDSTILL_WX_THR = 0.01;
-
-// Time thresh
-static constexpr double DEFAULT_LOCALIZATION_REINIT_MINIMUM_PERIOD = 20.0;
-static constexpr double DEFAULT_LOCALIZATION_ODOM_TRUST_PERIOD = 60.0;
-
-// Count thresh
-static const int32_t DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT =
-    DEFAULT_CONTROL_CYCLE_FREQ * 2;
-static const int32_t DEFAULT_INIT_POSE_STANDSTILL_COUNT = 10;
-static const int32_t DEFAULT_LOCALIZATION_RELIABLE_CNT = 60;
-
-// Pose diff thresh.
-static constexpr double DEFAULT_LOCALIZATION_TRANS_THRESH = 2.0;
-static constexpr double DEFAULT_LOCALIZATION_ORIEN_THRESH = 45 / 180.0 * M_PI;
-static constexpr double DEFAULT_LOCALIZATION_TRANS_RELIABLE_THRESH = 0.75;
-static constexpr double DEFAULT_LOCALIZATION_ORIEN_RELIABLE_THRESH =
-    15 / 180.0 * M_PI;
-
-// Obstacle distance.
-static constexpr double DEFAULT_OBSTACLE_DISTANCE_THRESH = 2.0;
-static constexpr double DEFAULT_OBSTACLE_SHORT_WAIT_BEFORE_AVOID = 30.0;
-static constexpr double DEFAULT_OBSTACLE_LONG_WAIT_BEFORE_AVOID = 60.0;
 
 }  // namespace
 
@@ -103,6 +70,26 @@ struct StatusManagementParams {
   bool init_from_gnss;
   bool use_pose_search;
   double x, y, z, roll, pitch, yaw;
+
+  bool reinit_via_gnss;
+  double init_pose_srv_timeout;
+  double status_check_freq;
+  double robot_stop_check_freq;
+  double standstill_vx_thr;
+  double standstill_wx_thr;
+  double localization_reinit_minimum_period;
+  double localization_odom_trust_period;
+  int localization_unreliable_cnt_for_reinit;
+  int localization_reliable_count;
+  int init_pose_standstill_count;
+  double localization_translation_thresh;
+  double localization_orientation_thresh;
+  double localization_translation_reliable_thresh;
+  double localization_orientation_reliable_thresh;
+
+  double obstacle_distance_thresh;
+  double obstacle_short_wait_before_avoid;
+  double obstacle_long_wait_before_avoid;
 };
 
 }  // namespace
@@ -329,7 +316,7 @@ void StatusManagementNodelet::Initialize() {
     stop_request_.SetObj(false);
     control_cycle_cnt_ = 0;
     checking_cycle_cnt_ = 0;
-    last_valid_ndt_pose_queue_.set_capacity(DEFAULT_LOCALIZATION_RELIABLE_CNT);
+    last_valid_ndt_pose_queue_.set_capacity(params_.localization_reliable_count);
   }
 
   // Read params.
@@ -397,6 +384,53 @@ void StatusManagementNodelet::ReadParams(StatusManagementParams &params) {
       << "[StatusManagementNodelet] Parameter pitch cannot be read.";
   CHECK(pnh_.getParam("yaw", params.yaw))
       << "[StatusManagementNodelet] Parameter yaw cannot be read.";
+
+
+  CHECK(pnh_.getParam("reinit_via_gnss", params.reinit_via_gnss)) 
+      << "[StatusManagementNodelet] Parameter reinit_via_gnss cannot be read.";
+
+  CHECK(pnh_.getParam("init_pose_srv_timeout", params.init_pose_srv_timeout)) 
+      << "[StatusManagementNodelet] Parameter init_pose_srv_timeout cannot be read.";
+
+  CHECK(pnh_.getParam("status_check_freq", params.status_check_freq)) 
+      << "[StatusManagementNodelet] Parameter status_check_freq cannot be read.";
+  CHECK(pnh_.getParam("robot_stop_check_freq", params.robot_stop_check_freq)) 
+      << "[StatusManagementNodelet] Parameter robot_stop_check_freq cannot be read.";
+
+  CHECK(pnh_.getParam("standstill_vx_thr", params.standstill_vx_thr)) 
+      << "[StatusManagementNodelet] Parameter standstill_vx_thr cannot be read.";
+  CHECK(pnh_.getParam("standstill_wx_thr", params.standstill_wx_thr)) 
+      << "[StatusManagementNodelet] Parameter standstill_wx_thr cannot be read.";
+  CHECK(pnh_.getParam("localization_reinit_minimum_period", params.localization_reinit_minimum_period)) 
+      << "[StatusManagementNodelet] Parameter localization_reinit_minimum_period cannot be read.";
+  CHECK(pnh_.getParam("localization_odom_trust_period", params.localization_odom_trust_period)) 
+      << "[StatusManagementNodelet] Parameter localization_odom_trust_period cannot be read.";
+  CHECK(pnh_.getParam("localization_unreliable_cnt_for_reinit", params.localization_unreliable_cnt_for_reinit)) 
+      << "[StatusManagementNodelet] Parameter localization_unreliable_cnt_for_reinit cannot be read.";
+  CHECK(pnh_.getParam("localization_reliable_count", params.localization_reliable_count)) 
+      << "[StatusManagementNodelet] Parameter localization_reliable_count cannot be read.";
+  CHECK(pnh_.getParam("init_pose_standstill_count", params.init_pose_standstill_count)) 
+      << "[StatusManagementNodelet] Parameter init_pose_standstill_count cannot be read.";
+
+  CHECK(pnh_.getParam("localization_translation_thresh", params.localization_translation_thresh)) 
+      << "[StatusManagementNodelet] Parameter localization_translation_thresh cannot be read.";
+  CHECK(pnh_.getParam("localization_orientation_thresh_deg", params.localization_orientation_thresh)) 
+      << "[StatusManagementNodelet] Parameter localization_orientation_thresh cannot be read.";
+  params.localization_orientation_thresh = params.localization_orientation_thresh / 180.0 * M_PI;
+
+  CHECK(pnh_.getParam("localization_translation_reliable_thresh", params.localization_translation_reliable_thresh)) 
+      << "[StatusManagementNodelet] Parameter localization_translation_reliable_thresh cannot be read.";
+  CHECK(pnh_.getParam("localization_orientation_reliable_thresh_deg", params.localization_orientation_reliable_thresh)) 
+      << "[StatusManagementNodelet] Parameter localization_orientation_reliable_thresh_deg cannot be read.";
+  params.localization_orientation_reliable_thresh = params.localization_orientation_reliable_thresh / 180.0 * M_PI;
+
+  CHECK(pnh_.getParam("obstacle_distance_thresh", params.obstacle_distance_thresh)) 
+      << "[StatusManagementNodelet] Parameter obstacle_distance_thresh cannot be read.";
+  CHECK(pnh_.getParam("obstacle_short_wait_before_avoid", params.obstacle_short_wait_before_avoid)) 
+      << "[StatusManagementNodelet] Parameter obstacle_short_wait_before_avoid cannot be read.";
+  CHECK(pnh_.getParam("obstacle_long_wait_before_avoid", params.obstacle_long_wait_before_avoid)) 
+      << "[StatusManagementNodelet] Parameter obstacle_long_wait_before_avoid cannot be read.";
+
 }
 
 void StatusManagementNodelet::PreparePublisher() {
@@ -496,7 +530,7 @@ XYZRPY StatusManagementNodelet::InitializePose(const bool via_gnss,
     messages::initialize_pose srv = POSE_INIT_REQUEST_FULL(init_pose);
     ros::ServiceClient client =
         nh_.serviceClient<messages::initialize_pose>("/initialize_pose");
-    if (!client.waitForExistence(ros::Duration(DEFAULT_SERVICE_TIMEOUT_SEC))) {
+    if (!client.waitForExistence(ros::Duration(params_.init_pose_srv_timeout))) {
       LOG(FATAL) << "Failed to wait for service. : /initialize_pose";
     }
     if (!client.call(srv)) {
@@ -563,8 +597,8 @@ void StatusManagementNodelet::RunControlCycle() {
         cur_vel_pub_.publish(twist_stamped);
 
         if (TwistIsBelowThreshold(twist_stamped.twist,
-                                  DEFAULT_STANDSTILL_VX_THR,
-                                  DEFAULT_STANDSTILL_WX_THR)) {
+                                  params_.standstill_vx_thr,
+                                  params_.standstill_wx_thr)) {
           standstill_cnt_.SetObj(standstill_cnt_.GetObj() + 1);
         } else {
           standstill_cnt_.SetObj(0);
@@ -585,7 +619,7 @@ void StatusManagementNodelet::RunControlCycle() {
 }
 
 void StatusManagementNodelet::RunCheckingCycle() {
-  ros::Rate r(DEFAULT_CHECKING_CYCLE_FREQ);
+  ros::Rate r(params_.status_check_freq);
   checking_cycle_cnt_ = 0;
   while (ros::ok()) {
     checking_cycle_cnt_++;
@@ -610,9 +644,9 @@ void StatusManagementNodelet::CheckIfEndIsReached() {
   static int count = 0;
   if (0 < base_wps.waypoints.size() &&
       base_wps.waypoints.size() - cur_idx.data < 3 &&
-      TwistIsBelowThreshold(odom.twist.twist, DEFAULT_STANDSTILL_VX_THR,
-                            DEFAULT_STANDSTILL_WX_THR)) {
-    if (count % (5 * static_cast<int>(DEFAULT_CHECKING_CYCLE_FREQ)) == 0) {
+      TwistIsBelowThreshold(odom.twist.twist, params_.standstill_vx_thr,
+                            params_.standstill_wx_thr)) {
+    if (count % (5 * static_cast<int>(params_.status_check_freq)) == 0) {
       PublishStatusMessage(
           "Reached stop waypoint. Please provide next waypoints to follow.");
     }
@@ -693,8 +727,8 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
             ndt_unreliable_cnt % static_cast<int>(DEFAULT_CONTROL_CYCLE_FREQ) ==
                 0 /*&&
             !PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
-                                      DEFAULT_LOCALIZATION_TRANS_THRESH,
-                                      DEFAULT_LOCALIZATION_ORIEN_THRESH)*/) {
+                                      params_.localization_translation_thresh,
+                                      params_.localization_orientation_thresh)*/) {
           ROS_WARN("Pose init called.");
           last_pose_init = ros::Time::now();
 
@@ -729,8 +763,8 @@ void StatusManagementNodelet::CheckRobotStopReason() {
   // ROS_WARN("Twist is almost zero");
   geometry_msgs::TwistStamped twist_raw = twist_raw_.GetObj();
   if (twist_raw.header.stamp.is_zero() ||
-      !TwistIsBelowThreshold(twist_raw.twist, DEFAULT_STANDSTILL_VX_THR,
-                             DEFAULT_STANDSTILL_WX_THR)) {
+      !TwistIsBelowThreshold(twist_raw.twist, params_.standstill_vx_thr,
+                             params_.standstill_wx_thr)) {
     stopped_due_to_obstacle_cnt_.SetObj(0);
     return;
   }
@@ -752,7 +786,7 @@ void StatusManagementNodelet::CheckRobotStopReason() {
   ROS_WARN("Distance : %lf", ComputeDistanceToObstacleOnWaypoint(
                                  obs_idx, fin_wps, cur_pose.pose));
   if (ComputeDistanceToObstacleOnWaypoint(obs_idx, fin_wps, cur_pose.pose) <
-      DEFAULT_OBSTACLE_DISTANCE_THRESH) {
+      params_.obstacle_distance_thresh) {
     // ROS_WARN("Robot stop due to obstacle detected.");
 
     // X. Count up.
@@ -761,7 +795,7 @@ void StatusManagementNodelet::CheckRobotStopReason() {
     // X. Status announce.
     int message_duration = 3;
     int stopped_cnt = stopped_due_to_obstacle_cnt_.GetObj();
-    if (static_cast<int>(stopped_cnt / DEFAULT_CHECKING_CYCLE_FREQ) %
+    if (static_cast<int>(stopped_cnt / params_.status_check_freq) %
             message_duration ==
         0) {
       PublishStatusMessage("Robot stops due to obstacle in front.");
@@ -769,7 +803,7 @@ void StatusManagementNodelet::CheckRobotStopReason() {
 
     // X. Wait for avoidance.
     if (IsShortWaitAvoidanceWaypoint(obs_idx, fin_wps)) {
-      if (DEFAULT_OBSTACLE_SHORT_WAIT_BEFORE_AVOID < stopped_cnt / DEFAULT_CHECKING_CYCLE_FREQ) {
+      if (params_.obstacle_short_wait_before_avoid < stopped_cnt / params_.status_check_freq) {
         PublishStatusMessage("Rerouting for obstacle avoidance.");
         std_msgs::Header header;
         header.stamp = ros::Time::now();
@@ -777,7 +811,7 @@ void StatusManagementNodelet::CheckRobotStopReason() {
         stopped_due_to_obstacle_cnt_.SetObj(0);
       }
     } else if (IsLongWaitAvoidanceWaypoint(obs_idx, fin_wps)) {
-      if (DEFAULT_OBSTACLE_LONG_WAIT_BEFORE_AVOID < stopped_cnt / DEFAULT_CHECKING_CYCLE_FREQ) {
+      if (params_.obstacle_long_wait_before_avoid < stopped_cnt / params_.status_check_freq) {
         PublishStatusMessage("Rerouting for obstacle avoidance.");
         std_msgs::Header header;
         header.stamp = ros::Time::now();
@@ -803,17 +837,17 @@ void StatusManagementNodelet::CheckPoseValidity() {
 
   // X. Map pose is not stable.
   if (false /*!PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
-                                DEFAULT_LOCALIZATION_TRANS_THRESH,
-                                DEFAULT_LOCALIZATION_ORIEN_THRESH)*/) {
+                                params_.localization_translation_thresh,
+                                params_.localization_orientation_thresh)*/) {
     localization_unreliable_cnt_.SetObj(
         std::min(localization_unreliable_cnt_.GetObj() + 1,
-                 DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT));
+                 params_.localization_unreliable_cnt_for_reinit));
 
   } else {
     // X. When map pose is stable.
     if (true/*PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
-                                 DEFAULT_LOCALIZATION_TRANS_RELIABLE_THRESH,
-                                 DEFAULT_LOCALIZATION_ORIEN_RELIABLE_THRESH)*/) {
+                                 params_.localization_translation_reliable_thresh,
+                                 params_.localization_orientation_reliable_thresh_deg)*/) {
       try {
         tf::StampedTransform tf_odom_to_map;
         tf_listener_.lookupTransform("map", "odom", ndt_pose.header.stamp,
@@ -826,7 +860,7 @@ void StatusManagementNodelet::CheckPoseValidity() {
 
       // X. If reaches stable count, treat the first one as valid pose.
       if (last_valid_ndt_pose_queue_.size() ==
-          DEFAULT_LOCALIZATION_RELIABLE_CNT) {
+          params_.localization_reliable_count) {
         std::pair<geometry_msgs::PoseStamped, tf::StampedTransform> e =
             last_valid_ndt_pose_queue_.front();
         last_valid_ndt_pose_queue_.pop_front();
@@ -848,21 +882,21 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
   ros::Time last_pose_init_time = last_pose_init_time_.GetObj();
   if (last_pose_init_time.is_zero() ||
       ros::Time::now() - last_pose_init_time >
-          ros::Duration(DEFAULT_LOCALIZATION_REINIT_MINIMUM_PERIOD)) {
-    if (DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT <=
+          ros::Duration(params_.localization_reinit_minimum_period)) {
+    if (params_.localization_unreliable_cnt_for_reinit <=
         localization_unreliable_cnt_.GetObj()) {
       stop_request_.SetObj(true);
 
       // X. Make sure that robot stops.
-      ros::Rate r(DEFAULT_ROBOT_STOP_CHECK_FREQ);
+      ros::Rate r(params_.robot_stop_check_freq);
       int wait_cnt = 0;
-      while (standstill_cnt_.GetObj() < DEFAULT_INIT_POSE_STANDSTILL_COUNT) {
+      while (standstill_cnt_.GetObj() < params_.init_pose_standstill_count) {
         wait_cnt += 1;
         if (wait_cnt % 5) {
           PublishStatusMessage("Robot will stop for pose initialization.");
         }
         if (localization_unreliable_cnt_.GetObj() <
-            DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT / 2) {
+            params_.localization_unreliable_cnt_for_reinit / 2) {
           ROS_WARN("Localization stabilized.");
           stop_request_.SetObj(false);
           return;
@@ -874,8 +908,8 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
       pose_initializing_.SetObj(true);
       if (!last_valid_ndt_pose_.GetObj().header.stamp.is_zero() &&
           ros::Time::now() - last_valid_ndt_pose_.GetObj().header.stamp <
-              ros::Duration(DEFAULT_LOCALIZATION_ODOM_TRUST_PERIOD) &&
-          !REINIT_VIA_GNSS) {
+              ros::Duration(params_.localization_odom_trust_period) &&
+          !params_.reinit_via_gnss) {
         PublishStatusMessage("Reinitialize localization based on odometry.");
         InitializePose(false, true,
                        CreateXYZRPYFromPose(last_cur_pose_.GetObj().pose));
@@ -890,7 +924,7 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
       pose_initializing_.SetObj(false);
       localization_unreliable_cnt_.SetObj(
           std::max(0, localization_unreliable_cnt_.GetObj() -
-                          DEFAULT_LOCALIZAITON_UNRELIABLE_CNT_FOR_REINIT / 2));
+                          params_.localization_unreliable_cnt_for_reinit / 2));
     }
   }
 }

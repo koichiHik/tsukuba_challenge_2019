@@ -54,6 +54,7 @@
   <arg name="lane_navi_yamlpath" />
   <arg name="lane_select_yamlpath" />
   <arg name="lane_rule_yamlpath" />
+  <arg name="status_management_yamlpath" />
 
   <!-- Load common parameters -->
   <rosparam command="load" file="$(arg common_yaml_filepath)" />
@@ -128,6 +129,7 @@
     <arg name="roll" value="$(arg roll)" />
     <arg name="pitch" value="$(arg pitch)" />
     <arg name="yaw" value="$(arg yaw)" />
+    <arg name="status_management_yamlpath" value="$(arg status_management_yamlpath)" />
   </include>
 
 </launch>
