@@ -6,7 +6,7 @@ ps3_joy:
 
 teleop_twist_joy:
   axis_linear:
-    x: 5
+    x: 7
     y: 0
   scale_linear:
     x: 1.0
@@ -15,8 +15,8 @@ teleop_twist_joy:
     x: 1.5
     y: 0.0
   axis_angular:
-    yaw: 4
+    yaw: 6
   scale_angular:
     yaw: 0.5
-  enable_button: 4
+  enable_button: 0
   enable_turbo_button: 8

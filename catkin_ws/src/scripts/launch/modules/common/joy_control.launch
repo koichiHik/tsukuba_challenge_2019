@@ -1,6 +1,6 @@
 
 <launch>
-  <arg name="joystick_param_filepath" default="$(find scripts)/params/common/ps3_holonomic_config.yaml" />
+  <arg name="joystick_param_filepath" />
 
   <rosparam file="$(arg joystick_param_filepath)" command="load" />
 
