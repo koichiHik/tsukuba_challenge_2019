@@ -25,7 +25,7 @@ PARAM_DIRPATH=$(rospack find ${PARAM_DIRNAME})
 YPSPUR_BIN_FILEPATH=${ROS_SCRIPTS_PKG}/../../../../3rdparty/install/yp_spur/bin/ypspur-coordinator
 VELODYNE_CALIBFILE="$(rospack find velodyne_pointcloud)/params/VLP16db.yaml"
 
-roslaunch ${ROS_SCRIPTS_PKG}/launch/system/manual_logging.launch \
+roslaunch ${ROS_SCRIPTS_PKG}/launch/system/controller_logging.launch \
   base_frame_id:="base_link" \
   imu_frame_id:="imu_link" \
   urg_frame_id:="laser2d_link" \
