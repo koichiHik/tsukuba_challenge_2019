@@ -8,10 +8,7 @@ replan_curve_mode: True
 overwrite_vmax_mode: True
 replan_endpoint_mode: True
 velocity_max: 2.5         # kph
-#velocity_max: 2.0
-#velocity_min: 0.1       # kph
-velocity_min: 1.0       # kph
-#velocity_min: 0.5       # kph
+velocity_min: 0.3       # kph
 radius_thresh: 4.0
 radius_min: 0.1
 accel_limit: 1.0

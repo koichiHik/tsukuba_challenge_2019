@@ -8,6 +8,7 @@
   <!-- ndt matching -->
   <arg name="ndt_matching_yaml_filepath" />
   <arg name="mcl_3dl_yamlpath" />
+  <arg name="use_gps" />
   <arg name="world_to_map_json" />
 
   <!-- Gnss Localizer -->
@@ -35,6 +36,6 @@
   </include>
 
   <node pkg="scripts" type="pose_transform.py" name="pose_transform" output="log" required="True" 
-        args="-world_to_map_json $(arg world_to_map_json)" />
+        args="-world_to_map_json $(arg world_to_map_json)" if="$(eval use_gps)" />
 
 </launch>

@@ -26,6 +26,7 @@
   <arg name="roll" />
   <arg name="pitch" />
   <arg name="yaw" />
+  <arg name="status_management_yamlpath" />
   <!-- bag replay -->
   <arg name="bagfile_path" />
   <arg name="start" />
@@ -38,6 +39,7 @@
   <arg name="pose_pair_filepath" default="" />
   <arg name="kml_filepath" default="" />
   <arg name="world_to_map_json" />
+  <arg name="use_gps" />
   <!-- rviz -->
   <arg name="rviz_config_file" />
 
@@ -63,6 +65,7 @@
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
     <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
     <arg name="mcl_3dl_yamlpath" value="$(arg mcl_3dl_yamlpath)" />
+    <arg name="use_gps" value="$(arg use_gps)" />
   </include>
 
   <!-- Status maanger bringup -->
@@ -75,6 +78,7 @@
     <arg name="roll" value="$(arg roll)" />
     <arg name="pitch" value="$(arg pitch)" />
     <arg name="yaw" value="$(arg yaw)" />
+    <arg name="status_management_yamlpath" value="$(arg status_management_yamlpath)" />
   </include>
 
   <group if="$(eval dump_pose_file)" >

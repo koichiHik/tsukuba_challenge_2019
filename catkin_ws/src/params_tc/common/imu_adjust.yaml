@@ -1,18 +1,9 @@
 
-# 1110 Tokushima
-#offset_x: 0.05
-#offset_y: -0.15
-#offset_z: 0.05
-
-#offset_rx: 0.03
-#offset_ry: -0.0045
-#offset_rz: -0.011
-
-# 1023 Tsukuba
+# 1022 Tsukuba Cityhall
 offset_x: 0.372737227109
 offset_y: 0.0674366955288
 offset_z: 0.055119905
 
-offset_rx: 0.0303458930436
-offset_ry: -0.00489008439321
-offset_rz: -0.00977212377627
+offset_rx: 0.0298008767568
+offset_ry: -0.00493949580932
+offset_rz: -0.00803520347284

@@ -41,24 +41,24 @@ options = {
     },
 
     -- Gray X-Rays. These only use geometry to color pixels.
---    {
---     action = "write_xray_image",
---      voxel_size = VOXEL_SIZE,
---      filename = "xray_yz_all",
---      transform = YZ_TRANSFORM,
---    },
---    {
---      action = "write_xray_image",
---      voxel_size = VOXEL_SIZE,
---      filename = "xray_xy_all",
---      transform = XY_TRANSFORM,
---    },
---    {
---      action = "write_xray_image",
---      voxel_size = VOXEL_SIZE,
---      filename = "xray_xz_all",
---      transform = XZ_TRANSFORM,
---    },
+   {
+    action = "write_xray_image",
+     voxel_size = VOXEL_SIZE,
+     filename = "xray_yz_all",
+     transform = YZ_TRANSFORM,
+   },
+   {
+     action = "write_xray_image",
+     voxel_size = VOXEL_SIZE,
+     filename = "xray_xy_all",
+     transform = XY_TRANSFORM,
+   },
+   {
+     action = "write_xray_image",
+     voxel_size = VOXEL_SIZE,
+     filename = "xray_xz_all",
+     transform = XZ_TRANSFORM,
+   },
     
     -- Now we recolor our points by frame and write another batch of X-Rays. It
     -- is visible in them what was seen by the horizontal and the vertical

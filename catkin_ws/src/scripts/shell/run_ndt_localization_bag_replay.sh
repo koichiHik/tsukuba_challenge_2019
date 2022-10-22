@@ -26,6 +26,7 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/ndt_localization_bag_replay.launch \
   robot_yaml_filepath:=${PARAM_DIRPATH}/common/robot.yaml \
   odom_yaml_filepath:=${PARAM_DIRPATH}/common/odometry.yaml \
   imu_adjust_param_filepath:=${PARAM_DIRPATH}/common/imu_adjust.yaml \
+  use_gps:=$(READ_DATAINFO ${DATAINFO_FILE} ${USE_GPS}) \
   pcd_filelist:=${MAP_PCDFILE} \
   raw_points_topic:="/velodyne_points" \
   downsampler_node_name:="voxel_grid_filter" \
@@ -51,3 +52,4 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/ndt_localization_bag_replay.launch \
   kml_filepath:=${DATA_DIR}/${KML_FILENAME} \
   world_to_map_json:=${DATA_DIR}/${WORLD_TO_MAP_JSON} \
   rviz_config_file:=${PARAM_DIRPATH}/rviz/localization.rviz \
+  status_management_yamlpath:=${PARAM_DIRPATH}/common/status_management.yaml

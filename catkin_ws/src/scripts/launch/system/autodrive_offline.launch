@@ -67,6 +67,7 @@
     <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
     <arg name="mcl_3dl_yamlpath" value="$(arg mcl_3dl_yamlpath)" />    
+    <arg name="use_gps" value="$(arg use_gps)" />
     <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
   </include>
 

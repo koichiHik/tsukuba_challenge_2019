@@ -51,7 +51,7 @@ POSE_GRAPH = {
       min_rotational_score = 0.77,
       min_low_resolution_score = 0.55,
       linear_xy_search_window = 5.,
-      linear_z_search_window = 1.,
+      linear_z_search_window = 5.,
       angular_search_window = math.rad(15.),
     },
     ceres_scan_matcher_3d = {

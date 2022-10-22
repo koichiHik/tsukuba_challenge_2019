@@ -5,7 +5,7 @@ velocity_offset: 0.05            # m/s
 decelerate_vel_min: 0.3         # m/s
 remove_points_upto: 0.1         # m
 enable_multiple_crosswalk_detection: False
-stop_distance_obstacle: 1.0     # m
+stop_distance_obstacle: 1.5    # m
 stop_distance_stopline: 0.3     # m
 detection_range: 2.0            # m
 deceleration_range: 3.0

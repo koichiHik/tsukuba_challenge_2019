@@ -27,6 +27,7 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/autodrive_offline.launch \
   robot_yaml_filepath:=${PARAM_DIRPATH}/common/robot.yaml \
   odom_yaml_filepath:=${PARAM_DIRPATH}/common/odometry.yaml \
   imu_adjust_param_filepath:=${PARAM_DIRPATH}/common/imu_adjust.yaml \
+  use_gps:=$(READ_DATAINFO ${DATAINFO_FILE} ${USE_GPS}) \
   rviz_config_file:=${PARAM_DIRPATH}/rviz/config.rviz \
   plane_number:=$(READ_DATAINFO ${DATAINFO_FILE} ${PLANE_NUMBER}) \
   pcd_filelist:=${MAP_PCDFILE} \

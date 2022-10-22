@@ -44,21 +44,36 @@ def solve_rigid_transform(from_matrix, to_matrix):
 
   return from_cog, to_cog, q
 
-def create_numpy_matrix_from_json(paired_pose_json):
+def create_numpy_matrix_from_json(paired_pose):
 
   size = len(paired_pose)
-  gnss_pnts = np.zeros((size, 3), dtype=np.float64)
-  loc_pnts = np.zeros((size, 3), dtype=np.float64)
 
+  not_nan_size = 0
   for idx in range(size):
     pair = paired_pose[idx]
-    gnss_pnts[idx, 0] = pair['gnss']['x']
-    gnss_pnts[idx, 1] = pair['gnss']['y']
-    gnss_pnts[idx, 2] = pair['gnss']['z']
 
-    loc_pnts[idx, 0] = pair['localized']['x']
-    loc_pnts[idx, 1] = pair['localized']['y']
-    loc_pnts[idx, 2] = pair['localized']['z']
+    if (not np.isnan(pair['gnss']['x']) and \
+        not np.isnan(pair['gnss']['y']) and \
+        not np.isnan(pair['gnss']['z'])):
+      not_nan_size = not_nan_size + 1
+
+  gnss_pnts = np.zeros((not_nan_size, 3), dtype=np.float64)
+  loc_pnts = np.zeros((not_nan_size, 3), dtype=np.float64)
+
+  not_nan_idx = 0
+  for idx in range(size):
+    pair = paired_pose[idx]
+
+    if (not np.isnan(pair['gnss']['x']) and \
+        not np.isnan(pair['gnss']['y']) and \
+        not np.isnan(pair['gnss']['z'])):
+        gnss_pnts[not_nan_idx, 0] = pair['gnss']['x']
+        gnss_pnts[not_nan_idx, 1] = pair['gnss']['y']
+        gnss_pnts[not_nan_idx, 2] = pair['gnss']['z']
+        loc_pnts[not_nan_idx, 0] = pair['localized']['x']
+        loc_pnts[not_nan_idx, 1] = pair['localized']['y']
+        loc_pnts[not_nan_idx, 2] = pair['localized']['z']
+        not_nan_idx = not_nan_idx + 1
 
   return gnss_pnts, loc_pnts
 
@@ -81,8 +96,7 @@ def verify_result(from_matrix, to_matrix, from_cog, to_cog, q):
   print('Maximum residuals : {}'.format(np.max(residuals)))
   print('Average residuals : {}'.format(np.mean(residuals)))
 
-
-if __name__ == '__main__':
+def main():
 
   parser = argparse.ArgumentParser()
   parser.add_argument('--pose_pair_filepath', type=str, required=True)
@@ -109,3 +123,6 @@ if __name__ == '__main__':
   with open(args.transform_filepath, 'w') as f:
     json.dump(OrderedDict([('gnss_cog', gnss_cog), ('quat', quat), ('map_cog', map_cog)]), f, indent=4)
   
+
+if __name__ == '__main__':
+  main()

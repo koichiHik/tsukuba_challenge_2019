@@ -34,7 +34,7 @@ def imu_raw_callback(msg):
 if __name__ == '__main__':
 
   rospy.init_node('imu_offset_calc')
-  rospy.Subscriber('imu', Imu, imu_raw_callback)
+  rospy.Subscriber('imu_raw', Imu, imu_raw_callback)
 
   rospy.spin()
 

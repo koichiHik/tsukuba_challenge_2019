@@ -6,8 +6,8 @@ update_rate: 10
 # Avoidance behavior configurations 
 enable_avoidance: False
 enable_onetime_avoidance: True
-avoid_waypoints_velocity: 1.0
-avoid_start_velocity: 1.0
+avoid_waypoints_velocity: 0.72
+avoid_start_velocity: 0.1
 replan_interval: 5.0
 search_waypoints_size: 50
 search_waypoints_delta: 1
@@ -18,16 +18,16 @@ use_back: False
 use_potential_heuristic: True
 use_wavefront_heuristic: False
 time_limit: 1000.0
-robot_length: 1.2
+robot_length: 0.9
 robot_width: 1.0
 robot_base2back: 0.6
 minimum_turning_radius: 0.25
 theta_size: 24
-curve_weight: 10.2
+curve_weight: 10.0
 reverse_weight: 2.0
 lateral_goal_range: 1.5
 longitudinal_goal_range: 1.5
 angle_goal_range: 10.0
 obstacle_threshold: 100
 potential_weight: 100.0
-distance_heuristic_weight: 1000.0
+distance_heuristic_weight: 1.0
