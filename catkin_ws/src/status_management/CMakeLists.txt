@@ -167,6 +167,11 @@ add_executable(test_prog
   src/test.cpp
 )
 
+add_dependencies(test_prog 
+  messages_generate_messages
+  messages_generate_messages_cpp
+)
+
 ## Specify libraries to link a library or executable target against
 target_link_libraries(test_prog
   ${catkin_LIBRARIES}
