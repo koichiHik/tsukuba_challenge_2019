@@ -22,19 +22,19 @@ if __name__ == '__main__':
   df["sin_yaw"] = np.sin(df["yaw"])
 
   # X. Smooting.
-  df["smooth_x"] = df["x"].rolling(window=args.window_size, center=True).mean()
+  df["smooth_x"] = df["x"].rolling(window=args.window_size, center=True, min_periods=1).mean()
   df['smooth_x'] = df['smooth_x'].where(~df['smooth_x'].isnull(), df['x'])
 
-  df["smooth_y"] = df["y"].rolling(window=args.window_size, center=True).mean()
+  df["smooth_y"] = df["y"].rolling(window=args.window_size, center=True, min_periods=1).mean()
   df['smooth_y'] = df['smooth_y'].where(~df['smooth_y'].isnull(), df['y'])
 
-  df["smooth_z"] = df["z"].rolling(window=args.window_size, center=True).mean()
+  df["smooth_z"] = df["z"].rolling(window=args.window_size, center=True, min_periods=1).mean()
   df['smooth_z'] = df['smooth_z'].where(~df['smooth_z'].isnull(), df['z'])
 
-  df["smooth_cos_yaw"] = df["cos_yaw"].rolling(window=args.window_size, center=True).mean()
+  df["smooth_cos_yaw"] = df["cos_yaw"].rolling(window=args.window_size, center=True, min_periods=1).mean()
   df["smooth_cos_yaw"] = df["smooth_cos_yaw"].where(~df["smooth_cos_yaw"].isnull(), df["cos_yaw"])
 
-  df["smooth_sin_yaw"] = df["sin_yaw"].rolling(window=args.window_size, center=True).mean()
+  df["smooth_sin_yaw"] = df["sin_yaw"].rolling(window=args.window_size, center=True, min_periods=1).mean()
   df["smooth_sin_yaw"] = df["smooth_sin_yaw"].where(~df["smooth_sin_yaw"].isnull(), df["sin_yaw"])
 
   df["smooth_yaw"] = np.arctan2(df["smooth_sin_yaw"], df["smooth_cos_yaw"])
