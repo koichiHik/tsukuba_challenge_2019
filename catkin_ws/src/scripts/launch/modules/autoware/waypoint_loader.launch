@@ -1,9 +1,7 @@
 <launch>
-  <arg name="multi_lane_csv" />
   <arg name="waypoint_replanner_yamlpath" />
 
-  <node pkg="waypoint_maker" type="waypoint_loader" name="waypoint_loader" output="screen" >
-    <param name="multi_lane_csv" value="$(arg multi_lane_csv)" />
+  <node pkg="waypoint_maker" type="waypoint_loader_upon_request" name="waypoint_loader_upon_request" output="screen" >
 
     <!-- Topic (OUT) -->
     <remap from="/based/lane_waypoints_raw" to="/based/lane_waypoints_raw" />

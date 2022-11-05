@@ -1,0 +1,15 @@
+
+use_gps: False
+pose_initializer: False
+init_via_gnss: False 
+
+init_pose:
+  x: 14.59
+  y: 2.17
+  z: -0.04
+  roll: -0.019271653270274233
+  pitch: -0.003258504617599481
+  yaw: -0.03945708572714498
+
+plane_number: 9
+

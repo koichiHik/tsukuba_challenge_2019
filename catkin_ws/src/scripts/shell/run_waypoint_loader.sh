@@ -17,5 +17,4 @@ PARAM_DIRNAME=$(READ_DATAINFO ${DATAINFO_FILE} ${PARAM_DIRNAME})
 PARAM_DIRPATH=$(rospack find ${PARAM_DIRNAME})
 
 roslaunch ${ROS_SCRIPTS_PKG}/launch/modules/autoware/waypoint_loader.launch \
-  multi_lane_csv:=${DATA_DIR}/${WAYPOINT_FILENAME} \
   waypoint_replanner_yamlpath:=${PARAM_DIRPATH}/autoware/waypoint_replanner.yaml \

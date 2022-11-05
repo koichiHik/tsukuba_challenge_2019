@@ -1,6 +1,8 @@
 
 // Original
-#include "status_management_util.h"
+#include <status_management/autorun_config.h>
+#include <status_management/status_management_helper.h>
+#include <status_management/status_management_util.h>
 
 // ROS
 #include <geometry_msgs/PoseStamped.h>
@@ -9,18 +11,19 @@
 #include <nav_msgs/Odometry.h>
 #include <nodelet/nodelet.h>
 #include <ros/ros.h>
+#include <std_msgs/Bool.h>
 #include <std_msgs/Header.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/String.h>
 #include <tf/tf.h>
-#include <tf/transform_broadcaster.h>
 #include <tf/transform_datatypes.h>
-#include <tf/transform_listener.h>
+#include <ypspur_ros/ControlMode.h>
 
 // Autoware
 #include <autoware_config_msgs/ConfigNDT.h>
 #include <autoware_msgs/Lane.h>
 #include <autoware_msgs/NDTStat.h>
+#include <autoware_msgs/String.h>
 
 // Glog
 #include <glog/logging.h>
@@ -34,63 +37,11 @@
 
 namespace {
 
-static const int32_t DEFAULT_PUB_QUEUE_SIZE = 100;
-static const int32_t DEFAULT_SUB_QUEUE_SIZE = 100;
 // Frequency.
 static constexpr double DEFAULT_INIT_ODOM_WAIT_FREQ = 2.0;
 static constexpr double DEFAULT_INIT_GNSS_CHECK_FREQ = 2.0;
 static constexpr double DEFAULT_CONTROL_CYCLE_FREQ = 50.0;
-
-}  // namespace
-
-namespace {
-
-template <typename T>
-class LockedObj {
- public:
-  LockedObj() : obj_() {}
-  LockedObj(const T &obj) : obj_(obj) {}
-
-  T GetObj() const {
-    std::lock_guard<std::mutex> lock(mtx_);
-    return obj_;
-  };
-
-  void SetObj(const T &obj) {
-    std::lock_guard<std::mutex> lock(mtx_);
-    obj_ = obj;
-  }
-
- private:
-  mutable std::mutex mtx_;
-  T obj_;
-};
-
-struct StatusManagementParams {
-  bool init_from_gnss;
-  bool use_pose_search;
-  double x, y, z, roll, pitch, yaw;
-
-  bool reinit_via_gnss;
-  double init_pose_srv_timeout;
-  double status_check_freq;
-  double robot_stop_check_freq;
-  double standstill_vx_thr;
-  double standstill_wx_thr;
-  double localization_reinit_minimum_period;
-  double localization_odom_trust_period;
-  int localization_unreliable_cnt_for_reinit;
-  int localization_reliable_count;
-  int init_pose_standstill_count;
-  double localization_translation_thresh;
-  double localization_orientation_thresh;
-  double localization_translation_reliable_thresh;
-  double localization_orientation_reliable_thresh;
-
-  double obstacle_distance_thresh;
-  double obstacle_short_wait_before_avoid;
-  double obstacle_long_wait_before_avoid;
-};
+static constexpr double DEFAULT_MESSAGE_CYCLE = 5.0;
 
 }  // namespace
 
@@ -107,16 +58,9 @@ class StatusManagementNodelet : public nodelet::Nodelet {
  private:
   void Initialize();
 
-  void ReadParams(StatusManagementParams &params);
+  XYZRPY InitializePose(const init_config &conf);
 
-  void PreparePublisher();
-
-  void PrepareSubscriber();
-
-  XYZRPY InitializePose(const bool via_gnss, const bool pose_init,
-                        const XYZRPY &pose);
-
-  void PublishStatusMessage(const std::string &msg);
+  void PublishStatusMessage(const std::string &msg, const double sec);
 
   void RunControlCycle();
 
@@ -130,100 +74,20 @@ class StatusManagementNodelet : public nodelet::Nodelet {
 
   void RunPoseInitializerIfNecessary();
 
-  void CheckIfEndIsReached();
-
- private:
-  // Subscribers.
-  // Pose
-  void GNSSLocalPoseCallback(const geometry_msgs::PoseStamped &msg);
-
-  void NdtPoseCallback(const geometry_msgs::PoseStamped &msg);
-
-  void AmclPoseCallback(const geometry_msgs::PoseWithCovarianceStamped &msg);
-
-  // Odom & Control
-  void OdomCallback(const nav_msgs::Odometry &msg);
-
-  void TwistRawCallback(const geometry_msgs::TwistStamped &msg);
-
-  // Waypoint & Lane
-  void ClosestWaypointCallback(const std_msgs::Int32 &msg);
-
-  void ObstacleWaypointCallback(const std_msgs::Int32 &msg);
-
-  void BaseWaypointCallback(const autoware_msgs::Lane &msg);
-
-  void FinalWaypointsCallback(const autoware_msgs::Lane &msg);
-
-  // Config & Status
-  void NdtStatCallback(const autoware_msgs::NDTStat &msg);
-
-  void AvoidanceRequestDoneCallback(const std_msgs::Header &msg);
+  bool CheckIfEndIsReached();
 
  private:
   ros::NodeHandle nh_, pnh_;
 
-  // X. Tf
-  tf::TransformBroadcaster tf_broadcaster_;
-  tf::TransformListener tf_listener_;
-
   // X. Parameter
-  StatusManagementParams params_;
+  StatusManagementNodeletParams params_;
 
-  // X. Subscriber
-  // Pose
-  ros::Subscriber gnss_local_pose_sub_, ndt_pose_sub_, amcl_pose_sub_;
-  // Odom & Control
-  ros::Subscriber odom_sub_, twist_raw_sub_;
-  // Waypoint & Land
-  ros::Subscriber cls_wp_idx_sub_, obst_wp_idx_sub_, base_wps_sub_,
-      final_wps_sub_;
-  // Config & Status
-  ros::Subscriber ndt_stat_sub_, avoidance_done_sub_;
+  std::unique_ptr<SyncState> p_sync_state_;
+  std::unique_ptr<CourseConfigMgmt> p_course_conf_mgmt_;
+  std::unique_ptr<Publishers> p_pubs_;
+  std::unique_ptr<Subscribers> p_subs_;
 
-  // X. Publisher
-  // Control
-  ros::Publisher cmd_vel_pub_;
-  // Pose & Vel
-  ros::Publisher cur_pose_pub_, cur_vel_pub_;
-  // Config & Status
-  ros::Publisher ndt_config_pub_, voxel_filt_pub_, mcl_3dl_init_pub_,
-      message_pub_, onetime_avoidance_req_pub_;
-
-  // X. Subscribed message.
-  // Pose
-  LockedObj<geometry_msgs::PoseStamped> gnss_local_;
-  LockedObj<geometry_msgs::PoseStamped> ndt_pose_;
-  LockedObj<geometry_msgs::PoseWithCovarianceStamped> amcl_pose_;
-
-  // Odom & Control
-  LockedObj<nav_msgs::Odometry> odom_;
-  LockedObj<geometry_msgs::TwistStamped> twist_raw_;
-
-  // Waypoint & Lane
-  LockedObj<std_msgs::Int32> cls_wp_idx_;
-  LockedObj<std_msgs::Int32> obst_wp_idx_;
-  LockedObj<autoware_msgs::Lane> base_wps_;
-  LockedObj<autoware_msgs::Lane> fin_wps_;
-
-  // Config & Status
-  LockedObj<autoware_msgs::NDTStat> ndt_stat_;
-  LockedObj<std_msgs::Header> avoidance_done_;
-
-  // Data.
-  LockedObj<geometry_msgs::PoseStamped> last_cur_pose_;
-  LockedObj<geometry_msgs::PoseStamped> last_valid_ndt_pose_;
-  boost::circular_buffer<
-      std::pair<geometry_msgs::PoseStamped, tf::StampedTransform>>
-      last_valid_ndt_pose_queue_;
-  LockedObj<tf::StampedTransform> last_valid_tf_odom_to_map_;
-  LockedObj<int32_t> standstill_cnt_;
-  LockedObj<int32_t> localization_unreliable_cnt_;
-  LockedObj<int32_t> stopped_due_to_obstacle_cnt_;
-  LockedObj<bool> pose_initializing_;
-  LockedObj<bool> stop_request_;
-  LockedObj<ros::Time> last_pose_init_time_;
-  uint64_t control_cycle_cnt_, checking_cycle_cnt_;
+  std::map<std::string, ros::Time> message_time_map_;
 
   std::thread thread_control_, thread_checking_;
 };
@@ -231,51 +95,11 @@ class StatusManagementNodelet : public nodelet::Nodelet {
 StatusManagementNodelet::StatusManagementNodelet()
     : nh_(),
       pnh_(),
-      tf_broadcaster_(),
-      tf_listener_(),
       params_(),
-      gnss_local_pose_sub_(),
-      ndt_pose_sub_(),
-      amcl_pose_sub_(),
-      odom_sub_(),
-      twist_raw_sub_(),
-      cls_wp_idx_sub_(),
-      obst_wp_idx_sub_(),
-      base_wps_sub_(),
-      final_wps_sub_(),
-      ndt_stat_sub_(),
-      avoidance_done_sub_(),
-      cmd_vel_pub_(),
-      cur_pose_pub_(),
-      cur_vel_pub_(),
-      ndt_config_pub_(),
-      voxel_filt_pub_(),
-      mcl_3dl_init_pub_(),
-      message_pub_(),
-      onetime_avoidance_req_pub_(),
-      gnss_local_(),
-      ndt_pose_(),
-      amcl_pose_(),
-      odom_(),
-      twist_raw_(),
-      cls_wp_idx_(),
-      obst_wp_idx_(),
-      base_wps_(),
-      fin_wps_(),
-      ndt_stat_(),
-      avoidance_done_(),
-      last_cur_pose_(),
-      last_valid_ndt_pose_(),
-      last_valid_ndt_pose_queue_(),
-      last_valid_tf_odom_to_map_(),
-      standstill_cnt_(),
-      localization_unreliable_cnt_(),
-      stopped_due_to_obstacle_cnt_(),
-      pose_initializing_(),
-      stop_request_(),
-      last_pose_init_time_(),
-      control_cycle_cnt_(),
-      checking_cycle_cnt_(),
+      p_sync_state_(),
+      p_course_conf_mgmt_(),
+      p_pubs_(),
+      p_subs_(),
       thread_control_(),
       thread_checking_() {}
 
@@ -292,74 +116,31 @@ void StatusManagementNodelet::onInit() {
 void StatusManagementNodelet::Initialize() {
   ROS_WARN("StatusManagementNodelet initialize");
 
-  /*
-  ros::Rate r(0.1);
-  while (ros::Time::now().is_zero()) {
-    r.sleep();
-  }
-  ROS_WARN("Current time : %lf", ros::Time::now().toSec());
-  */
-
+  // X. Initialize
   nh_ = getMTNodeHandle();
   pnh_ = getMTPrivateNodeHandle();
-
-  // Variable init
-  {
-    std_msgs::Int32 n;
-    n.data = -1;
-    cls_wp_idx_.SetObj(n);
-    obst_wp_idx_.SetObj(n);
-    standstill_cnt_.SetObj(0);
-    localization_unreliable_cnt_.SetObj(0);
-    stopped_due_to_obstacle_cnt_.SetObj(0);
-    pose_initializing_.SetObj(false);
-    stop_request_.SetObj(false);
-    control_cycle_cnt_ = 0;
-    checking_cycle_cnt_ = 0;
-    last_valid_ndt_pose_queue_.set_capacity(params_.localization_reliable_count);
-  }
-
-  // Read params.
-  ReadParams(params_);
-
-  // Publisher
-  PreparePublisher();
+  params_ = ReadStatusManagementNodeletParams(pnh_);
+  p_sync_state_.reset(new SyncState(params_.localization_reliable_count));
+  p_course_conf_mgmt_.reset(new CourseConfigMgmt(params_.course_config_yaml,
+                                                 params_.start_course_idx));
+  p_pubs_.reset(new Publishers(nh_));
+  p_subs_.reset(new Subscribers(nh_, *p_sync_state_, p_pubs_->message_pub_));
 
   // Messaging.
-  PublishStatusMessage("Initializing system. Please wait for a moment.");
+  PublishStatusMessage("Initializing system. Please wait for a moment.",
+                       DEFAULT_MESSAGE_CYCLE);
 
-  // Subscriber
-  PrepareSubscriber();
+  // X. Initialize voxel filter.
+  p_pubs_->voxel_filt_pub_.publish(CONFIG_VOXELFILT_POSE_RUN());
 
-  // If direct initialization, keep parameter value as valid.
-  if (!params_.use_pose_search) {
-    ros::Rate r(DEFAULT_INIT_ODOM_WAIT_FREQ);
-    while (ros::ok() && odom_.GetObj().header.stamp.is_zero()) {
-      r.sleep();
-    }
-    nav_msgs::Odometry odom = odom_.GetObj();
-    geometry_msgs::Pose init_pose =
-        CreatePoseFromXYZRPY(XYZRPY(params_.x, params_.y, params_.z,
-                                    params_.roll, params_.pitch, params_.yaw));
-    geometry_msgs::PoseStamped init_pose_stamped;
-    ros::Time cur_time = ros::Time::now();
-    init_pose_stamped.header.stamp = cur_time;
-    init_pose_stamped.header.frame_id = "map";
-    init_pose_stamped.pose = init_pose;
-    last_valid_ndt_pose_.SetObj(init_pose_stamped);
-
-    tf::Transform trans_odom_to_map =
-        CreateTransformFromPose(init_pose, odom.pose.pose);
-
-    last_valid_tf_odom_to_map_.SetObj(
-        tf::StampedTransform(trans_odom_to_map, cur_time, "map", "odom"));
+  // X. Load map and waypoint.
+  {
+    autorun_config conf = p_course_conf_mgmt_->GetCurrentConfig();
+    CallMapLoadService(nh_, conf.file_conf_.map_pcd_file_);
+    CallWaypointLoadService(nh_, conf.file_conf_.lane_csv_file_);
+    CallWorld2MapLoadService(nh_, conf.file_conf_.world_to_map_json_file_);
+    InitializePose(conf.init_conf_);
   }
-
-  // Initialize pose.
-  XYZRPY init_pose(params_.x, params_.y, params_.z, params_.roll, params_.pitch,
-                   params_.yaw);
-  XYZRPY init_searched_pose = InitializePose(
-      params_.init_from_gnss, params_.use_pose_search, init_pose);
 
   // Dispatch thread.
   thread_checking_ =
@@ -367,247 +148,102 @@ void StatusManagementNodelet::Initialize() {
   RunControlCycle();
 }
 
-void StatusManagementNodelet::ReadParams(StatusManagementParams &params) {
-  CHECK(pnh_.getParam("init_from_gnss", params.init_from_gnss))
-      << "[StatusManagementNodelet] Parameter init_from_gnss cannot be read.";
-  CHECK(pnh_.getParam("use_pose_search", params.use_pose_search))
-      << "[StatusManagementNodelet] Parameter use_pose_search cannot be read.";
-  CHECK(pnh_.getParam("x", params.x))
-      << "[SattusManagementNodelet] Parameter x cannot be read.";
-  CHECK(pnh_.getParam("y", params.y))
-      << "[StatusManagementNodelet] Parameter y cannot be read.";
-  CHECK(pnh_.getParam("z", params.z))
-      << "[StatusManagementNodelet] Parameter z cannot be read.";
-  CHECK(pnh_.getParam("roll", params.roll))
-      << "[StatusManagementNodelet] Parameter roll cannot be read.";
-  CHECK(pnh_.getParam("pitch", params.pitch))
-      << "[StatusManagementNodelet] Parameter pitch cannot be read.";
-  CHECK(pnh_.getParam("yaw", params.yaw))
-      << "[StatusManagementNodelet] Parameter yaw cannot be read.";
-
-
-  CHECK(pnh_.getParam("reinit_via_gnss", params.reinit_via_gnss)) 
-      << "[StatusManagementNodelet] Parameter reinit_via_gnss cannot be read.";
-
-  CHECK(pnh_.getParam("init_pose_srv_timeout", params.init_pose_srv_timeout)) 
-      << "[StatusManagementNodelet] Parameter init_pose_srv_timeout cannot be read.";
-
-  CHECK(pnh_.getParam("status_check_freq", params.status_check_freq)) 
-      << "[StatusManagementNodelet] Parameter status_check_freq cannot be read.";
-  CHECK(pnh_.getParam("robot_stop_check_freq", params.robot_stop_check_freq)) 
-      << "[StatusManagementNodelet] Parameter robot_stop_check_freq cannot be read.";
-
-  CHECK(pnh_.getParam("standstill_vx_thr", params.standstill_vx_thr)) 
-      << "[StatusManagementNodelet] Parameter standstill_vx_thr cannot be read.";
-  CHECK(pnh_.getParam("standstill_wx_thr", params.standstill_wx_thr)) 
-      << "[StatusManagementNodelet] Parameter standstill_wx_thr cannot be read.";
-  CHECK(pnh_.getParam("localization_reinit_minimum_period", params.localization_reinit_minimum_period)) 
-      << "[StatusManagementNodelet] Parameter localization_reinit_minimum_period cannot be read.";
-  CHECK(pnh_.getParam("localization_odom_trust_period", params.localization_odom_trust_period)) 
-      << "[StatusManagementNodelet] Parameter localization_odom_trust_period cannot be read.";
-  CHECK(pnh_.getParam("localization_unreliable_cnt_for_reinit", params.localization_unreliable_cnt_for_reinit)) 
-      << "[StatusManagementNodelet] Parameter localization_unreliable_cnt_for_reinit cannot be read.";
-  CHECK(pnh_.getParam("localization_reliable_count", params.localization_reliable_count)) 
-      << "[StatusManagementNodelet] Parameter localization_reliable_count cannot be read.";
-  CHECK(pnh_.getParam("init_pose_standstill_count", params.init_pose_standstill_count)) 
-      << "[StatusManagementNodelet] Parameter init_pose_standstill_count cannot be read.";
-
-  CHECK(pnh_.getParam("localization_translation_thresh", params.localization_translation_thresh)) 
-      << "[StatusManagementNodelet] Parameter localization_translation_thresh cannot be read.";
-  CHECK(pnh_.getParam("localization_orientation_thresh_deg", params.localization_orientation_thresh)) 
-      << "[StatusManagementNodelet] Parameter localization_orientation_thresh cannot be read.";
-  params.localization_orientation_thresh = params.localization_orientation_thresh / 180.0 * M_PI;
-
-  CHECK(pnh_.getParam("localization_translation_reliable_thresh", params.localization_translation_reliable_thresh)) 
-      << "[StatusManagementNodelet] Parameter localization_translation_reliable_thresh cannot be read.";
-  CHECK(pnh_.getParam("localization_orientation_reliable_thresh_deg", params.localization_orientation_reliable_thresh)) 
-      << "[StatusManagementNodelet] Parameter localization_orientation_reliable_thresh_deg cannot be read.";
-  params.localization_orientation_reliable_thresh = params.localization_orientation_reliable_thresh / 180.0 * M_PI;
-
-  CHECK(pnh_.getParam("obstacle_distance_thresh", params.obstacle_distance_thresh)) 
-      << "[StatusManagementNodelet] Parameter obstacle_distance_thresh cannot be read.";
-  CHECK(pnh_.getParam("obstacle_short_wait_before_avoid", params.obstacle_short_wait_before_avoid)) 
-      << "[StatusManagementNodelet] Parameter obstacle_short_wait_before_avoid cannot be read.";
-  CHECK(pnh_.getParam("obstacle_long_wait_before_avoid", params.obstacle_long_wait_before_avoid)) 
-      << "[StatusManagementNodelet] Parameter obstacle_long_wait_before_avoid cannot be read.";
-
-}
-
-void StatusManagementNodelet::PreparePublisher() {
-  // X. Publisher
-
-  // Control related.
-  cmd_vel_pub_ = nh_.advertise<geometry_msgs::Twist>(
-      "cmd_vel", DEFAULT_PUB_QUEUE_SIZE, false);
-  cur_pose_pub_ = nh_.advertise<geometry_msgs::PoseStamped>(
-      "current_pose", DEFAULT_PUB_QUEUE_SIZE, false);
-  cur_vel_pub_ = nh_.advertise<geometry_msgs::TwistStamped>(
-      "current_velocity", DEFAULT_PUB_QUEUE_SIZE, false);
-
-  // Config
-  ndt_config_pub_ =
-      nh_.advertise<autoware_config_msgs::ConfigNDT>("/config/ndt", true);
-  voxel_filt_pub_ = nh_.advertise<autoware_config_msgs::ConfigVoxelGridFilter>(
-      "config/voxel_grid_filter", true);
-  mcl_3dl_init_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
-      "/mcl_3dl/initialpose", true);
-
-  // Request
-  onetime_avoidance_req_pub_ =
-      nh_.advertise<std_msgs::Header>("onetime_avoidance_request", true);
-  message_pub_ = nh_.advertise<std_msgs::String>("status_message",
-                                                 DEFAULT_PUB_QUEUE_SIZE, true);
-}
-
-void StatusManagementNodelet::PrepareSubscriber() {
-  // Pose
-  gnss_local_pose_sub_ =
-      nh_.subscribe("gnss_pose_local", DEFAULT_SUB_QUEUE_SIZE,
-                    &StatusManagementNodelet::GNSSLocalPoseCallback, this);
-  ndt_pose_sub_ =
-      nh_.subscribe("ndt_pose", DEFAULT_SUB_QUEUE_SIZE,
-                    &StatusManagementNodelet::NdtPoseCallback, this);
-  amcl_pose_sub_ =
-      nh_.subscribe("amcl_pose", DEFAULT_SUB_QUEUE_SIZE,
-                    &StatusManagementNodelet::AmclPoseCallback, this);
-
-  // Odom & Control
-  odom_sub_ = nh_.subscribe("odom", DEFAULT_SUB_QUEUE_SIZE,
-                            &StatusManagementNodelet::OdomCallback, this);
-  twist_raw_sub_ =
-      nh_.subscribe("twist_raw", DEFAULT_SUB_QUEUE_SIZE,
-                    &StatusManagementNodelet::TwistRawCallback, this);
-
-  // Waypoint and Lane
-  cls_wp_idx_sub_ =
-      nh_.subscribe("/closest_waypoint", DEFAULT_SUB_QUEUE_SIZE,
-                    &StatusManagementNodelet::ClosestWaypointCallback, this);
-  obst_wp_idx_sub_ =
-      nh_.subscribe("obstacle_waypoint", DEFAULT_SUB_QUEUE_SIZE,
-                    &StatusManagementNodelet::ObstacleWaypointCallback, this);
-  base_wps_sub_ =
-      nh_.subscribe("/base_waypoints", DEFAULT_SUB_QUEUE_SIZE,
-                    &StatusManagementNodelet::BaseWaypointCallback, this);
-  final_wps_sub_ =
-      nh_.subscribe("final_waypoints", DEFAULT_SUB_QUEUE_SIZE,
-                    &StatusManagementNodelet::FinalWaypointsCallback, this);
-
-  // Config & Status
-  ndt_stat_sub_ =
-      nh_.subscribe("ndt_stat", DEFAULT_SUB_QUEUE_SIZE,
-                    &StatusManagementNodelet::NdtStatCallback, this);
-  avoidance_done_sub_ = nh_.subscribe(
-      "avoidance_request_done", DEFAULT_SUB_QUEUE_SIZE,
-      &StatusManagementNodelet::AvoidanceRequestDoneCallback, this);
-}
-
-XYZRPY StatusManagementNodelet::InitializePose(const bool via_gnss,
-                                               const bool pose_init,
-                                               const XYZRPY &pose) {
-  XYZRPY init_pose = pose;
+XYZRPY StatusManagementNodelet::InitializePose(const init_config &conf) {
+  XYZRPY init_pose;
+  CreateInitPoseFromConfig(conf, *p_sync_state_, init_pose,
+                           DEFAULT_INIT_ODOM_WAIT_FREQ);
 
   // X. Update from GNSS is ON.
-  if (via_gnss) {
-    // X. Wait update from GNSS.
-    ros::Rate r(DEFAULT_INIT_GNSS_CHECK_FREQ);
-    while (gnss_local_.GetObj().header.stamp.is_zero() && ros::ok()) {
-      ROS_WARN("Waiting for GNSS data to be received.");
-      r.sleep();
-    }
-
-    // X. Update init pose.
-    init_pose = CreateXYZRPYFromPose(gnss_local_.GetObj().pose);
-    init_pose.roll_ = 0.0;
-    init_pose.pitch_ = 0.0;
-    init_pose.yaw_ = 0.0;
+  if (conf.init_via_gnss_) {
+    InitializePoseViaGNSS(*p_sync_state_, init_pose,
+                          DEFAULT_INIT_GNSS_CHECK_FREQ);
   }
 
   // X. Use pose initializer.
-  if (pose_init) {
+  if (conf.pose_initializer_) {
     PublishStatusMessage(
-        "Start pose initializer. This will take about twenty seconds.");
-    voxel_filt_pub_.publish(CONFIG_VOXELFILT_POSE_SEARCH());
-    messages::initialize_pose srv = POSE_INIT_REQUEST_FULL(init_pose);
-    ros::ServiceClient client =
-        nh_.serviceClient<messages::initialize_pose>("/initialize_pose");
-    if (!client.waitForExistence(ros::Duration(params_.init_pose_srv_timeout))) {
-      LOG(FATAL) << "Failed to wait for service. : /initialize_pose";
-    }
-    if (!client.call(srv)) {
-      LOG(FATAL) << "Failed to call service. : /initialize_pose";
-    }
-
-    // X. Update pose.
-    init_pose.x_ = srv.response.x;
-    init_pose.y_ = srv.response.y;
-    init_pose.z_ = srv.response.z;
-    init_pose.roll_ = srv.response.roll;
-    init_pose.pitch_ = srv.response.pitch;
-    init_pose.yaw_ = srv.response.yaw;
+        "Start pose initializer. This will take about twenty seconds.",
+        DEFAULT_MESSAGE_CYCLE);
+    CallPoseInitializeService(nh_, p_pubs_->voxel_filt_pub_, init_pose,
+                              params_.init_pose_srv_timeout);
   }
 
-  // X. Set finer resoluiton to voxelfilter.
-  voxel_filt_pub_.publish(CONFIG_VOXELFILT_POSE_RUN());
-
-  // X. Initialize ndt localizer.
-  ndt_config_pub_.publish(CONFIG_DEFAULT_NDT(init_pose));
-
-  // X. Initialize amcl localizer.
-  mcl_3dl_init_pub_.publish(
-      CreatePoseWithCovarianceStamped(init_pose, ros::Time::now()));
+  InitializeLocalizer(p_pubs_->ndt_config_pub_, p_pubs_->mcl_3dl_init_pub_,
+                      init_pose);
 
   // X. Status Announce.
-  PublishStatusMessage("Pose initialization is done. Start control.");
+  PublishStatusMessage("Pose initialization is done. Start control.",
+                       DEFAULT_MESSAGE_CYCLE);
 
   return init_pose;
 }
 
-void StatusManagementNodelet::PublishStatusMessage(const std::string &text) {
+void StatusManagementNodelet::PublishStatusMessage(const std::string &text,
+                                                   const double sec) {
   std_msgs::String msg;
   msg.data = text;
-  message_pub_.publish(msg);
+  ros::Time cur_time = ros::Time::now();
+  if (message_time_map_.find(text) == message_time_map_.end()) {
+    message_time_map_.insert(std::make_pair(text, cur_time));
+    p_pubs_->message_pub_.publish(msg);
+  } else if (ros::Duration(sec) < cur_time - message_time_map_.at(text)) {
+    message_time_map_.at(text) = cur_time;
+    p_pubs_->message_pub_.publish(msg);
+  }
 }
 
 void StatusManagementNodelet::RunControlCycle() {
-  control_cycle_cnt_ = 0;
   ros::Rate r(DEFAULT_CONTROL_CYCLE_FREQ);
   while (ros::ok()) {
-    control_cycle_cnt_++;
+    p_sync_state_->control_cycle_cnt_.SetObj(
+        p_sync_state_->control_cycle_cnt_.GetObj() + 1);
     // X. Ros time.
     ros::Time time = ros::Time::now();
 
     // X. Control command routing.
     {
-      geometry_msgs::TwistStamped twist_stamped = twist_raw_.GetObj();
-      if (!twist_stamped.header.stamp.is_zero() && 
-          !stop_request_.GetObj()) {
-        cmd_vel_pub_.publish(twist_stamped.twist);
+      if (!p_sync_state_->engage_request_.GetObj()) {
+        ypspur_ros::ControlMode msg;
+        msg.vehicle_control_mode = 0;
+        p_pubs_->yp_spur_free_pub_.publish(msg);
       } else {
-        cmd_vel_pub_.publish(CREATE_ZERO_TWIST());
+        ypspur_ros::ControlMode msg;
+        msg.vehicle_control_mode = 2;
+        p_pubs_->yp_spur_free_pub_.publish(msg);
+        geometry_msgs::TwistStamped twist_stamped =
+            p_sync_state_->twist_raw_.GetObj();
+        if (p_sync_state_->autorun_request_.GetObj() &&
+            !twist_stamped.header.stamp.is_zero() &&
+            !p_sync_state_->stop_request_.GetObj()) {
+          p_pubs_->cmd_vel_pub_.publish(twist_stamped.twist);
+        } else {
+          p_pubs_->cmd_vel_pub_.publish(CREATE_ZERO_TWIST());
+        }
       }
     }
 
     // X. Velocity routing.
     {
-      nav_msgs::Odometry odom = odom_.GetObj();
+      nav_msgs::Odometry odom = p_sync_state_->odom_.GetObj();
       if (!odom.header.stamp.is_zero()) {
         geometry_msgs::TwistStamped twist_stamped;
         twist_stamped.header.stamp = time;
         twist_stamped.twist = odom.twist.twist;
-        cur_vel_pub_.publish(twist_stamped);
+        p_pubs_->cur_vel_pub_.publish(twist_stamped);
 
         if (TwistIsBelowThreshold(twist_stamped.twist,
                                   params_.standstill_vx_thr,
                                   params_.standstill_wx_thr)) {
-          standstill_cnt_.SetObj(standstill_cnt_.GetObj() + 1);
+          p_sync_state_->standstill_cnt_.SetObj(
+              p_sync_state_->standstill_cnt_.GetObj() + 1);
         } else {
-          standstill_cnt_.SetObj(0);
+          p_sync_state_->standstill_cnt_.SetObj(0);
         }
       }
     }
 
     // X. Check pose validity.
-    if (!pose_initializing_.GetObj()) {
+    if (!p_sync_state_->pose_initializing_.GetObj()) {
       CheckPoseValidity();
     }
 
@@ -620,9 +256,9 @@ void StatusManagementNodelet::RunControlCycle() {
 
 void StatusManagementNodelet::RunCheckingCycle() {
   ros::Rate r(params_.status_check_freq);
-  checking_cycle_cnt_ = 0;
   while (ros::ok()) {
-    checking_cycle_cnt_++;
+    p_sync_state_->checking_cycle_cnt_.SetObj(
+        p_sync_state_->checking_cycle_cnt_.GetObj() + 1);
     // X. Robot stuck reason.
     CheckRobotStopReason();
 
@@ -630,35 +266,61 @@ void StatusManagementNodelet::RunCheckingCycle() {
     RunPoseInitializerIfNecessary();
 
     // X. Check if reached goal.
-    CheckIfEndIsReached();
+    if (CheckIfEndIsReached() && p_course_conf_mgmt_->NextConfig()) {
+      std_msgs::Bool msg;
+      msg.data = false;
+      p_pubs_->status_mgmt_status_pub_.publish(msg);
+      autorun_config conf = p_course_conf_mgmt_->GetCurrentConfig();
+      CallMapLoadService(nh_, conf.file_conf_.map_pcd_file_);
+      CallWaypointLoadService(nh_, conf.file_conf_.lane_csv_file_);
+      CallWorld2MapLoadService(nh_, conf.file_conf_.world_to_map_json_file_);
+      InitializePose(conf.init_conf_);
+    }
+
+    if (!p_sync_state_->engage_request_.GetObj() ||
+        (p_sync_state_->engage_request_.GetObj() &&
+         !p_sync_state_->autorun_request_.GetObj())) {
+      PublishStatusMessage("System is ready. Wait user request.",
+                           DEFAULT_MESSAGE_CYCLE);
+    }
 
     r.sleep();
   }
 }
 
-void StatusManagementNodelet::CheckIfEndIsReached() {
-  autoware_msgs::Lane base_wps = base_wps_.GetObj();
-  std_msgs::Int32 cur_idx = cls_wp_idx_.GetObj();
-  nav_msgs::Odometry odom = odom_.GetObj();
+bool StatusManagementNodelet::CheckIfEndIsReached() {
+  autoware_msgs::Lane base_wps = p_sync_state_->base_wps_.GetObj();
+  std_msgs::Int32 cur_idx = p_sync_state_->cls_wp_idx_.GetObj();
+  nav_msgs::Odometry odom = p_sync_state_->odom_.GetObj();
 
+  bool end_is_reached = false;
   static int count = 0;
+
+  static int current_idx = cur_idx.data;
+  if (0 <= cur_idx.data) {
+    current_idx = cur_idx.data;
+  }
+
+  LOG(INFO) << "Index diff : " << base_wps.waypoints.size() - current_idx;
   if (0 < base_wps.waypoints.size() &&
-      base_wps.waypoints.size() - cur_idx.data < 3 &&
+      static_cast<int>(base_wps.waypoints.size()) - current_idx < 3 &&
       TwistIsBelowThreshold(odom.twist.twist, params_.standstill_vx_thr,
                             params_.standstill_wx_thr)) {
-    if (count % (5 * static_cast<int>(params_.status_check_freq)) == 0) {
-      PublishStatusMessage(
-          "Reached stop waypoint. Please provide next waypoints to follow.");
-    }
+    end_is_reached = true;
+    PublishStatusMessage(
+        "Reached stop waypoint. Please provide next waypoints to follow.",
+        DEFAULT_MESSAGE_CYCLE);
     count++;
   } else {
     count = 0;
   }
+
+  return end_is_reached;
 }
 
 void StatusManagementNodelet::CreateAndPublishCurrentPose(
     const ros::Time &time) {
-  nav_msgs::Odometry odom = odom_.GetObj();
+  nav_msgs::Odometry odom = p_sync_state_->odom_.GetObj();
   if (!odom.header.stamp.is_zero()) {
     geometry_msgs::PoseStamped cur_pose;
     cur_pose.header.stamp = time;
@@ -666,14 +328,14 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
 
     static ros::Time last_pose_init;
     static int ndt_unreliable_cnt = 0;
-    geometry_msgs::PoseStamped ndt_pose = ndt_pose_.GetObj();
+    geometry_msgs::PoseStamped ndt_pose = p_sync_state_->ndt_pose_.GetObj();
 
     //
     // ROS_WARN("Localization Unreliable Cnt : %d",
-    //         localization_unreliable_cnt_.GetObj());
+    //         p_sync_state_->localization_unreliable_cnt_.GetObj());
     if (!ndt_pose.header.stamp.is_zero() &&
-        localization_unreliable_cnt_.GetObj() == 0 &&
-        !pose_initializing_.GetObj()) {
+        p_sync_state_->localization_unreliable_cnt_.GetObj() == 0 &&
+        !p_sync_state_->pose_initializing_.GetObj()) {
       // X. Use ndt pose as cur pose.
       cur_pose.pose = ndt_pose.pose;
       tf::Transform trans_odom_to_map =
@@ -681,48 +343,44 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
 
       // X. Send tf & cur pose
       // ROS_WARN("Publish transform from ndt.");
-      tf_broadcaster_.sendTransform(
+      p_pubs_->tf_broadcaster_.sendTransform(
           tf::StampedTransform(trans_odom_to_map, time, "map", "odom"));
 
       // ROS_WARN("Before cur pose pub");
-      cur_pose_pub_.publish(cur_pose);
-      last_cur_pose_.SetObj(cur_pose);
+      p_pubs_->cur_pose_pub_.publish(cur_pose);
+      p_sync_state_->last_cur_pose_.SetObj(cur_pose);
 
       ndt_unreliable_cnt = 0;
 
     } else {
       // X. Use odometry as cur pose.
-      tf::StampedTransform transform_st = last_valid_tf_odom_to_map_.GetObj();
+      tf::StampedTransform transform_st =
+          p_sync_state_->last_valid_tf_odom_to_map_.GetObj();
       if (!transform_st.stamp_.is_zero()) {
         // X. Send transform.
         // ROS_WARN("Publish transform from odom.");
         transform_st.stamp_ = time;
-        tf_broadcaster_.sendTransform(transform_st);
+        p_pubs_->tf_broadcaster_.sendTransform(transform_st);
 
         // X. Transform.
         cur_pose.pose = TransformPose(transform_st, odom.pose.pose);
 
         // X.
         // ROS_WARN("Before cur pose pub");
-        cur_pose_pub_.publish(cur_pose);
-        last_cur_pose_.SetObj(cur_pose);
-
-        if (ndt_unreliable_cnt %
-                (5 * static_cast<int>(DEFAULT_CONTROL_CYCLE_FREQ)) ==
-            0) {
-          PublishStatusMessage("Ndt pose is unreliable");
-        }
+        p_pubs_->cur_pose_pub_.publish(cur_pose);
+        p_sync_state_->last_cur_pose_.SetObj(cur_pose);
+        PublishStatusMessage("Ndt pose is unreliable", DEFAULT_MESSAGE_CYCLE);
 
         double trans_diff, angle_diff;
-        geometry_msgs::PoseStamped ndt_pose = ndt_pose_.GetObj();
+        geometry_msgs::PoseStamped ndt_pose = p_sync_state_->ndt_pose_.GetObj();
         geometry_msgs::PoseWithCovarianceStamped amcl_pose =
-            amcl_pose_.GetObj();
+            p_sync_state_->amcl_pose_.GetObj();
         ComputePoseDiff(ndt_pose.pose, amcl_pose.pose.pose, trans_diff,
                         angle_diff);
         // ROS_WARN("Trans Diff : %lf, Angle Diff : %lf", trans_diff,
         // angle_diff);
 
-        if (!pose_initializing_.GetObj() &&
+        if (!p_sync_state_->pose_initializing_.GetObj() &&
             (ros::Time::now() - last_pose_init).toSec() > 4.0 &&
             ndt_unreliable_cnt % static_cast<int>(DEFAULT_CONTROL_CYCLE_FREQ) ==
                 0 /*&&
@@ -734,14 +392,14 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
 
           // Init ndt matching.
           XYZRPY init_pose = CreateXYZRPYFromPose(cur_pose.pose);
-          ndt_config_pub_.publish(CONFIG_DEFAULT_NDT(init_pose));
+          p_pubs_->ndt_config_pub_.publish(CONFIG_DEFAULT_NDT(init_pose));
 
           // Init amcl localizer.
           geometry_msgs::PoseWithCovarianceStamped init_pose_amcl;
           init_pose_amcl.header.stamp = cur_pose.header.stamp;
           init_pose_amcl.header.frame_id = "map";
           init_pose_amcl.pose.pose = cur_pose.pose;
-          mcl_3dl_init_pub_.publish(init_pose_amcl);
+          p_pubs_->mcl_3dl_init_pub_.publish(init_pose_amcl);
         }
         ndt_unreliable_cnt = ndt_unreliable_cnt + 1;
       }
@@ -750,38 +408,39 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
 }
 
 void StatusManagementNodelet::CheckRobotStopReason() {
-  int32_t obs_idx = obst_wp_idx_.GetObj().data;
+  int32_t obs_idx = p_sync_state_->obst_wp_idx_.GetObj().data;
 
   // X. Robot is not stopped.
   // ROS_WARN("Obstacle Idx : %d", obs_idx);
   if (obs_idx == -1) {
-    stopped_due_to_obstacle_cnt_.SetObj(0);
+    p_sync_state_->stopped_due_to_obstacle_cnt_.SetObj(0);
     return;
   }
 
   // X.
   // ROS_WARN("Twist is almost zero");
-  geometry_msgs::TwistStamped twist_raw = twist_raw_.GetObj();
+  geometry_msgs::TwistStamped twist_raw = p_sync_state_->twist_raw_.GetObj();
   if (twist_raw.header.stamp.is_zero() ||
       !TwistIsBelowThreshold(twist_raw.twist, params_.standstill_vx_thr,
                              params_.standstill_wx_thr)) {
-    stopped_due_to_obstacle_cnt_.SetObj(0);
+    p_sync_state_->stopped_due_to_obstacle_cnt_.SetObj(0);
     return;
   }
 
   // X.
-  autoware_msgs::Lane fin_wps = fin_wps_.GetObj();
-  geometry_msgs::PoseStamped last_cur_pose = last_cur_pose_.GetObj();
+  autoware_msgs::Lane fin_wps = p_sync_state_->fin_wps_.GetObj();
+  geometry_msgs::PoseStamped last_cur_pose =
+      p_sync_state_->last_cur_pose_.GetObj();
 
   // ROS_WARN("Waypoint time : %lf", fin_wps.header.stamp.toSec());
   // ROS_WARN("Last cur pose : %lf", last_cur_pose.header.stamp.toSec());
   if (fin_wps.waypoints.size() == 0 || last_cur_pose.header.stamp.is_zero()) {
-    stopped_due_to_obstacle_cnt_.SetObj(0);
+    p_sync_state_->stopped_due_to_obstacle_cnt_.SetObj(0);
     return;
   }
 
   // X.
-  geometry_msgs::PoseStamped cur_pose = last_cur_pose_.GetObj();
+  geometry_msgs::PoseStamped cur_pose = p_sync_state_->last_cur_pose_.GetObj();
 
   ROS_WARN("Distance : %lf", ComputeDistanceToObstacleOnWaypoint(
                                  obs_idx, fin_wps, cur_pose.pose));
@@ -790,48 +449,50 @@ void StatusManagementNodelet::CheckRobotStopReason() {
     // ROS_WARN("Robot stop due to obstacle detected.");
 
     // X. Count up.
-    stopped_due_to_obstacle_cnt_.SetObj(stopped_due_to_obstacle_cnt_.GetObj() +
-                                        1);
+    p_sync_state_->stopped_due_to_obstacle_cnt_.SetObj(
+        p_sync_state_->stopped_due_to_obstacle_cnt_.GetObj() + 1);
     // X. Status announce.
-    int message_duration = 3;
-    int stopped_cnt = stopped_due_to_obstacle_cnt_.GetObj();
-    if (static_cast<int>(stopped_cnt / params_.status_check_freq) %
-            message_duration ==
-        0) {
-      PublishStatusMessage("Robot stops due to obstacle in front.");
-    }
+    int stopped_cnt = p_sync_state_->stopped_due_to_obstacle_cnt_.GetObj();
+    PublishStatusMessage("Robot stops due to obstacle in front.",
+                         DEFAULT_MESSAGE_CYCLE);
 
     // X. Wait for avoidance.
     if (IsShortWaitAvoidanceWaypoint(obs_idx, fin_wps)) {
-      if (params_.obstacle_short_wait_before_avoid < stopped_cnt / params_.status_check_freq) {
-        PublishStatusMessage("Rerouting for obstacle avoidance.");
+      if (params_.obstacle_short_wait_before_avoid <
+          stopped_cnt / params_.status_check_freq) {
+        PublishStatusMessage("Rerouting for obstacle avoidance.",
+                             DEFAULT_MESSAGE_CYCLE);
         std_msgs::Header header;
         header.stamp = ros::Time::now();
-        onetime_avoidance_req_pub_.publish(header);
-        stopped_due_to_obstacle_cnt_.SetObj(0);
+        p_pubs_->onetime_avoidance_req_pub_.publish(header);
+        p_sync_state_->stopped_due_to_obstacle_cnt_.SetObj(0);
       }
     } else if (IsLongWaitAvoidanceWaypoint(obs_idx, fin_wps)) {
-      if (params_.obstacle_long_wait_before_avoid < stopped_cnt / params_.status_check_freq) {
-        PublishStatusMessage("Rerouting for obstacle avoidance.");
+      if (params_.obstacle_long_wait_before_avoid <
+          stopped_cnt / params_.status_check_freq) {
+        PublishStatusMessage("Rerouting for obstacle avoidance.",
+                             DEFAULT_MESSAGE_CYCLE);
         std_msgs::Header header;
         header.stamp = ros::Time::now();
-        onetime_avoidance_req_pub_.publish(header);
-        stopped_due_to_obstacle_cnt_.SetObj(0);
+        p_pubs_->onetime_avoidance_req_pub_.publish(header);
+        p_sync_state_->stopped_due_to_obstacle_cnt_.SetObj(0);
       }
     } else {
-      PublishStatusMessage("Rerouting is not allowed here. Keep waiting.");
-      stopped_due_to_obstacle_cnt_.SetObj(0);
+      PublishStatusMessage("Rerouting is not allowed here. Keep waiting.",
+                           DEFAULT_MESSAGE_CYCLE);
+      p_sync_state_->stopped_due_to_obstacle_cnt_.SetObj(0);
     }
   }
 }
 
 void StatusManagementNodelet::CheckPoseValidity() {
-  geometry_msgs::PoseStamped ndt_pose = ndt_pose_.GetObj();
-  geometry_msgs::PoseWithCovarianceStamped amcl_pose = amcl_pose_.GetObj();
+  geometry_msgs::PoseStamped ndt_pose = p_sync_state_->ndt_pose_.GetObj();
+  geometry_msgs::PoseWithCovarianceStamped amcl_pose =
+      p_sync_state_->amcl_pose_.GetObj();
 
   // X. During pose initialization, skip.
-  if (pose_initializing_.GetObj() || ndt_pose.header.stamp.is_zero() ||
-      amcl_pose.header.stamp.is_zero()) {
+  if (p_sync_state_->pose_initializing_.GetObj() ||
+      ndt_pose.header.stamp.is_zero() || amcl_pose.header.stamp.is_zero()) {
     return;
   }
 
@@ -839,8 +500,8 @@ void StatusManagementNodelet::CheckPoseValidity() {
   if (false /*!PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
                                 params_.localization_translation_thresh,
                                 params_.localization_orientation_thresh)*/) {
-    localization_unreliable_cnt_.SetObj(
-        std::min(localization_unreliable_cnt_.GetObj() + 1,
+    p_sync_state_->localization_unreliable_cnt_.SetObj(
+        std::min(p_sync_state_->localization_unreliable_cnt_.GetObj() + 1,
                  params_.localization_unreliable_cnt_for_reinit));
 
   } else {
@@ -850,139 +511,101 @@ void StatusManagementNodelet::CheckPoseValidity() {
                                  params_.localization_orientation_reliable_thresh_deg)*/) {
       try {
         tf::StampedTransform tf_odom_to_map;
-        tf_listener_.lookupTransform("map", "odom", ndt_pose.header.stamp,
-                                     tf_odom_to_map);
-        last_valid_ndt_pose_queue_.push_back(
+        p_subs_->tf_listener_.lookupTransform(
+            "map", "odom", ndt_pose.header.stamp, tf_odom_to_map);
+        p_sync_state_->last_valid_ndt_pose_queue_.push_back(
             std::make_pair(ndt_pose, tf_odom_to_map));
       } catch (tf::TransformException ex) {
         ROS_ERROR("%s", ex.what());
       }
 
       // X. If reaches stable count, treat the first one as valid pose.
-      if (last_valid_ndt_pose_queue_.size() ==
+      if (p_sync_state_->last_valid_ndt_pose_queue_.size() ==
           params_.localization_reliable_count) {
         std::pair<geometry_msgs::PoseStamped, tf::StampedTransform> e =
-            last_valid_ndt_pose_queue_.front();
-        last_valid_ndt_pose_queue_.pop_front();
-        last_valid_ndt_pose_.SetObj(e.first);
-        last_valid_tf_odom_to_map_.SetObj(e.second);
+            p_sync_state_->last_valid_ndt_pose_queue_.front();
+        p_sync_state_->last_valid_ndt_pose_queue_.pop_front();
+        p_sync_state_->last_valid_ndt_pose_.SetObj(e.first);
+        p_sync_state_->last_valid_tf_odom_to_map_.SetObj(e.second);
       }
 
     } else {
-      last_valid_ndt_pose_queue_.clear();
+      p_sync_state_->last_valid_ndt_pose_queue_.clear();
     }
 
     // X. Decrement unreliable count.
-    localization_unreliable_cnt_.SetObj(
-        std::max(0, localization_unreliable_cnt_.GetObj() - 1));
+    p_sync_state_->localization_unreliable_cnt_.SetObj(
+        std::max(0, p_sync_state_->localization_unreliable_cnt_.GetObj() - 1));
   }
 }
 
 void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
-  ros::Time last_pose_init_time = last_pose_init_time_.GetObj();
+  ros::Time last_pose_init_time = p_sync_state_->last_pose_init_time_.GetObj();
   if (last_pose_init_time.is_zero() ||
       ros::Time::now() - last_pose_init_time >
           ros::Duration(params_.localization_reinit_minimum_period)) {
     if (params_.localization_unreliable_cnt_for_reinit <=
-        localization_unreliable_cnt_.GetObj()) {
-      stop_request_.SetObj(true);
+        p_sync_state_->localization_unreliable_cnt_.GetObj()) {
+      p_sync_state_->stop_request_.SetObj(true);
 
       // X. Make sure that robot stops.
       ros::Rate r(params_.robot_stop_check_freq);
-      int wait_cnt = 0;
-      while (standstill_cnt_.GetObj() < params_.init_pose_standstill_count) {
-        wait_cnt += 1;
-        if (wait_cnt % 5) {
-          PublishStatusMessage("Robot will stop for pose initialization.");
-        }
-        if (localization_unreliable_cnt_.GetObj() <
+      while (p_sync_state_->standstill_cnt_.GetObj() <
+             params_.init_pose_standstill_count) {
+        PublishStatusMessage("Robot will stop for pose initialization.",
+                             DEFAULT_MESSAGE_CYCLE);
+        if (p_sync_state_->localization_unreliable_cnt_.GetObj() <
             params_.localization_unreliable_cnt_for_reinit / 2) {
           ROS_WARN("Localization stabilized.");
-          stop_request_.SetObj(false);
+          p_sync_state_->stop_request_.SetObj(false);
           return;
         }
         r.sleep();
       }
 
       // X. Choose initial position for search.
-      pose_initializing_.SetObj(true);
-      if (!last_valid_ndt_pose_.GetObj().header.stamp.is_zero() &&
-          ros::Time::now() - last_valid_ndt_pose_.GetObj().header.stamp <
+      XYZRPY searched_pose;
+      p_sync_state_->pose_initializing_.SetObj(true);
+      if (!p_sync_state_->last_valid_ndt_pose_.GetObj()
+               .header.stamp.is_zero() &&
+          ros::Time::now() -
+                  p_sync_state_->last_valid_ndt_pose_.GetObj().header.stamp <
               ros::Duration(params_.localization_odom_trust_period) &&
           !params_.reinit_via_gnss) {
-        PublishStatusMessage("Reinitialize localization based on odometry.");
-        InitializePose(false, true,
-                       CreateXYZRPYFromPose(last_cur_pose_.GetObj().pose));
+        PublishStatusMessage("Reinitialize localization based on odometry.",
+                             DEFAULT_MESSAGE_CYCLE);
+        searched_pose = TryInitializePose(
+            nh_, p_pubs_->voxel_filt_pub_, *p_sync_state_,
+            CreateXYZRPYFromPose(p_sync_state_->last_cur_pose_.GetObj().pose),
+            false, true, DEFAULT_INIT_GNSS_CHECK_FREQ,
+            params_.init_pose_srv_timeout);
+
       } else {
-        PublishStatusMessage("Reinitialize localization based on GNSS.");
-        InitializePose(true, true, XYZRPY(0.0, 0.0, 0.0, 0.0, 0.0, 0.0));
+        PublishStatusMessage("Reinitialize localization based on GNSS.",
+                             DEFAULT_MESSAGE_CYCLE);
+        searched_pose = TryInitializePose(
+            nh_, p_pubs_->voxel_filt_pub_, *p_sync_state_,
+            XYZRPY(0.0, 0.0, 0.0, 0.0, 0.0, 0.0), true, true,
+            DEFAULT_INIT_GNSS_CHECK_FREQ, params_.init_pose_srv_timeout);
       }
 
+      // X. Update localizer.
+      InitializeLocalizer(p_pubs_->ndt_config_pub_, p_pubs_->mcl_3dl_init_pub_,
+                          searched_pose);
+
+      // X. Status Announce.
+      PublishStatusMessage("Pose initialization is done. Start control.",
+                           DEFAULT_MESSAGE_CYCLE);
+
       // X. Memorize last update.
-      last_pose_init_time_.SetObj(ros::Time::now());
-      stop_request_.SetObj(false);
-      pose_initializing_.SetObj(false);
-      localization_unreliable_cnt_.SetObj(
-          std::max(0, localization_unreliable_cnt_.GetObj() -
+      p_sync_state_->last_pose_init_time_.SetObj(ros::Time::now());
+      p_sync_state_->stop_request_.SetObj(false);
+      p_sync_state_->pose_initializing_.SetObj(false);
+      p_sync_state_->localization_unreliable_cnt_.SetObj(
+          std::max(0, p_sync_state_->localization_unreliable_cnt_.GetObj() -
                           params_.localization_unreliable_cnt_for_reinit / 2));
     }
   }
-}
-
-// Subscribe callback.
-void StatusManagementNodelet::GNSSLocalPoseCallback(
-    const geometry_msgs::PoseStamped &msg) {
-  gnss_local_.SetObj(msg);
-}
-
-void StatusManagementNodelet::NdtPoseCallback(
-    const geometry_msgs::PoseStamped &msg) {
-  ndt_pose_.SetObj(msg);
-}
-
-void StatusManagementNodelet::AmclPoseCallback(
-    const geometry_msgs::PoseWithCovarianceStamped &msg) {
-  amcl_pose_.SetObj(msg);
-}
-
-void StatusManagementNodelet::OdomCallback(const nav_msgs::Odometry &msg) {
-  odom_.SetObj(msg);
-}
-
-void StatusManagementNodelet::TwistRawCallback(
-    const geometry_msgs::TwistStamped &msg) {
-  twist_raw_.SetObj(msg);
-}
-
-void StatusManagementNodelet::ClosestWaypointCallback(
-    const std_msgs::Int32 &msg) {
-  cls_wp_idx_.SetObj(msg);
-}
-
-void StatusManagementNodelet::ObstacleWaypointCallback(
-    const std_msgs::Int32 &msg) {
-  obst_wp_idx_.SetObj(msg);
-}
-
-void StatusManagementNodelet::BaseWaypointCallback(
-    const autoware_msgs::Lane &msg) {
-  base_wps_.SetObj(msg);
-}
-
-void StatusManagementNodelet::FinalWaypointsCallback(
-    const autoware_msgs::Lane &msg) {
-  fin_wps_.SetObj(msg);
-}
-
-void StatusManagementNodelet::NdtStatCallback(
-    const autoware_msgs::NDTStat &msg) {
-  ndt_stat_.SetObj(msg);
-}
-
-void StatusManagementNodelet::AvoidanceRequestDoneCallback(
-    const std_msgs::Header &msg) {
-  avoidance_done_.SetObj(msg);
-  PublishStatusMessage("Avoidance done. Back to waypoint following mode.");
 }
 
 }  // namespace koichi_robotics_lib

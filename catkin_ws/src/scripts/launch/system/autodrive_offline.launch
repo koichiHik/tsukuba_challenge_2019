@@ -10,9 +10,7 @@
   <arg name="robot_yaml_filepath" />
   <arg name="odom_yaml_filepath" />
   <arg name="imu_adjust_param_filepath" />
-  <arg name="plane_number" default="9" />
   <!-- map loader -->
-  <arg name="pcd_filelist" />
   <!-- points down sampler -->
   <arg name="raw_points_topic" />
   <arg name="downsampler_node_name" />
@@ -20,16 +18,6 @@
   <arg name="common_yaml_filepath" />
   <arg name="ndt_matching_yaml_filepath" />
   <arg name="mcl_3dl_yamlpath" />
-  <arg name="world_to_map_json" />
-  <!-- init pos -->
-  <arg name="pose_initializer" />
-  <arg name="init_via_gnss" />
-  <arg name="x" />
-  <arg name="y" />
-  <arg name="z" />
-  <arg name="roll" />
-  <arg name="pitch" />
-  <arg name="yaw" />
   <arg name="lidar_cluster_filepath" />
   <arg name="costmap_generator_filepath" />
   <arg name="astar_avoid_yamlpath" />
@@ -38,7 +26,10 @@
   <arg name="lane_navi_yamlpath" />
   <arg name="lane_select_yamlpath" />
   <arg name="lane_rule_yamlpath" />
+  <arg name="start_course_idx" />
+  <arg name="course_config_yamlpath" />
   <arg name="status_management_yamlpath" />
+  <arg name="waypoint_replanner_yamlpath" />
   <arg name="bagfile_path" />
   <arg name="start" />
   <arg name="duration" />
@@ -61,14 +52,10 @@
 
   <!-- Localizer nodes bringup -->
   <include file="$(find scripts)/launch/system/localizer_bringup.launch">
-    <arg name="plane_number" value="$(arg plane_number)" />
-    <arg name="pcd_filelist" value="$(arg pcd_filelist)" />
     <arg name="raw_points_topic" value="$(arg raw_points_topic)" />
     <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
     <arg name="mcl_3dl_yamlpath" value="$(arg mcl_3dl_yamlpath)" />    
-    <arg name="use_gps" value="$(arg use_gps)" />
-    <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
   </include>
 
   <!-- Perception nodes bringup -->
@@ -90,31 +77,15 @@
   </include>
 
   <!-- Status maanger bringup -->
-
   <include file="$(find scripts)/launch/modules/common/status_management.launch">
-    <arg name="init_from_gnss" value="$(arg init_via_gnss)" />
-    <arg name="use_pose_search" value="$(arg pose_initializer)" />
-    <arg name="x" value="$(arg x)" />
-    <arg name="y" value="$(arg y)" />
-    <arg name="z" value="$(arg z)" />
-    <arg name="roll" value="$(arg roll)" />
-    <arg name="pitch" value="$(arg pitch)" />
-    <arg name="yaw" value="$(arg yaw)" />
+    <arg name="start_course_idx" value="$(arg start_course_idx)" />
+    <arg name="course_config_yamlpath" value="$(arg course_config_yamlpath)" />  
     <arg name="status_management_yamlpath" value="$(arg status_management_yamlpath)" />
   </include>
 
-  <!-- 
-  <node pkg="scripts" type="status_manager.py" name="status_manager" output="screen" required="True" >
-    <param name="pose_initializer" value="$(arg pose_initializer)" />
-    <param name="init_via_gnss" value="$(arg init_via_gnss)" />  
-    <param name="x" value="$(arg x)" />
-    <param name="y" value="$(arg y)" />
-    <param name="z" value="$(arg z)" />
-    <param name="roll" value="$(arg roll)" />
-    <param name="pitch" value="$(arg pitch)" />
-    <param name="yaw" value="$(arg yaw)" />
-  </node>
-  -->
+  <include file="$(find scripts)/launch/modules/autoware/waypoint_loader.launch" >
+    <arg name="waypoint_replanner_yamlpath" value="$(arg waypoint_replanner_yamlpath)" />
+  </include>
 
   <include file="$(find scripts)/launch/modules/common/rosbag_replay.launch">
     <arg name="bagfile_path" value="$(arg bagfile_path)" />

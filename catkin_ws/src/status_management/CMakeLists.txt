@@ -3,6 +3,9 @@ project(status_management)
 
 add_compile_options(-std=c++11)
 
+find_package(Boost REQUIRED COMPONENTS
+  filesystem
+)
 find_package(glog REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(catkin REQUIRED COMPONENTS
@@ -113,7 +116,8 @@ catkin_package(
     sensor_msgs
     autoware_msgs
     autoware_config_msgs
-#  DEPENDS system_lib
+  DEPENDS 
+    Boost
 )
 
 ###########
@@ -129,6 +133,8 @@ include_directories(
 
 ## Declare a C++ library
 add_library(status_management_nodelet
+  src/autorun_config.cpp
+  src/status_management_helper.cpp
   src/status_management_util.cpp
   src/status_management_nodelet.cpp
 )
@@ -159,24 +165,14 @@ add_dependencies(status_management_nodelet
 ## Specify libraries to link a library or executable target against
 target_link_libraries(status_management_nodelet
   ${catkin_LIBRARIES}
+  yaml-cpp
   glog::glog
   Eigen3::Eigen
 )
 
-add_executable(test_prog
-  src/test.cpp
-)
-
-add_dependencies(test_prog 
-  messages_generate_messages
-  messages_generate_messages_cpp
-)
-
-## Specify libraries to link a library or executable target against
-target_link_libraries(test_prog
-  ${catkin_LIBRARIES}
-  glog::glog
-  Eigen3::Eigen
+target_include_directories(status_management_nodelet PRIVATE
+  include
+  ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 #############
@@ -224,12 +220,29 @@ target_link_libraries(test_prog
 #############
 ## Testing ##
 #############
+if(CATKIN_ENABLE_TESTING)
 
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_status_management.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+catkin_add_gtest(test_autorun_config test/test_autorun_config.cpp)
+list(APPEND EXECUTABLE_TARGETS test_autorun_config)
 
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+# ----- Build ------
+foreach(EXECUTABLE_TARGET IN LISTS EXECUTABLE_TARGETS)
+
+target_link_libraries(${EXECUTABLE_TARGET}
+  glog::glog
+  status_management_nodelet
+  yaml-cpp
+  ${catkin_LIBRARIES}
+)
+target_include_directories(${EXECUTABLE_TARGET} PRIVATE
+  include
+  ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+add_dependencies(${EXECUTABLE_TARGET}
+  ${catkin_EXPORTED_TARGETS}
+)
+
+endforeach(EXECUTABLE_TARGET IN LISTS EXECUTABLE_TARGETS)
+
+endif()

@@ -4,12 +4,9 @@
   <!-- for base nodes -->
   <arg name="base_frame_id" default="base_link" />
   <arg name="odom_frame_id" default="odom" />
-  <arg name="plane_number" default="9" />
   <arg name="robot_yaml_filepath" />
   <arg name="odom_yaml_filepath" />
   <arg name="imu_adjust_param_filepath" />
-  <!-- map loader -->
-  <arg name="pcd_filelist" />
   <!-- points down sampler -->
   <arg name="raw_points_topic" />
   <arg name="downsampler_node_name" />
@@ -17,15 +14,8 @@
   <arg name="common_yaml_filepath" />
   <arg name="ndt_matching_yaml_filepath" />
   <arg name="mcl_3dl_yamlpath" />
-  <!-- init pos -->
-  <arg name="pose_initializer" />
-  <arg name="init_via_gnss" />
-  <arg name="x" />
-  <arg name="y" />
-  <arg name="z" />
-  <arg name="roll" />
-  <arg name="pitch" />
-  <arg name="yaw" />
+  <arg name="start_course_idx" />
+  <arg name="course_config_yamlpath" />
   <arg name="status_management_yamlpath" />
   <!-- bag replay -->
   <arg name="bagfile_path" />
@@ -38,8 +28,6 @@
   <arg name="localized_pose_filepath" default="" />
   <arg name="pose_pair_filepath" default="" />
   <arg name="kml_filepath" default="" />
-  <arg name="world_to_map_json" />
-  <arg name="use_gps" />
   <!-- rviz -->
   <arg name="rviz_config_file" />
 
@@ -58,26 +46,16 @@
   </include>
 
   <include file="$(find scripts)/launch/system/localizer_bringup.launch">
-    <arg name="plane_number" value="$(arg plane_number)" />
-    <arg name="pcd_filelist" value="$(arg pcd_filelist)" />
     <arg name="raw_points_topic" value="$(arg raw_points_topic)" />
     <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
-    <arg name="world_to_map_json" value="$(arg world_to_map_json)" />
     <arg name="mcl_3dl_yamlpath" value="$(arg mcl_3dl_yamlpath)" />
-    <arg name="use_gps" value="$(arg use_gps)" />
   </include>
 
   <!-- Status maanger bringup -->
   <include file="$(find scripts)/launch/modules/common/status_management.launch">
-    <arg name="init_from_gnss" value="$(arg init_via_gnss)" />
-    <arg name="use_pose_search" value="$(arg pose_initializer)" />
-    <arg name="x" value="$(arg x)" />
-    <arg name="y" value="$(arg y)" />
-    <arg name="z" value="$(arg z)" />
-    <arg name="roll" value="$(arg roll)" />
-    <arg name="pitch" value="$(arg pitch)" />
-    <arg name="yaw" value="$(arg yaw)" />
+    <arg name="start_course_idx" value="$(arg start_course_idx)" />
+    <arg name="course_config_yamlpath" value="$(arg course_config_yamlpath)" />
     <arg name="status_management_yamlpath" value="$(arg status_management_yamlpath)" />
   </include>
 

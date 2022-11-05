@@ -1,13 +1,7 @@
 <launch>
-  <arg name="init_from_gnss" />
-  <arg name="use_pose_search" />
-  <arg name="x" />
-  <arg name="y" />
-  <arg name="z" />
-  <arg name="roll" />
-  <arg name="pitch" />
-  <arg name="yaw" />
+  <arg name="start_course_idx" />
   <arg name="status_management_yamlpath" />
+  <arg name="course_config_yamlpath" />
   <arg name="nodelet_mgr" default="status_mgmt_nodelet_mgr" />
 
   <node pkg="scripts" name="announcer" type="text_to_speech_node.py" required="true" />
@@ -21,16 +15,12 @@
     <!-- Topic Name OUT -->
 
     <!-- Load parameters -->
-    <param name="init_from_gnss" value="$(arg init_from_gnss)" />
-    <param name="use_pose_search" value="$(arg use_pose_search)" />
-    <param name="x" value="$(arg x)" />
-    <param name="y" value="$(arg y)" />
-    <param name="z" value="$(arg z)" />
-    <param name="roll" value="$(arg roll)" />
-    <param name="pitch" value="$(arg pitch)" />
-    <param name="yaw" value="$(arg yaw)" />
+    <param name="start_course_idx" value="$(arg start_course_idx)" />
+    <param name="course_config_yamlpath" value="$(arg course_config_yamlpath)" />
     <rosparam file="$(arg status_management_yamlpath)" command="load" />
 
   </node>
+
+  <node pkg="scripts" name="control_window" type="control_window.py" required="true" />
 
 </launch>

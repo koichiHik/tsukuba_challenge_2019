@@ -1,5 +1,5 @@
 <launch>
-  <arg name="plane" />
+  <arg name="plane" default="9" />
   <node pkg="gnss_localizer" type="fix2tfpose" name="fix2tfpose" output="log">
     <param name="plane" value="$(arg plane)"/>
 

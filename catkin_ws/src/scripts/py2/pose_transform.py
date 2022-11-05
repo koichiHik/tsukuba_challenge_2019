@@ -7,12 +7,15 @@ import argparse
 import numpy as np
 import json
 
+# Autoware
+from autoware_msgs.srv import String, StringResponse
+
 # ROS
 import rospy
 from geometry_msgs.msg import Pose, PoseStamped
 from tf.transformations import quaternion_multiply, quaternion_matrix
 
-class PoseTransformer:
+class Wld2Map:
 
   def __init__(self, world_to_map_json):
 
@@ -37,13 +40,28 @@ class PoseTransformer:
 
     self.R = quaternion_matrix(self.quat)[:3,:3]
 
+class PoseTransformer:
+
+  def __init__(self):
+
+    self.wld_2_map = None
+
     rospy.init_node('gnss_pose_transformer')
+    rospy.Service('load_world_to_map_json', String, self.load_world_2_map_json)
     rospy.Subscriber('gnss_pose', PoseStamped, self.pose_callback)
+
     self.pub = rospy.Publisher('gnss_pose_local', PoseStamped, queue_size=100)
 
     rospy.spin()
-    
+
+  def load_world_2_map_json(self, req):
+    self.wld_2_map = Wld2Map(req.str)
+    return StringResponse()
+
   def pose_callback(self, pose_stamped):
+
+    if (self.wld_2_map is None):
+      return
 
     src_trans = \
       np.array( \
@@ -55,8 +73,8 @@ class PoseTransformer:
          pose_stamped.pose.orientation.z, pose_stamped.pose.orientation.w], \
         dtype=np.float64)
 
-    new_trans = np.matmul(self.R, (src_trans - self.gnss_cog)) + self.map_cog
-    new_quat = quaternion_multiply(self.quat, src_quat)
+    new_trans = np.matmul(self.wld_2_map.R, (src_trans - self.wld_2_map.gnss_cog)) + self.wld_2_map.map_cog
+    new_quat = quaternion_multiply(self.wld_2_map.quat, src_quat)
 
     new_pose = PoseStamped()
     new_pose.header = pose_stamped.header
@@ -74,9 +92,5 @@ class PoseTransformer:
 
 if __name__ == '__main__':
 
-  parser = argparse.ArgumentParser()
-  parser.add_argument('-world_to_map_json', type=str, required=True)
-  args = parser.parse_args(rospy.myargv()[1:])
-
   # X. Run subscriber.
-  transformer = PoseTransformer(args.world_to_map_json)
+  transformer = PoseTransformer()

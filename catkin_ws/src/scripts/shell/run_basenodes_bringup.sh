@@ -21,7 +21,6 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/basenodes_bringup.launch \
   urdf_file:=${ROS_SCRIPTS_PKG}/urdf/robot.urdf \
   base_frame_id:="base_link" \
   odom_frame_id:="odom" \
-  plane_number:=$(READ_DATAINFO ${DATAINFO_FILE} ${PLANE_NUMBER}) \
   robot_yaml_filepath:=${PARAM_DIRPATH}/common/robot.yaml \
   odom_yaml_filepath:=${PARAM_DIRPATH}/common/odometry.yaml \
   imu_adjust_param_filepath:=${PARAM_DIRPATH}/common/imu_adjust.yaml \

@@ -1,19 +1,20 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]; then
+if [ $# -ne 2 ]; then
   echo "Please specify bag filepath."
   exit 1
 fi
+
+START_COURSE_IDX=0
 
 ROS_SCRIPTS_PKG=$(rospack find scripts)
 source ${ROS_SCRIPTS_PKG}/shell/run_env.sh
 source ${ROS_SCRIPTS_PKG}/shell/ros_general_functions.sh
 source ${ROS_SCRIPTS_PKG}/shell/filename_solve.sh
 
-DATA_DIR=${1} 
+DATA_DIR=${1}
+COURSE_CONFIG_YAML=${2}
 DATAINFO_FILE=${DATA_DIR}/${DATAINFO_FILENAME}
-BAG_FILEPATH=$(GET_BAGFILE_PATH ${DATA_DIR})
-MAP_PCDFILE=$(GET_PCDFILE_PATH ${DATA_DIR})
 
 PARAM_DIRNAME=$(READ_DATAINFO ${DATAINFO_FILE} ${PARAM_DIRNAME})
 PARAM_DIRPATH=$(rospack find ${PARAM_DIRNAME})
@@ -32,25 +33,13 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/autodrive.launch \
   robot_yaml_filepath:=${PARAM_DIRPATH}/common/robot.yaml \
   odom_yaml_filepath:=${PARAM_DIRPATH}/common/odometry.yaml \
   imu_adjust_param_filepath:=${PARAM_DIRPATH}/common/imu_adjust.yaml \
-  use_gps:=$(READ_DATAINFO ${DATAINFO_FILE} ${USE_GPS}) \
   nmea_driver_param_filepath:=${PARAM_DIRPATH}/common/nmea_navsat_driver.yaml \
   rviz_config_file:=${PARAM_DIRPATH}/rviz/config.rviz \
-  plane_number:=$(READ_DATAINFO ${DATAINFO_FILE} ${PLANE_NUMBER}) \
-  pcd_filelist:=${MAP_PCDFILE} \
   raw_points_topic:="/velodyne_points" \
   downsampler_node_name:="voxel_grid_filter" \
   common_yaml_filepath:=${PARAM_DIRPATH}/autoware/common.yaml \
   ndt_matching_yaml_filepath:=${PARAM_DIRPATH}/autoware/ndt_matching.yaml \
   mcl_3dl_yamlpath:=${PARAM_DIRPATH}/common/mcl_3dl.yaml \
-  world_to_map_json:=${DATA_DIR}/${WORLD_TO_MAP_JSON} \
-  pose_initializer:=$(READ_DATAINFO ${DATAINFO_FILE} ${POSE_INITIALIZER}) \
-  init_via_gnss:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_VIA_GNSS}) \
-  x:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_X_NAME}) \
-  y:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_Y_NAME}) \
-  z:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_Z_NAME}) \
-  roll:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_ROLL_NAME}) \
-  pitch:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_PITCH_NAME}) \
-  yaw:=$(READ_DATAINFO ${DATAINFO_FILE} ${INIT_YAW_NAME}) \
   lidar_cluster_filepath:=${PARAM_DIRPATH}/autoware/lidar_euclidean_cluster_detect.yaml \
   costmap_generator_filepath:=${PARAM_DIRPATH}/autoware/costmap_generator.yaml \
   astar_avoid_yamlpath:=${PARAM_DIRPATH}/autoware/astar_avoid.yaml \
@@ -58,5 +47,8 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/autodrive.launch \
   pure_pursuit_controller_yamlpath:=${PARAM_DIRPATH}/autoware/pure_pursuit_controller.yaml \
   lane_navi_yamlpath:=${PARAM_DIRPATH}/autoware/lane_navi.yaml \
   lane_rule_yamlpath:=${PARAM_DIRPATH}/autoware/lane_rule.yaml \
-  lane_select_yamlpath:=${PARAM_DIRPATH}/autoware/lane_select.yaml \
-  status_management_yamlpath:=${PARAM_DIRPATH}/common/status_management.yaml
+  lane_select_yamlpath:=${PARA_DIRPATH}/autoware/lane_select.yaml \
+  start_course_idx:=${START_COURSE_IDX} \
+  course_config_yamlpath:=${COURSE_CONFIG_YAML} \
+  status_management_yamlpath:=${PARAM_DIRPATH}/common/status_management.yaml \
+  waypoint_replanner_yamlpath:=${PARAM_DIRPATH}/autoware/waypoint_replanner.yaml \

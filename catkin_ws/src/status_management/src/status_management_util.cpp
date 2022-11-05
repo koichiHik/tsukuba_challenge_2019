@@ -1,5 +1,5 @@
 
-#include "status_management_util.h"
+#include <status_management/status_management_util.h>
 
 // ROS
 #include <tf/transform_datatypes.h>
@@ -94,12 +94,12 @@ bool IsAvoidanceOkWaypoint(const int32_t wp_idx,
 }
 
 bool IsShortWaitAvoidanceWaypoint(const int32_t wp_idx,
-                           const autoware_msgs::Lane &lane) {
+                                  const autoware_msgs::Lane &lane) {
   return lane.waypoints[wp_idx].wpstate.event_state == 1;
 }
 
 bool IsLongWaitAvoidanceWaypoint(const int32_t wp_idx,
-                           const autoware_msgs::Lane &lane) {
+                                 const autoware_msgs::Lane &lane) {
   return lane.waypoints[wp_idx].wpstate.event_state == 2;
 }
 
