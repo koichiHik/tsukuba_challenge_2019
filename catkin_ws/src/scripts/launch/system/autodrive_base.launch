@@ -1,0 +1,66 @@
+<launch>
+  <arg name="urdf_file" default="$(find scripts)/urdf/robot.urdf" />
+  <arg name="base_frame_id" default="base_link" />
+  <arg name="odom_frame_id" default="odom" />
+  <arg name="lidar_frame_id" default="laser3d_link" />
+  <arg name="imu_frame_id" default="imu_link" />
+  <arg name="urg_frame_id" default="laser2d_link" />
+  <arg name="ypspur_odom_frame_id" default="odom_ypspur" />
+  <!-- ypspur_ros node -->
+  <arg name="ypspur_cmd_vel" default="cmd_vel" />
+  <arg name="yp_spur_yaml_filepath" />
+  <arg name="control_limit_filepath" />
+  <arg name="ypspur_bin_filepath" default="$(find scripts)/../../../../3rdparty/install/yp_spur/bin/ypspur-coordinator" />
+  <arg name="ypspur_param_filepath" />
+  <arg name="imu_port" default="/dev/RT_USB_IMU" />
+  <!-- urg node-->
+  <arg name="urg_node_yaml_filepath" />
+  <!-- velodyne node-->
+  <arg name="velodyne_calibration" default="$(find velodyne_pointcloud)/params/VLP16db.yaml"/>
+  <arg name="velodyne_param_filepath" />
+  <arg name="rviz_config_file" />
+  <!-- odom node-->
+  <arg name="robot_yaml_filepath" />
+  <arg name="odom_yaml_filepath" />
+  <arg name="imu_adjust_param_filepath" />
+	<arg name="nmea_driver_param_filepath" />
+	<arg name="use_gps" />
+  <arg name="common_yaml_filepath" />
+
+  <!-- Load common parameters -->
+  <rosparam command="load" file="$(arg common_yaml_filepath)" />
+
+  <!-- Hardware nodes bringup -->
+  <include file="$(find scripts)/launch/system/hardware_bringup.launch" >
+    <arg name="base_frame_id" value="$(arg base_frame_id)" />
+    <arg name="imu_frame_id" value="$(arg imu_frame_id)" />
+    <arg name="urg_frame_id" value="$(arg urg_frame_id)" />
+    <arg name="velodyne_frame_id" value="$(arg lidar_frame_id)" />
+    <arg name="ypspur_odom_frame_id" value="$(arg ypspur_odom_frame_id)" />
+    <arg name="ypspur_cmd_vel" value="$(arg ypspur_cmd_vel)" />
+    <arg name="yp_spur_yaml_filepath" value="$(arg yp_spur_yaml_filepath)" />
+    <arg name="control_limit_filepath" value="$(arg control_limit_filepath)" />
+    <arg name="ypspur_bin_filepath" value="$(arg ypspur_bin_filepath)" />
+    <arg name="ypspur_param_filepath" value="$(arg ypspur_param_filepath)" />
+    <arg name="imu_port" value="$(arg imu_port)" />
+    <arg name="urg_node_yaml_filepath" value="$(arg urg_node_yaml_filepath)" />
+    <arg name="velodyne_calibration" value="$(arg velodyne_calibration)"/>
+    <arg name="velodyne_param_filepath" value="$(arg velodyne_param_filepath)" />
+    <arg name="use_gps" value="$(arg use_gps)" />
+		<arg name="nmea_driver_param_filepath" value="$(arg nmea_driver_param_filepath)" />
+  </include>
+  
+  <!-- Base nodes bringup -->
+  <include file="$(find scripts)/launch/system/basenodes_bringup.launch" >
+    <arg name="urdf_file" value="$(arg urdf_file)" />
+    <arg name="base_frame_id" value="$(arg base_frame_id)" />
+    <arg name="odom_frame_id" value="$(arg odom_frame_id)" />
+    <arg name="robot_yaml_filepath" value="$(arg robot_yaml_filepath)" />
+    <arg name="odom_yaml_filepath" value="$(arg odom_yaml_filepath)" />
+    <arg name="imu_adjust_param_filepath" value="$(arg imu_adjust_param_filepath)" />
+    <arg name="rviz_config_file" value="$(arg rviz_config_file)" />
+  </include>
+
+  <node pkg="scripts" name="control_window" type="control_window.py" required="true" />
+
+</launch>

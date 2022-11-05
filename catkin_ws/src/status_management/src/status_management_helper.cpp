@@ -53,6 +53,9 @@ StatusManagementNodeletParams ReadStatusManagementNodeletParams(
   CHECK(pnh.getParam("course_config_yamlpath", params.course_config_yaml))
       << "[StatusManagementNodelet] Parameter init_from_gnss cannot be read.";
 
+  CHECK(pnh.getParam("localize_only", params.localize_only))
+      << "[StatusManagementNodelet] Parameter localize_only cannot be read.";
+
   CHECK(pnh.getParam("start_course_idx", params.start_course_idx))
       << "[StatusManagementNodelet] Parameter start_course_idx cannot be read.";
 

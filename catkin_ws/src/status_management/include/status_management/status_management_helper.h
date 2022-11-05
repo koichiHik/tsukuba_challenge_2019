@@ -60,6 +60,7 @@ class LockedObj {
 
 struct StatusManagementNodeletParams {
   std::string course_config_yaml;
+  bool localize_only;
   int start_course_idx;
 
   bool init_from_gnss;

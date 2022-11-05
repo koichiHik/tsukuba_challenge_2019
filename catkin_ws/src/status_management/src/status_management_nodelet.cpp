@@ -137,8 +137,10 @@ void StatusManagementNodelet::Initialize() {
   {
     autorun_config conf = p_course_conf_mgmt_->GetCurrentConfig();
     CallMapLoadService(nh_, conf.file_conf_.map_pcd_file_);
-    CallWaypointLoadService(nh_, conf.file_conf_.lane_csv_file_);
-    CallWorld2MapLoadService(nh_, conf.file_conf_.world_to_map_json_file_);
+    if (!params_.localize_only) {
+      CallWaypointLoadService(nh_, conf.file_conf_.lane_csv_file_);
+      CallWorld2MapLoadService(nh_, conf.file_conf_.world_to_map_json_file_);
+    }
     InitializePose(conf.init_conf_);
   }
 
@@ -203,9 +205,9 @@ void StatusManagementNodelet::RunControlCycle() {
     // X. Control command routing.
     {
       if (!p_sync_state_->engage_request_.GetObj()) {
-        ypspur_ros::ControlMode msg;
-        msg.vehicle_control_mode = 0;
-        p_pubs_->yp_spur_free_pub_.publish(msg);
+        // ypspur_ros::ControlMode msg;
+        // msg.vehicle_control_mode = 0;
+        // p_pubs_->yp_spur_free_pub_.publish(msg);
       } else {
         ypspur_ros::ControlMode msg;
         msg.vehicle_control_mode = 2;
@@ -272,8 +274,10 @@ void StatusManagementNodelet::RunCheckingCycle() {
       p_pubs_->status_mgmt_status_pub_.publish(msg);
       autorun_config conf = p_course_conf_mgmt_->GetCurrentConfig();
       CallMapLoadService(nh_, conf.file_conf_.map_pcd_file_);
-      CallWaypointLoadService(nh_, conf.file_conf_.lane_csv_file_);
-      CallWorld2MapLoadService(nh_, conf.file_conf_.world_to_map_json_file_);
+      if (!params_.localize_only) {
+        CallWaypointLoadService(nh_, conf.file_conf_.lane_csv_file_);
+        CallWorld2MapLoadService(nh_, conf.file_conf_.world_to_map_json_file_);
+      }
       InitializePose(conf.init_conf_);
     }
 

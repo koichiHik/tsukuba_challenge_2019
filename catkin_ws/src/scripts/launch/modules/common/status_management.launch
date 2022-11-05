@@ -3,6 +3,8 @@
   <arg name="status_management_yamlpath" />
   <arg name="course_config_yamlpath" />
   <arg name="nodelet_mgr" default="status_mgmt_nodelet_mgr" />
+  <arg name="localize_only" default="False" />  
+  <arg name="gui_on" default="True" />
 
   <node pkg="scripts" name="announcer" type="text_to_speech_node.py" required="true" />
 
@@ -15,12 +17,14 @@
     <!-- Topic Name OUT -->
 
     <!-- Load parameters -->
+    <param name="localize_only" value="$(arg localize_only)" />
     <param name="start_course_idx" value="$(arg start_course_idx)" />
     <param name="course_config_yamlpath" value="$(arg course_config_yamlpath)" />
     <rosparam file="$(arg status_management_yamlpath)" command="load" />
 
   </node>
 
-  <node pkg="scripts" name="control_window" type="control_window.py" required="true" />
+  <node pkg="scripts" name="control_window" type="control_window.py" 
+        required="true" if="$(eval gui_on)" />
 
 </launch>

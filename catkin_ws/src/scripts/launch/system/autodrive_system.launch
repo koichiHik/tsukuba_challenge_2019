@@ -1,0 +1,67 @@
+<launch>
+  <arg name="base_frame_id" default="base_link" />
+  <arg name="odom_frame_id" default="odom" />
+  <arg name="map_frame_id" default="map" />
+  <!-- map loader -->
+  <!-- points down sampler -->
+  <arg name="raw_points_topic" />
+  <arg name="downsampler_node_name" />
+  <arg name="common_yaml_filepath" />
+  <!-- ndt matching -->
+  <arg name="ndt_matching_yaml_filepath" />
+  <arg name="mcl_3dl_yamlpath" />
+  <arg name="lidar_cluster_filepath" />
+  <arg name="costmap_generator_filepath" />
+  <arg name="astar_avoid_yamlpath" />
+  <arg name="velocity_set_yamlpath" />
+  <arg name="pure_pursuit_controller_yamlpath" />
+  <arg name="lane_navi_yamlpath" />
+  <arg name="lane_select_yamlpath" />
+  <arg name="lane_rule_yamlpath" />
+  <arg name="start_course_idx" />
+  <arg name="course_config_yamlpath" />
+  <arg name="status_management_yamlpath" />
+  <arg name="waypoint_replanner_yamlpath" />
+
+  <!-- Load common parameters -->
+  <rosparam command="load" file="$(arg common_yaml_filepath)" />
+  
+  <!-- Localizer nodes bringup -->
+  <include file="$(find scripts)/launch/system/localizer_bringup.launch">
+    <arg name="raw_points_topic" value="$(arg raw_points_topic)" />
+    <arg name="downsampler_node_name" value="$(arg downsampler_node_name)" />
+    <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
+    <arg name="mcl_3dl_yamlpath" value="$(arg mcl_3dl_yamlpath)" />
+  </include>
+
+  <!-- Perception nodes bringup -->
+  <include file="$(find scripts)/launch/system/perception_bringup.launch">
+    <arg name="map_frame_id" value="$(arg map_frame_id)" />
+    <arg name="base_frame_id" value="$(arg base_frame_id)" />
+    <arg name="lidar_cluster_filepath" value="$(arg lidar_cluster_filepath)" />
+    <arg name="costmap_generator_filepath" value="$(arg costmap_generator_filepath)" />
+  </include>
+
+  <!-- Planner nodes bringup -->
+  <include file="$(find scripts)/launch/system/planner_bringup.launch" >
+    <arg name="astar_avoid_yamlpath" value="$(arg astar_avoid_yamlpath)" />
+    <arg name="velocity_set_yamlpath" value="$(arg velocity_set_yamlpath)" />
+    <arg name="pure_pursuit_controller_yamlpath" value="$(arg pure_pursuit_controller_yamlpath)" />
+    <arg name="lane_navi_yamlpath" value="$(arg lane_navi_yamlpath)" />
+    <arg name="lane_select_yamlpath" value="$(arg lane_select_yamlpath)" />
+    <arg name="lane_rule_yamlpath" value="$(arg lane_rule_yamlpath)" />
+  </include>
+
+  <!-- Status maanger bringup -->
+  <include file="$(find scripts)/launch/modules/common/status_management.launch">
+    <arg name="start_course_idx" value="$(arg start_course_idx)" />
+    <arg name="course_config_yamlpath" value="$(arg course_config_yamlpath)" />
+    <arg name="status_management_yamlpath" value="$(arg status_management_yamlpath)" />
+    <arg name="gui_on" value="False" />
+  </include>
+
+  <include file="$(find scripts)/launch/modules/autoware/waypoint_loader.launch" >
+    <arg name="waypoint_replanner_yamlpath" value="$(arg waypoint_replanner_yamlpath)" />
+  </include>
+
+</launch>

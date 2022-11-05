@@ -57,6 +57,8 @@
     <arg name="start_course_idx" value="$(arg start_course_idx)" />
     <arg name="course_config_yamlpath" value="$(arg course_config_yamlpath)" />
     <arg name="status_management_yamlpath" value="$(arg status_management_yamlpath)" />
+    <arg name="localize_only" value="True" />
+    <arg name="gui_on" value="False" />
   </include>
 
   <group if="$(eval dump_pose_file)" >

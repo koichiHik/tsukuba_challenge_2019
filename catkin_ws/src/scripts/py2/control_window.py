@@ -10,10 +10,13 @@ print(wx.__version__)
 # Ros
 import rospy
 from std_msgs.msg import Bool
+from ypspur_ros.msg import ControlMode
 
 # STL
 import sys
 import threading
+import time
+import atexit
 
 class ButtonID:
 
@@ -81,6 +84,32 @@ class Frame(wx.Frame):
         self.autorun_pub.publish(autorun_msg)
 
         self.status_mgmt_sub = rospy.Subscriber("status_management_status", Bool, self.OnStatusManagementStatusCallback)
+
+        # Ypspur ROS.
+        self.ypspur_pub = rospy.Publisher("/ypspur/control_mode", ControlMode, queue_size=10, latch=True)
+        self.thread = threading.Thread(target=self.PublishEngangeMessage)
+        self.thread.start()
+
+        atexit.register(self.Ternate)
+
+    def Ternate(self):
+        self.thread.join()
+
+    def GetStatusLabel(self):
+        self.button_label = self.engage_btn.GetLabel()
+
+    def PublishEngangeMessage(self):
+
+        self.button_label = Engage.Label.DISENGAGED
+        while (not rospy.is_shutdown()):
+            wx.CallAfter(self.GetStatusLabel)
+            msg = ControlMode()
+            if (self.button_label == Engage.Label.ENGAGED):
+                msg.vehicle_control_mode = 2
+            else:
+                msg.vehicle_control_mode = 0
+            self.ypspur_pub.publish(msg)
+            time.sleep(0.5)
 
     def OnClose(self, event):
         dlg = wx.MessageDialog(self, 
