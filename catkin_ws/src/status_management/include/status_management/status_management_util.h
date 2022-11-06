@@ -11,10 +11,10 @@
 #include <Eigen/Core>
 
 // ROS
-#include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <geometry_msgs/Twist.h>
+#include <ros/ros.h>
 #include <tf/transform_datatypes.h>
 
 // Original
@@ -73,7 +73,8 @@ inline autoware_config_msgs::ConfigNDT CONFIG_DEFAULT_NDT(
   config.init_pos_gnss = 0;
   config.use_predict_pose = 0;
   config.error_threshold = 0.0;
-  config.resolution = 1.0;
+  // config.resolution = 1.0;
+  config.resolution = 0.1;
   config.step_size = 0.1;
   config.trans_epsilon = 0.01;
   config.max_iterations = 30;
@@ -93,7 +94,8 @@ inline messages::initialize_pose POSE_INIT_REQUEST_FULL(const XYZRPY &xyzrpy) {
   req.request.yaw = xyzrpy.yaw_;
 
   // config.
-  req.request.resolution = 1.0;
+  // req.request.resolution = 1.0;
+  req.request.resolution = 0.1;
   req.request.step_size = 0.1;
   req.request.outlier_ratio = 0.55;
   req.request.trans_eps = 0.01;
@@ -149,9 +151,7 @@ inline double NormalizeAnglePi2Pi(const double angle) {
 }
 
 inline double ComputeAngleBetweenQuaternion(
-  const geometry_msgs::Quaternion &q1,
-  const geometry_msgs::Quaternion &q2) {
-
+    const geometry_msgs::Quaternion &q1, const geometry_msgs::Quaternion &q2) {
   tf::Quaternion tf_q1, tf_q2, tf_q1_to_q2;
   tf::quaternionMsgToTF(q1, tf_q1);
   tf::quaternionMsgToTF(q2, tf_q2);
@@ -161,11 +161,9 @@ inline double ComputeAngleBetweenQuaternion(
   return std::abs(tf_q1_to_q2.getAngleShortestPath());
 }
 
-inline void ComputePoseDiff(const geometry_msgs::Pose &pose1, 
-                            const geometry_msgs::Pose &pose2, 
-                            double &trans_diff_norm, 
-                            double &angle_diff_norm) {
-
+inline void ComputePoseDiff(const geometry_msgs::Pose &pose1,
+                            const geometry_msgs::Pose &pose2,
+                            double &trans_diff_norm, double &angle_diff_norm) {
   Eigen::Vector3d translation_diff;
   translation_diff << pose1.position.x - pose2.position.x,
       pose1.position.y - pose2.position.y, pose1.position.z - pose2.position.z;
@@ -175,14 +173,14 @@ inline void ComputePoseDiff(const geometry_msgs::Pose &pose1,
   tf::quaternionMsgToTF(pose2.orientation, q2);
 
   trans_diff_norm = translation_diff.norm();
-  angle_diff_norm = std::abs(ComputeAngleBetweenQuaternion(pose1.orientation, pose2.orientation));
+  angle_diff_norm = std::abs(
+      ComputeAngleBetweenQuaternion(pose1.orientation, pose2.orientation));
 }
 
 inline bool PoseDiffIsBelowThreshold(const geometry_msgs::Pose &pose1,
                                      const geometry_msgs::Pose &pose2,
                                      const double trans_thr,
                                      const double orientation_thr) {
-
   double trans_diff_norm, angle_diff_norm;
   ComputePoseDiff(pose1, pose2, trans_diff_norm, angle_diff_norm);
   return trans_diff_norm <= trans_thr && angle_diff_norm <= orientation_thr;
@@ -196,10 +194,10 @@ bool IsAvoidanceOkWaypoint(const int32_t wp_idx,
                            const autoware_msgs::Lane &lane);
 
 bool IsShortWaitAvoidanceWaypoint(const int32_t wp_idx,
-                           const autoware_msgs::Lane &lane);
+                                  const autoware_msgs::Lane &lane);
 
 bool IsLongWaitAvoidanceWaypoint(const int32_t wp_idx,
-                           const autoware_msgs::Lane &lane);
+                                 const autoware_msgs::Lane &lane);
 
 geometry_msgs::Pose TransformPose(const tf::Transform &trans,
                                   const geometry_msgs::Pose &pose);
