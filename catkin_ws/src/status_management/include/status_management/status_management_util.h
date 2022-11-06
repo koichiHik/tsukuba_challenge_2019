@@ -73,8 +73,8 @@ inline autoware_config_msgs::ConfigNDT CONFIG_DEFAULT_NDT(
   config.init_pos_gnss = 0;
   config.use_predict_pose = 0;
   config.error_threshold = 0.0;
-  // config.resolution = 1.0;
-  config.resolution = 0.1;
+  config.resolution = 1.0;
+  // config.resolution = 0.1;
   config.step_size = 0.1;
   config.trans_epsilon = 0.01;
   config.max_iterations = 30;
@@ -94,8 +94,8 @@ inline messages::initialize_pose POSE_INIT_REQUEST_FULL(const XYZRPY &xyzrpy) {
   req.request.yaw = xyzrpy.yaw_;
 
   // config.
-  // req.request.resolution = 1.0;
-  req.request.resolution = 0.1;
+  req.request.resolution = 1.0;
+  // req.request.resolution = 0.1;
   req.request.step_size = 0.1;
   req.request.outlier_ratio = 0.55;
   req.request.trans_eps = 0.01;

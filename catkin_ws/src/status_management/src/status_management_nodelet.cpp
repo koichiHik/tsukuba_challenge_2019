@@ -306,8 +306,9 @@ bool StatusManagementNodelet::CheckIfEndIsReached() {
   }
 
   LOG(INFO) << "Index diff : " << base_wps.waypoints.size() - current_idx;
+  const int DIFF_THRESH = 10;
   if (0 < base_wps.waypoints.size() &&
-      static_cast<int>(base_wps.waypoints.size()) - current_idx < 3 &&
+      static_cast<int>(base_wps.waypoints.size()) - current_idx < DIFF_THRESH &&
       TwistIsBelowThreshold(odom.twist.twist, params_.standstill_vx_thr,
                             params_.standstill_wx_thr)) {
     end_is_reached = true;
