@@ -13,6 +13,6 @@ imu_topic: /imu # X. Do not change this.
 output_log_data: false
 gnss_reinit_fitness: 500
 
-use_predict_pose_for_large_error: false
+use_predict_pose_for_large_error: true
 predict_trans_error_thresh: 0.5
 predict_angle_deg_error_thresh: 15.0
