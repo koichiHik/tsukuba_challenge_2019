@@ -185,17 +185,17 @@ struct Publishers {
         "current_velocity", DEFAULT_PUB_QUEUE_SIZE, false);
 
     // Config
-    ndt_config_pub_ =
-        nh_.advertise<autoware_config_msgs::ConfigNDT>("/config/ndt", true);
+    ndt_config_pub_ = nh_.advertise<autoware_config_msgs::ConfigNDT>(
+        "/config/ndt", DEFAULT_PUB_QUEUE_SIZE, true);
     voxel_filt_pub_ =
         nh_.advertise<autoware_config_msgs::ConfigVoxelGridFilter>(
-            "config/voxel_grid_filter", true);
+            "config/voxel_grid_filter", DEFAULT_PUB_QUEUE_SIZE, true);
     mcl_3dl_init_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
-        "/mcl_3dl/initialpose", true);
+        "/mcl_3dl/initialpose", DEFAULT_PUB_QUEUE_SIZE, true);
 
     // Request
-    onetime_avoidance_req_pub_ =
-        nh_.advertise<std_msgs::Header>("onetime_avoidance_request", true);
+    onetime_avoidance_req_pub_ = nh_.advertise<std_msgs::Header>(
+        "onetime_avoidance_request", DEFAULT_PUB_QUEUE_SIZE, true);
     message_pub_ = nh_.advertise<std_msgs::String>(
         "status_message", DEFAULT_PUB_QUEUE_SIZE, true);
   }

@@ -7,6 +7,7 @@
   <arg name="odom_yaml_filepath" />
   <arg name="imu_adjust_param_filepath" />
   <arg name="rviz_config_file" />
+  <arg name="rviz_on" default="False" />
 
   <!-- Robot state publisher -->
   <include file="$(find scripts)/launch/modules/common/robot_state_publisher.launch" >
@@ -30,6 +31,6 @@
   <include file="$(find scripts)/launch/modules/common/scan_to_pcl2.launch" />
 
   <node pkg="rviz" type="rviz" name="rviz" output="screen" required="True"
-        args="-d $(arg rviz_config_file)" />
+        args="-d $(arg rviz_config_file)" if="$(eval rviz_on)" />
 
 </launch>

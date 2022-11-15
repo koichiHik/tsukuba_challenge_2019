@@ -137,6 +137,7 @@ add_library(status_management_nodelet
   src/status_management_helper.cpp
   src/status_management_util.cpp
   src/status_management_nodelet.cpp
+  src/current_pose_generator.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -225,6 +226,9 @@ if(CATKIN_ENABLE_TESTING)
 catkin_add_gtest(test_autorun_config test/test_autorun_config.cpp)
 list(APPEND EXECUTABLE_TARGETS test_autorun_config)
 
+catkin_add_gtest(test_current_pose_generator test/test_current_pose_generator.cpp)
+list(APPEND EXECUTABLE_TARGETS test_current_pose_generator)
+
 # ----- Build ------
 foreach(EXECUTABLE_TARGET IN LISTS EXECUTABLE_TARGETS)
 
@@ -236,6 +240,7 @@ target_link_libraries(${EXECUTABLE_TARGET}
 )
 target_include_directories(${EXECUTABLE_TARGET} PRIVATE
   include
+  src
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 

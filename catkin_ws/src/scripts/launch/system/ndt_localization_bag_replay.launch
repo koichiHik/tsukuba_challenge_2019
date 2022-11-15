@@ -43,6 +43,7 @@
     <arg name="odom_yaml_filepath" value="$(arg odom_yaml_filepath)" />
     <arg name="imu_adjust_param_filepath" value="$(arg imu_adjust_param_filepath)" />
     <arg name="rviz_config_file" value="$(arg rviz_config_file)" />
+    <arg name="rviz_on" value="True" />
   </include>
 
   <include file="$(find scripts)/launch/system/localizer_bringup.launch">

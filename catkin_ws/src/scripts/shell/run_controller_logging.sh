@@ -13,11 +13,11 @@ source ${ROS_SCRIPTS_PKG}/shell/filename_solve.sh
 DATA_DIR=${1} 
 DATAINFO_FILE=${DATA_DIR}/${DATAINFO_FILENAME}
 
-USE_GPS=$(READ_DATAINFO ${DATAINFO_FILE} ${USE_GPS})
-if [[ "${USE_GPS}" == "True" ]]; then
-  ${ROS_SCRIPTS_PKG}/shell/run_rtklib_str2str.sh &
-  sleep 5
-fi
+# USE_GPS=$(READ_DATAINFO ${DATAINFO_FILE} ${USE_GPS})
+# if [[ "${USE_GPS}" == "True" ]]; then
+#  ${ROS_SCRIPTS_PKG}/shell/run_rtklib_str2str.sh &
+#  sleep 5
+# fi
 
 PARAM_DIRNAME=$(READ_DATAINFO ${DATAINFO_FILE} ${PARAM_DIRNAME})
 PARAM_DIRPATH=$(rospack find ${PARAM_DIRNAME})
@@ -47,5 +47,5 @@ roslaunch ${ROS_SCRIPTS_PKG}/launch/system/controller_logging.launch \
   robot_yaml_filepath:=${PARAM_DIRPATH}/common/robot.yaml \
   odom_yaml_filepath:=${PARAM_DIRPATH}/common/odometry.yaml \
   imu_adjust_param_filepath:=${PARAM_DIRPATH}/common/imu_adjust.yaml \
-  use_gps:=${USE_GPS} \
-	nmea_driver_param_filepath:=${PARAM_DIRPATH}/common/nmea_navsat_driver.yaml \
+  use_gps:=True \
+  nmea_driver_param_filepath:=${PARAM_DIRPATH}/common/nmea_navsat_driver.yaml \
