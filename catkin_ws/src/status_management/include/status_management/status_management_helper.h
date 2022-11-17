@@ -3,6 +3,7 @@
 
 // Original
 #include <status_management/autorun_config.h>
+#include <status_management/current_pose_generator.h>
 #include <status_management/status_management_util.h>
 
 // Autoware message
@@ -218,8 +219,10 @@ struct Publishers {
 struct Subscribers {
  public:
   Subscribers(ros::NodeHandle &nh, SyncState &sync_state,
-              ros::Publisher &message_pub)
-      : sync_state_(sync_state), message_pub_(message_pub) {
+              ros::Publisher &message_pub, CurrentPoseGenerator &pose_gen)
+      : sync_state_(sync_state),
+        message_pub_(message_pub),
+        cur_pose_gen_(pose_gen) {
     // Control window
     engage_request_sub_ =
         nh.subscribe("control_window_engage_request", DEFAULT_SUB_QUEUE_SIZE,
@@ -283,6 +286,7 @@ struct Subscribers {
   }
 
   void NdtPoseCallback(const geometry_msgs::PoseStamped &msg) {
+    cur_pose_gen_.UpdateNdtPose(msg.pose);
     sync_state_.ndt_pose_.SetObj(msg);
   }
 
@@ -291,6 +295,7 @@ struct Subscribers {
   }
 
   void OdomCallback(const nav_msgs::Odometry &msg) {
+    cur_pose_gen_.UpdateOdomPose(msg);
     sync_state_.odom_.SetObj(msg);
   }
 
@@ -339,6 +344,8 @@ struct Subscribers {
       final_wps_sub_;
   // Config & Status
   ros::Subscriber ndt_stat_sub_, avoidance_done_sub_;
+
+  CurrentPoseGenerator &cur_pose_gen_;
 
  public:
   tf::TransformListener tf_listener_;

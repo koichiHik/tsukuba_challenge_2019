@@ -11,6 +11,7 @@
     <remap from="/initialpose" to="/initialpose" />
     <remap from="/filtered_points" to="/filtered_points" />
     <remap from="/vehicle/odom" to="/odom" />
+    <remap from="/current_pose" to="/current_pose" />
     <!-- <remap from="/imu_raw" to="/imu" /> -->
     <remap from="points_map" to="points_map" />
 

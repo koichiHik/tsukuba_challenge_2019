@@ -4,6 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "/usr/include/eigen3",
                 "/opt/ros/melodic/include"
             ],
             "defines": [],

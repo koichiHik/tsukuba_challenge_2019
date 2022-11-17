@@ -1,9 +1,6 @@
 #ifndef __STATUS_MANAGEMENT_CURRENT_POSE_GENERATOR_H__
 #define __STATUS_MANAGEMENT_CURRENT_POSE_GENERATOR_H__
 
-// Original
-#include <status_management/status_management_helper.h>
-
 // Message
 #include <nav_msgs/Odometry.h>
 
@@ -12,6 +9,9 @@
 #include <geometry_msgs/Transform.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf/tf.h>
+
+// Eigen
+#include <Eigen/Core>
 
 // Boost
 #include <boost/circular_buffer.hpp>
@@ -27,8 +27,9 @@ struct CurrentPoseGenerator {
   bool ResetBuffer();
   void UpdateNdtPose(const geometry_msgs::Pose &ndt_pose);
   void UpdateOdomPose(const nav_msgs::Odometry &odom);
-  bool IsCurrentPoseAvailable();
-  geometry_msgs::Pose GetCurrentPose();
+  void StartUpdate();
+  bool GetCurrentPoseAndTransform(geometry_msgs::Pose &pose,
+                                  tf::Transform &transform);
 
   static bool UpdateTfBuffer(
       const geometry_msgs::Pose &ndt_pose, const geometry_msgs::Pose &cur_odom,
@@ -37,6 +38,7 @@ struct CurrentPoseGenerator {
           &tf_buff);
 
  private:
+  bool update_enable_;
   unsigned int odom_update_cnt_;
   unsigned int ndt_update_cnt_;
   tf::Transform tf_odom_to_world_;

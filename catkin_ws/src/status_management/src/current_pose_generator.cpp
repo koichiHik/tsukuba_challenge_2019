@@ -2,6 +2,7 @@
 #include <status_management/current_pose_generator.h>
 
 // Original
+#include <status_management/status_management_helper.h>
 #include <status_management/status_management_util.h>
 
 // Eigen
@@ -15,8 +16,6 @@ namespace koichi_robotics_lib {
 
 template <typename T>
 using eigen_alloc_vec = std::vector<T, Eigen::aligned_allocator<T>>;
-
-CurrentPoseGenerator::CurrentPoseGenerator() : tf_buff_(TF_BUFFER_SIZE) {}
 
 Eigen::Vector3d AverageTranslations(
     const eigen_alloc_vec<Eigen::Vector3d> &translations) {
@@ -61,18 +60,35 @@ tf::Transform ComputeAveragedTransform(
 }
 
 /**
- * Implementation of SyncState
+ * Implementation of CurrentPoseGenerator
  */
+CurrentPoseGenerator::CurrentPoseGenerator()
+    : update_enable_(false),
+      odom_update_cnt_(0),
+      ndt_update_cnt_(0),
+      tf_odom_to_world_{},
+      cur_odom_{},
+      tf_buff_(TF_BUFFER_SIZE),
+      mtx_{} {}
+
 bool CurrentPoseGenerator::ResetBuffer() {
   std::lock_guard<std::mutex> lock(mtx_);
-  tf_buff_.clear();
+  update_enable_ = false;
   odom_update_cnt_ = 0;
   ndt_update_cnt_ = 0;
+  tf_odom_to_world_ = tf::Transform();
+  cur_odom_ = geometry_msgs::Pose();
+  tf_buff_.clear();
   return true;
 }
 
 void CurrentPoseGenerator::UpdateNdtPose(const geometry_msgs::Pose &ndt_pose) {
   std::lock_guard<std::mutex> lock(mtx_);
+
+  // X.
+  if (!update_enable_) {
+    return;
+  }
 
   // X. Increment counter.
   ndt_update_cnt_ = ndt_update_cnt_ + 1;
@@ -92,23 +108,27 @@ void CurrentPoseGenerator::UpdateNdtPose(const geometry_msgs::Pose &ndt_pose) {
 void CurrentPoseGenerator::UpdateOdomPose(const nav_msgs::Odometry &odom) {
   std::lock_guard<std::mutex> lock(mtx_);
 
-  // X. Increment counter.
-  odom_update_cnt_ = odom_update_cnt_ + 1;
-  if (odom_update_cnt_ < DUMP_FIRST_MSG) {
+  // X.
+  if (!update_enable_) {
     return;
   }
 
+  // X. Increment counter.
+  odom_update_cnt_ = odom_update_cnt_ + 1;
   cur_odom_ = odom.pose.pose;
 }
 
-bool CurrentPoseGenerator::IsCurrentPoseAvailable() {
+void CurrentPoseGenerator::StartUpdate() {
   std::lock_guard<std::mutex> lock(mtx_);
-  return MINIMUM_BUFF_COUNT <= tf_buff_.size();
+  update_enable_ = true;
 }
 
-geometry_msgs::Pose CurrentPoseGenerator::GetCurrentPose() {
+bool CurrentPoseGenerator::GetCurrentPoseAndTransform(
+    geometry_msgs::Pose &pose, tf::Transform &transform) {
   std::lock_guard<std::mutex> lock(mtx_);
-  return TransformPose(tf_odom_to_world_, cur_odom_);
+  pose = TransformPose(tf_odom_to_world_, cur_odom_);
+  transform = tf_odom_to_world_;
+  return (update_enable_ && MINIMUM_BUFF_COUNT <= tf_buff_.size());
 }
 
 bool CurrentPoseGenerator::UpdateTfBuffer(
