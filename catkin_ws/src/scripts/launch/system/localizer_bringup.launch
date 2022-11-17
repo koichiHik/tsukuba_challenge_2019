@@ -18,9 +18,11 @@
     <arg name="ndt_matching_yaml_filepath" value="$(arg ndt_matching_yaml_filepath)" />
   </include>
 
+  <!--
   <include file="$(find scripts)/launch/modules/common/mcl_3dl.launch">
     <arg name="mcl_3dl_yamlpath" value="$(arg mcl_3dl_yamlpath)" />
   </include>
+  -->
 
   <include file="$(find scripts)/launch/modules/common/pose_initializer.launch" />
 

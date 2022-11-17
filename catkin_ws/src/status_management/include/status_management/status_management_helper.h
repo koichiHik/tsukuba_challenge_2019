@@ -87,6 +87,8 @@ struct StatusManagementNodeletParams {
   double obstacle_distance_thresh;
   double obstacle_short_wait_before_avoid;
   double obstacle_long_wait_before_avoid;
+
+  CurrentPoseGenerator::Params cur_pose_gen_params_;
 };
 
 class CourseConfigMgmt {
@@ -136,7 +138,6 @@ struct SyncState {
   // Pose
   LockedObj<geometry_msgs::PoseStamped> gnss_local_;
   LockedObj<geometry_msgs::PoseStamped> ndt_pose_;
-  LockedObj<geometry_msgs::PoseWithCovarianceStamped> amcl_pose_;
 
   // Odom & Control
   LockedObj<nav_msgs::Odometry> odom_;
@@ -188,11 +189,13 @@ struct Publishers {
     // Config
     ndt_config_pub_ = nh_.advertise<autoware_config_msgs::ConfigNDT>(
         "/config/ndt", DEFAULT_PUB_QUEUE_SIZE, true);
+    ndt_init_pose_pub_ =
+        nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
+            "/initialpose", DEFAULT_PUB_QUEUE_SIZE, true);
+
     voxel_filt_pub_ =
         nh_.advertise<autoware_config_msgs::ConfigVoxelGridFilter>(
             "config/voxel_grid_filter", DEFAULT_PUB_QUEUE_SIZE, true);
-    mcl_3dl_init_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(
-        "/mcl_3dl/initialpose", DEFAULT_PUB_QUEUE_SIZE, true);
 
     // Request
     onetime_avoidance_req_pub_ = nh_.advertise<std_msgs::Header>(
@@ -207,8 +210,8 @@ struct Publishers {
   // Pose & Vel
   ros::Publisher cur_pose_pub_, cur_vel_pub_;
   // Config & Status
-  ros::Publisher ndt_config_pub_, voxel_filt_pub_, mcl_3dl_init_pub_,
-      message_pub_, onetime_avoidance_req_pub_;
+  ros::Publisher ndt_config_pub_, voxel_filt_pub_, message_pub_,
+      onetime_avoidance_req_pub_, ndt_init_pose_pub_;
 
   tf::TransformBroadcaster tf_broadcaster_;
 
@@ -237,8 +240,6 @@ struct Subscribers {
                      &Subscribers::GNSSLocalPoseCallback, this);
     ndt_pose_sub_ = nh.subscribe("ndt_pose", DEFAULT_SUB_QUEUE_SIZE,
                                  &Subscribers::NdtPoseCallback, this);
-    amcl_pose_sub_ = nh.subscribe("amcl_pose", DEFAULT_SUB_QUEUE_SIZE,
-                                  &Subscribers::AmclPoseCallback, this);
 
     // Odom & Control
     odom_sub_ = nh.subscribe("odom", DEFAULT_SUB_QUEUE_SIZE,
@@ -290,10 +291,6 @@ struct Subscribers {
     sync_state_.ndt_pose_.SetObj(msg);
   }
 
-  void AmclPoseCallback(const geometry_msgs::PoseWithCovarianceStamped &msg) {
-    sync_state_.amcl_pose_.SetObj(msg);
-  }
-
   void OdomCallback(const nav_msgs::Odometry &msg) {
     cur_pose_gen_.UpdateOdomPose(msg);
     sync_state_.odom_.SetObj(msg);
@@ -336,7 +333,7 @@ struct Subscribers {
   // Control window.
   ros::Subscriber engage_request_sub_, autorun_request_sub_;
   // Pose
-  ros::Subscriber gnss_local_pose_sub_, ndt_pose_sub_, amcl_pose_sub_;
+  ros::Subscriber gnss_local_pose_sub_, ndt_pose_sub_;
   // Odom & Control
   ros::Subscriber odom_sub_, twist_raw_sub_;
   // Waypoint & Land
@@ -373,10 +370,6 @@ bool CallPoseInitializeService(ros::NodeHandle &nh,
                                ros::Publisher &voxel_filt_pub,
                                XYZRPY &init_pose,
                                const double init_pose_srv_timeout);
-
-bool InitializeLocalizer(ros::Publisher &ndt_config_pub,
-                         ros::Publisher &mcl_3dl_init_pub,
-                         const XYZRPY &init_pose);
 
 bool CreateInitPoseFromConfig(const init_config &conf, SyncState &sync_state,
                               XYZRPY &init_pose, const double odom_wait_freq);

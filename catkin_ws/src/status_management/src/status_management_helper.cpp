@@ -135,6 +135,30 @@ StatusManagementNodeletParams ReadStatusManagementNodeletParams(
       << "[StatusManagementNodelet] Parameter obstacle_long_wait_before_avoid "
          "cannot be read.";
 
+  CHECK(pnh.getParam("tf_buff_size", params.cur_pose_gen_params_.tf_buff_size_))
+      << "[StatusManagementNodelet] Parameter tf_buff_size "
+         "cannot be read.";
+
+  CHECK(pnh.getParam("first_dump_msg_count",
+                     params.cur_pose_gen_params_.first_dump_msg_count_))
+      << "[StatusManagementNodelet] Parameter first_dump_msg_count "
+         "cannot be read.";
+
+  CHECK(pnh.getParam("minimum_valid_buff_count",
+                     params.cur_pose_gen_params_.minimum_valid_buff_count_))
+      << "[StatusManagementNodelet] Parameter minimum_valid_buff_count "
+         "cannot be read.";
+
+  CHECK(pnh.getParam("max_translation_diff",
+                     params.cur_pose_gen_params_.max_translation_diff_))
+      << "[StatusManagementNodelet] Parameter max_translation_diff "
+         "cannot be read.";
+
+  CHECK(pnh.getParam("max_rotation_diff_in_deg",
+                     params.cur_pose_gen_params_.max_rotation_diff_in_deg_))
+      << "[StatusManagementNodelet] Parameter max_rotation_diff_in_deg "
+         "cannot be read.";
+
   return params;
 }
 
@@ -255,19 +279,6 @@ XYZRPY TryInitializePose(ros::NodeHandle &nh, ros::Publisher &voxel_filt_pub,
                               init_pose_srv_timeout);
   }
   return init_pose;
-}
-
-bool InitializeLocalizer(ros::Publisher &ndt_config_pub,
-                         ros::Publisher &mcl_3dl_init_pub,
-                         const XYZRPY &init_pose) {
-  // X. Initialize ndt localizer.
-  ndt_config_pub.publish(CONFIG_DEFAULT_NDT(init_pose));
-
-  // X. Initialize amcl localizer.
-  mcl_3dl_init_pub.publish(
-      CreatePoseWithCovarianceStamped(init_pose, ros::Time::now()));
-
-  return true;
 }
 
 bool CreateInitPoseFromConfig(const init_config &conf, SyncState &sync_state,

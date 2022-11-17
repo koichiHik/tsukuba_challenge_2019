@@ -83,10 +83,10 @@ class StatusManagementNodelet : public nodelet::Nodelet {
   // X. Parameter
   StatusManagementNodeletParams params_;
 
-  CurrentPoseGenerator cur_pose_gen_;
   std::unique_ptr<SyncState> p_sync_state_;
   std::unique_ptr<CourseConfigMgmt> p_course_conf_mgmt_;
   std::unique_ptr<Publishers> p_pubs_;
+  std::unique_ptr<CurrentPoseGenerator> p_cur_pose_gen_;
   std::unique_ptr<Subscribers> p_subs_;
 
   std::map<std::string, ros::Time> message_time_map_;
@@ -98,10 +98,10 @@ StatusManagementNodelet::StatusManagementNodelet()
     : nh_(),
       pnh_(),
       params_(),
-      cur_pose_gen_(),
       p_sync_state_(),
       p_course_conf_mgmt_(),
       p_pubs_(),
+      p_cur_pose_gen_(),
       p_subs_(),
       thread_control_(),
       thread_checking_() {}
@@ -127,8 +127,11 @@ void StatusManagementNodelet::Initialize() {
   p_course_conf_mgmt_.reset(new CourseConfigMgmt(params_.course_config_yaml,
                                                  params_.start_course_idx));
   p_pubs_.reset(new Publishers(nh_));
+  p_cur_pose_gen_.reset(new CurrentPoseGenerator(params_.cur_pose_gen_params_,
+                                                 p_pubs_->ndt_config_pub_,
+                                                 p_pubs_->ndt_init_pose_pub_));
   p_subs_.reset(new Subscribers(nh_, *p_sync_state_, p_pubs_->message_pub_,
-                                cur_pose_gen_));
+                                *p_cur_pose_gen_));
 
   // Messaging.
   PublishStatusMessage("Initializing system. Please wait for a moment.",
@@ -147,9 +150,6 @@ void StatusManagementNodelet::Initialize() {
     }
     InitializePose(conf.init_conf_);
   }
-
-  // X. Start pose generator.
-  cur_pose_gen_.StartUpdate();
 
   // Dispatch thread.
   thread_checking_ =
@@ -177,8 +177,7 @@ XYZRPY StatusManagementNodelet::InitializePose(const init_config &conf) {
                               params_.init_pose_srv_timeout);
   }
 
-  InitializeLocalizer(p_pubs_->ndt_config_pub_, p_pubs_->mcl_3dl_init_pub_,
-                      init_pose);
+  p_cur_pose_gen_->InitializePose(init_pose);
 
   // X. Status Announce.
   PublishStatusMessage("Pose initialization is done. Start control.",
@@ -276,7 +275,7 @@ void StatusManagementNodelet::RunCheckingCycle() {
 
     // X. Check if reached goal.
     if (CheckIfEndIsReached() && p_course_conf_mgmt_->NextConfig()) {
-      cur_pose_gen_.ResetBuffer();
+      p_cur_pose_gen_->ResetBuffer();
       std_msgs::Bool msg;
       msg.data = false;
       p_pubs_->status_mgmt_status_pub_.publish(msg);
@@ -287,7 +286,6 @@ void StatusManagementNodelet::RunCheckingCycle() {
         CallWorld2MapLoadService(nh_, conf.file_conf_.world_to_map_json_file_);
       }
       InitializePose(conf.init_conf_);
-      cur_pose_gen_.StartUpdate();
     }
 
     if (!p_sync_state_->engage_request_.GetObj() ||
@@ -337,8 +335,8 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
   {
     tf::Transform tf_odom_to_world;
     geometry_msgs::PoseStamped cur_pose;
-    if (cur_pose_gen_.GetCurrentPoseAndTransform(cur_pose.pose,
-                                                 tf_odom_to_world)) {
+    if (p_cur_pose_gen_->GetCurrentPoseAndTransform(cur_pose.pose,
+                                                    tf_odom_to_world)) {
       cur_pose.header.stamp = time;
       cur_pose.header.frame_id = "map";
 
@@ -350,96 +348,6 @@ void StatusManagementNodelet::CreateAndPublishCurrentPose(
       p_sync_state_->last_cur_pose_.SetObj(cur_pose);
     }
   }
-
-  // nav_msgs::Odometry odom = p_sync_state_->odom_.GetObj();
-  // if (!odom.header.stamp.is_zero()) {
-  //   geometry_msgs::PoseStamped cur_pose;
-  //   cur_pose.header.stamp = time;
-  //   cur_pose.header.frame_id = "map";
-
-  //   static ros::Time last_pose_init;
-  //   static int ndt_unreliable_cnt = 0;
-  //   geometry_msgs::PoseStamped ndt_pose =
-  //   p_sync_state_->ndt_pose_.GetObj();
-
-  //
-  // ROS_WARN("Localization Unreliable Cnt : %d",
-  //         p_sync_state_->localization_unreliable_cnt_.GetObj());
-  // if (!ndt_pose.header.stamp.is_zero() &&
-  //     p_sync_state_->localization_unreliable_cnt_.GetObj() == 0 &&
-  //     !p_sync_state_->pose_initializing_.GetObj()) {
-  // // X. Use ndt pose as cur pose.
-  // cur_pose.pose = ndt_pose.pose;
-  // tf::Transform trans_odom_to_map =
-  //     CreateTransformFromPose(cur_pose.pose, odom.pose.pose);
-
-  // X. Send tf & cur pose
-  // ROS_WARN("Publish transform from ndt.");
-  // p_pubs_->tf_broadcaster_.sendTransform(
-  //     tf::StampedTransform(trans_odom_to_map, time, "map", "odom"));
-
-  // ROS_WARN("Before cur pose pub");
-  // p_pubs_->cur_pose_pub_.publish(cur_pose);
-  // p_sync_state_->last_cur_pose_.SetObj(cur_pose);
-
-  // ndt_unreliable_cnt = 0;
-
-  // } else {
-  //   // X. Use odometry as cur pose.
-  //   tf::StampedTransform transform_st =
-  //       p_sync_state_->last_valid_tf_odom_to_map_.GetObj();
-  //   if (!transform_st.stamp_.is_zero()) {
-  //     // X. Send transform.
-  //     // ROS_WARN("Publish transform from odom.");
-  //     transform_st.stamp_ = time;
-  //     p_pubs_->tf_broadcaster_.sendTransform(transform_st);
-
-  //     // X. Transform.
-  //     cur_pose.pose = TransformPose(transform_st, odom.pose.pose);
-
-  //     // X.
-  //     // ROS_WARN("Before cur pose pub");
-  //     p_pubs_->cur_pose_pub_.publish(cur_pose);
-  //     p_sync_state_->last_cur_pose_.SetObj(cur_pose);
-  //     PublishStatusMessage("Ndt pose is unreliable",
-  //     DEFAULT_MESSAGE_CYCLE);
-
-  //     double trans_diff, angle_diff;
-  //     geometry_msgs::PoseStamped ndt_pose =
-  //     p_sync_state_->ndt_pose_.GetObj();
-  //     geometry_msgs::PoseWithCovarianceStamped amcl_pose =
-  //         p_sync_state_->amcl_pose_.GetObj();
-  //     ComputePoseDiff(ndt_pose.pose, amcl_pose.pose.pose, trans_diff,
-  //                     angle_diff);
-  //     // ROS_WARN("Trans Diff : %lf, Angle Diff : %lf", trans_diff,
-  //     // angle_diff);
-
-  //     if (!p_sync_state_->pose_initializing_.GetObj() &&
-  //         (ros::Time::now() - last_pose_init).toSec() > 4.0 &&
-  //         ndt_unreliable_cnt % static_cast<int>(DEFAULT_CONTROL_CYCLE_FREQ)
-  //         ==
-  //             0 /*&&
-  //         !PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
-  //                                   params_.localization_translation_thresh,
-  //                                   params_.localization_orientation_thresh)*/)
-  //                                   {
-  //       ROS_WARN("Pose init called.");
-  //       last_pose_init = ros::Time::now();
-
-  //       // Init ndt matching.
-  //       XYZRPY init_pose = CreateXYZRPYFromPose(cur_pose.pose);
-  //       p_pubs_->ndt_config_pub_.publish(CONFIG_DEFAULT_NDT(init_pose));
-
-  //       // Init amcl localizer.
-  //       geometry_msgs::PoseWithCovarianceStamped init_pose_amcl;
-  //       init_pose_amcl.header.stamp = cur_pose.header.stamp;
-  //       init_pose_amcl.header.frame_id = "map";
-  //       init_pose_amcl.pose.pose = cur_pose.pose;
-  //       p_pubs_->mcl_3dl_init_pub_.publish(init_pose_amcl);
-  //     }
-  //     ndt_unreliable_cnt = ndt_unreliable_cnt + 1;
-  //   }
-  // }
 }
 
 void StatusManagementNodelet::CheckRobotStopReason() {
@@ -522,28 +430,22 @@ void StatusManagementNodelet::CheckRobotStopReason() {
 
 void StatusManagementNodelet::CheckPoseValidity() {
   geometry_msgs::PoseStamped ndt_pose = p_sync_state_->ndt_pose_.GetObj();
-  geometry_msgs::PoseWithCovarianceStamped amcl_pose =
-      p_sync_state_->amcl_pose_.GetObj();
 
   // X. During pose initialization, skip.
   if (p_sync_state_->pose_initializing_.GetObj() ||
-      ndt_pose.header.stamp.is_zero() || amcl_pose.header.stamp.is_zero()) {
+      ndt_pose.header.stamp.is_zero()) {
     return;
   }
 
   // X. Map pose is not stable.
-  if (false /*!PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
-                                params_.localization_translation_thresh,
-                                params_.localization_orientation_thresh)*/) {
+  if (false) {
     p_sync_state_->localization_unreliable_cnt_.SetObj(
         std::min(p_sync_state_->localization_unreliable_cnt_.GetObj() + 1,
                  params_.localization_unreliable_cnt_for_reinit));
 
   } else {
     // X. When map pose is stable.
-    if (true/*PoseDiffIsBelowThreshold(ndt_pose.pose, amcl_pose.pose.pose,
-                                 params_.localization_translation_reliable_thresh,
-                                 params_.localization_orientation_reliable_thresh_deg)*/) {
+    if (true) {
       try {
         tf::StampedTransform tf_odom_to_map;
         p_subs_->tf_listener_.lookupTransform(
@@ -599,7 +501,7 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
       }
 
       // X. Reset buffer.
-      cur_pose_gen_.ResetBuffer();
+      p_cur_pose_gen_->ResetBuffer();
 
       // X. Choose initial position for search.
       XYZRPY searched_pose;
@@ -627,12 +529,8 @@ void StatusManagementNodelet::RunPoseInitializerIfNecessary() {
             DEFAULT_INIT_GNSS_CHECK_FREQ, params_.init_pose_srv_timeout);
       }
 
-      // X. Update localizer.
-      InitializeLocalizer(p_pubs_->ndt_config_pub_, p_pubs_->mcl_3dl_init_pub_,
-                          searched_pose);
-
       // X. Restart
-      cur_pose_gen_.StartUpdate();
+      p_cur_pose_gen_->InitializePose(searched_pose);
 
       // X. Status Announce.
       PublishStatusMessage("Pose initialization is done. Start control.",

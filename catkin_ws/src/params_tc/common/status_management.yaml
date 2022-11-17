@@ -31,3 +31,10 @@ localization_orientation_reliable_thresh_deg: 15.0
 obstacle_distance_thresh: 2.0
 obstacle_short_wait_before_avoid: 5.0
 obstacle_long_wait_before_avoid: 5.0
+
+# Current pose generator
+tf_buff_size: 30
+first_dump_msg_count: 5
+minimum_valid_buff_count: 5
+max_translation_diff: 2.5
+max_rotation_diff_in_deg: 5.0
