@@ -47,6 +47,7 @@ struct CurrentPoseGenerator {
   static bool UpdateTfBuffer(
       const geometry_msgs::Pose &ndt_pose, const geometry_msgs::Pose &cur_odom,
       const tf::Transform &last_tf_odom_to_world,
+      const int minmum_valid_buff_count,
       const double max_allowed_translation_diff,
       const double max_allowed_rotation_diff_in_deg,
       boost::circular_buffer<std::pair<Eigen::Vector3d, Eigen::Matrix3d>>

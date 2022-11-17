@@ -153,8 +153,9 @@ void CurrentPoseGenerator::UpdateNdtPose(const geometry_msgs::Pose &ndt_pose) {
 
   // X. Update tf buffer.
   UpdateTfBuffer(
-      ndt_pose, cur_odom_, tf_odom_to_world_, params_.max_translation_diff_,
-      params_.max_rotation_diff_in_deg_, tf_buff_, ndt_init_pose_pub_);
+      ndt_pose, cur_odom_, tf_odom_to_world_, params_.minimum_valid_buff_count_,
+      params_.max_translation_diff_, params_.max_rotation_diff_in_deg_,
+      tf_buff_, ndt_init_pose_pub_);
 
   // X. Compute averaged transform.
   tf_odom_to_world_ = ComputeAveragedTransform(tf_buff_);
@@ -185,6 +186,7 @@ bool CurrentPoseGenerator::GetCurrentPoseAndTransform(
 bool CurrentPoseGenerator::UpdateTfBuffer(
     const geometry_msgs::Pose &ndt_pose, const geometry_msgs::Pose &cur_odom,
     const tf::Transform &last_tf_odom_to_world,
+    const int minmum_valid_buff_count,
     const double max_allowed_translation_diff,
     const double max_allowed_rotation_diff_in_deg,
     boost::circular_buffer<std::pair<Eigen::Vector3d, Eigen::Matrix3d>>
@@ -198,7 +200,7 @@ bool CurrentPoseGenerator::UpdateTfBuffer(
     ComputeTransformDifference(cur_odom, last_tf_odom_to_world, tf_odom_to_ndt,
                                translation_diff, rotation_diff);
 
-    if (5 <= tf_buff.size() &&
+    if (minmum_valid_buff_count <= tf_buff.size() &&
         !(translation_diff < max_allowed_translation_diff &&
           rotation_diff < max_allowed_rotation_diff_in_deg / 180.0 * M_PI)) {
       LOG(INFO) << "Transform invalid. Norm : " << translation_diff
