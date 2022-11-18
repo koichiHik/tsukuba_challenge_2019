@@ -27,6 +27,7 @@ Panels:
         - /PoseWithCovariance1
         - /Pose2
         - /Pose3
+        - /PoseArray1
       Splitter Ratio: 0.5
     Tree Height: 686
   - Class: rviz/Selection
@@ -47,7 +48,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: PointCloud2
+    SyncSource: ""
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -91,7 +92,7 @@ Visualization Manager:
       Min Color: 0; 0; 0
       Name: LaserScan
       Position Transformer: XYZ
-      Queue Size: 10
+      Queue Size: 1
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.10000000149011612
@@ -119,7 +120,7 @@ Visualization Manager:
       Min Color: 0; 0; 0
       Name: PointCloud2
       Position Transformer: XYZ
-      Queue Size: 10
+      Queue Size: 1
       Selectable: true
       Size (Pixels): 3
       Size (m): 1
@@ -147,7 +148,7 @@ Visualization Manager:
           Value: true
         Value: true
       Enabled: true
-      Keep: 10000
+      Keep: 500
       Name: Odometry
       Position Tolerance: 0.10000000149011612
       Shape:
@@ -236,7 +237,7 @@ Visualization Manager:
       Min Color: 0; 0; 0
       Name: PointCloud2
       Position Transformer: XYZ
-      Queue Size: 10
+      Queue Size: 1
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.10000000149011612
@@ -266,7 +267,7 @@ Visualization Manager:
       Marker Topic: /next_waypoint_mark
       Name: Marker
       Namespaces:
-        next_waypoint_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -274,7 +275,7 @@ Visualization Manager:
       Marker Topic: /next_target_mark
       Name: Marker
       Namespaces:
-        next_target_marker: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -282,9 +283,7 @@ Visualization Manager:
       Marker Topic: /local_waypoints_mark
       Name: MarkerArray
       Namespaces:
-        local_path_marker: true
-        local_point_marker: true
-        local_waypoint_velocity: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -292,7 +291,7 @@ Visualization Manager:
       Marker Topic: /obstacle
       Name: Marker
       Namespaces:
-        my_namespace: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/MarkerArray
@@ -300,9 +299,7 @@ Visualization Manager:
       Marker Topic: /global_waypoints_mark
       Name: MarkerArray
       Namespaces:
-        global_change_flag_lane_1: false
-        global_lane_waypoint_orientation_marker_1: true
-        global_velocity_lane_1: false
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -323,7 +320,7 @@ Visualization Manager:
       Min Color: 239; 41; 41
       Name: PointCloud2
       Position Transformer: XYZ
-      Queue Size: 10
+      Queue Size: 1
       Selectable: true
       Size (Pixels): 3
       Size (m): 0.10000000149011612

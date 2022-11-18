@@ -1,9 +1,11 @@
 1:
+  init_pose: True
   map_pcd_file: /Desktop/sample_1.pcd
   smooth_waypoint_csv: /Desktop/smooth_waypoint_1.csv
   course_start_yaml: /course_start_1.yaml
   world_to_map_json: /Desktop/world_to_map_1.json
 2:
+  init_pose: False
   map_pcd_file: /Desktop/sample_2.pcd
   smooth_waypoint_csv: /Desktop/smooth_waypoint_2.csv
   course_start_yaml: /course_start_2.yaml

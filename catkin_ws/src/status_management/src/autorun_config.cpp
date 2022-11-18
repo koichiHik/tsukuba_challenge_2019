@@ -39,6 +39,7 @@ std::map<unsigned int, file_config> YamlConfigReader::ReadFileConfig(
        ++itr) {
     file_config conf;
     conf.course_no_ = itr->first.as<unsigned int>();
+    conf.init_pose_ = itr->second["init_pose"].as<bool>();
     conf.map_pcd_file_ = itr->second["map_pcd_file"].as<std::string>();
     conf.lane_csv_file_ = itr->second["smooth_waypoint_csv"].as<std::string>();
     conf.world_to_map_json_file_ =

@@ -275,17 +275,24 @@ void StatusManagementNodelet::RunCheckingCycle() {
 
     // X. Check if reached goal.
     if (CheckIfEndIsReached() && p_course_conf_mgmt_->NextConfig()) {
-      p_cur_pose_gen_->ResetBuffer();
+      autorun_config conf = p_course_conf_mgmt_->GetCurrentConfig();
+      if (conf.file_conf_.init_pose_) {
+        p_cur_pose_gen_->ResetBuffer();
+      }
+
       std_msgs::Bool msg;
       msg.data = false;
       p_pubs_->status_mgmt_status_pub_.publish(msg);
-      autorun_config conf = p_course_conf_mgmt_->GetCurrentConfig();
+
       CallMapLoadService(nh_, conf.file_conf_.map_pcd_file_);
       if (!params_.localize_only) {
         CallWaypointLoadService(nh_, conf.file_conf_.lane_csv_file_);
         CallWorld2MapLoadService(nh_, conf.file_conf_.world_to_map_json_file_);
       }
-      InitializePose(conf.init_conf_);
+
+      if (conf.file_conf_.init_pose_) {
+        InitializePose(conf.init_conf_);
+      }
     }
 
     if (!p_sync_state_->engage_request_.GetObj() ||

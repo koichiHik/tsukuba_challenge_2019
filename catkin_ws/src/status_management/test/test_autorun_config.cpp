@@ -26,6 +26,7 @@ TEST(YamlConfigReader, case0) {
 
   ASSERT_EQ(citr->first, 1);
   ASSERT_EQ(citr->second.course_no_, 1);
+  ASSERT_TRUE(citr->second.init_pose_);
   ASSERT_EQ(citr->second.map_pcd_file_, "/Desktop/sample_1.pcd");
   ASSERT_EQ(citr->second.lane_csv_file_, "/Desktop/smooth_waypoint_1.csv");
   ASSERT_EQ(citr->second.course_start_yaml_file_, "/course_start_1.yaml");
@@ -34,6 +35,7 @@ TEST(YamlConfigReader, case0) {
 
   citr++;
   ASSERT_EQ(citr->first, 2);
+  ASSERT_FALSE(citr->second.init_pose_);
   ASSERT_EQ(citr->second.course_no_, 2);
   ASSERT_EQ(citr->second.map_pcd_file_, "/Desktop/sample_2.pcd");
   ASSERT_EQ(citr->second.lane_csv_file_, "/Desktop/smooth_waypoint_2.csv");

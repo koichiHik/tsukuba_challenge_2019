@@ -27,6 +27,7 @@ struct init_config {
 
 struct file_config {
   unsigned int course_no_;
+  bool init_pose_;
   std::string map_pcd_file_;
   std::string lane_csv_file_;
   std::string world_to_map_json_file_;
