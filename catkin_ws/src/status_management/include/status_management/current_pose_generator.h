@@ -64,7 +64,7 @@ struct CurrentPoseGenerator {
   boost::circular_buffer<std::pair<Eigen::Vector3d, Eigen::Matrix3d>> tf_buff_;
   ros::Publisher &ndt_config_pub_, &ndt_init_pose_pub_;
 
-  std::mutex mtx_;
+  std::recursive_mutex mtx_;
 };
 
 }  // namespace koichi_robotics_lib

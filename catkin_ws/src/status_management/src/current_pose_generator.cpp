@@ -118,13 +118,13 @@ CurrentPoseGenerator::CurrentPoseGenerator(const Params &params,
       mtx_{} {}
 
 void CurrentPoseGenerator::InitializePose(XYZRPY &init_pose) {
-  std::lock_guard<std::mutex> lock(mtx_);
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
   ndt_config_pub_.publish(CONFIG_DEFAULT_NDT(init_pose));
   update_enable_ = true;
 }
 
 bool CurrentPoseGenerator::ResetBuffer() {
-  std::lock_guard<std::mutex> lock(mtx_);
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
   update_enable_ = false;
   odom_update_cnt_ = 0;
   ndt_update_cnt_ = 0;
@@ -135,7 +135,7 @@ bool CurrentPoseGenerator::ResetBuffer() {
 }
 
 void CurrentPoseGenerator::UpdateNdtPose(const geometry_msgs::Pose &ndt_pose) {
-  std::lock_guard<std::mutex> lock(mtx_);
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
 
   // X.
   if (!update_enable_) {
@@ -162,7 +162,7 @@ void CurrentPoseGenerator::UpdateNdtPose(const geometry_msgs::Pose &ndt_pose) {
 }
 
 void CurrentPoseGenerator::UpdateOdomPose(const nav_msgs::Odometry &odom) {
-  std::lock_guard<std::mutex> lock(mtx_);
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
 
   // X.
   if (!update_enable_) {
@@ -176,7 +176,7 @@ void CurrentPoseGenerator::UpdateOdomPose(const nav_msgs::Odometry &odom) {
 
 bool CurrentPoseGenerator::GetCurrentPoseAndTransform(
     geometry_msgs::Pose &pose, tf::Transform &transform) {
-  std::lock_guard<std::mutex> lock(mtx_);
+  std::lock_guard<std::recursive_mutex> lock(mtx_);
   pose = TransformPose(tf_odom_to_world_, cur_odom_);
   transform = tf_odom_to_world_;
   return (update_enable_ &&
