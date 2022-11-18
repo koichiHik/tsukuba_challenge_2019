@@ -312,7 +312,7 @@ bool StatusManagementNodelet::CheckIfEndIsReached() {
     current_idx = cur_idx.data;
   }
 
-  LOG(INFO) << "Index diff : " << base_wps.waypoints.size() - current_idx;
+  // LOG(INFO) << "Index diff : " << base_wps.waypoints.size() - current_idx;
   const int DIFF_THRESH = 10;
   if (0 < base_wps.waypoints.size() &&
       static_cast<int>(base_wps.waypoints.size()) - current_idx < DIFF_THRESH &&
