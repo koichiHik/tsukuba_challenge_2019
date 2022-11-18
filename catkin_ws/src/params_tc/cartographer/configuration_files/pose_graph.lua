@@ -42,7 +42,7 @@ POSE_GRAPH = {
       ceres_solver_options = {
         use_nonmonotonic_steps = true,
         max_num_iterations = 10,
-        num_threads = 1,
+        num_threads = 5,
       },
     },
     fast_correlative_scan_matcher_3d = {
@@ -67,7 +67,7 @@ POSE_GRAPH = {
       ceres_solver_options = {
         use_nonmonotonic_steps = false,
         max_num_iterations = 10,
-        num_threads = 1,
+        num_threads = 5,
       },
     },
   },
@@ -81,8 +81,8 @@ POSE_GRAPH = {
     rotation_weight = 3e5,
 --    acceleration_weight = 1e1,
 --    rotation_weight = 1e1,
-    local_slam_pose_translation_weight = 1e0,
-    local_slam_pose_rotation_weight = 1e0,
+    local_slam_pose_translation_weight = 1e2,
+    local_slam_pose_rotation_weight = 1e2,
     odometry_translation_weight = 1e1,
     odometry_rotation_weight = 1e1,
     fixed_frame_pose_translation_weight = 1e1,

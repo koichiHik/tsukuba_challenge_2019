@@ -26,6 +26,10 @@ options = {
 --      max_range = 130.,
       max_range = 50.,
     },
+    {
+      action = "fixed_ratio_sampler",
+      sampling_ratio = 0.5,
+    },
 --    {
 --      action = "voxel_filter_and_remove_moving_objects",
 --      voxel_size = 0.1,

@@ -16,6 +16,6 @@ DATAINFO_FILE=${DATA_DIR}/${DATAINFO_FILENAME}
 roslaunch ${ROS_SCRIPTS_PKG}/launch/modules/autoware/waypoint_saver.launch \
   save_filename:=${DATA_DIR}/${RAW_WAYPOINT_FILENAME} \
   interval:=0.1 \
-  pose_topic:="/ndt_pose" \
+  pose_topic:="/current_pose" \
   velocity_topic:="/estimated_vel_mps" \
   save_velocity:="False" \

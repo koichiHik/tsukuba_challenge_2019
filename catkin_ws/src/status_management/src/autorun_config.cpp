@@ -5,6 +5,9 @@
 // YAML
 #include <yaml-cpp/yaml.h>
 
+// Glog
+#include <glog/logging.h>
+
 // STL
 #include <iostream>
 
@@ -13,6 +16,7 @@ namespace koichi_robotics_lib {
 init_config YamlConfigReader::ReadInitConfig(const std::string &path) {
   init_config conf;
 
+  LOG(INFO) << "Path : " << path;
   YAML::Node node = YAML::LoadFile(path);
 
   conf.use_gps_ = node["use_gps"].as<bool>();
